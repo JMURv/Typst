@@ -1,0 +1,129 @@
+version: '3.3'
+
+services:
+  postgres:
+    container_name: postgres_typst
+    image: postgres:15.0-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./docker/env/.env.dev
+    volumes:
+      - pg_data_typst:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin_typst
+    image: dpage/pgadmin4
+    env_file:
+      - ./docker/env/.env.dev
+    ports:
+      - "15432:80"
+    volumes:
+      - pgadmin_typst:/var/lib/pgadmin
+    depends_on:
+      - postgres
+
+  redis:
+    container_name: redis_typst
+    image: redis:alpine
+    env_file:
+      - docker/env/.env.dev
+    ports:
+      - "6379:6379"
+
+  backend:
+    container_name: backend_typst
+    image: "typst-backend:latest"
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./docker/env/.env.dev
+    volumes:
+      - .:/app
+      - static_volume_typst:/app/backend/static
+      - media_volume_typst:/app/backend/media
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+    depends_on:
+      - postgres
+      - redis
+    command: sh -c "poetry run python manage.py makemigrations &&
+                    poetry run python manage.py migrate &&
+                    poetry run python manage.py create_users &&
+                    poetry run python manage.py runserver 0.0.0.0:8000"
+
+  celery:
+    container_name: celery_typst
+    working_dir: /app/backend
+    image: "typst-backend:latest"
+    env_file:
+      - docker/env/.env.dev
+    command: celery -A typst worker --loglevel=info --logfile=../docker/logs/celery-worker.log
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - redis
+
+  recommends:
+    container_name: recommends_typst
+    build:
+      context: ./recommendations
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "9000:9000"
+    expose:
+      - "9000"
+    command: sh -c "poetry run uvicorn main:app --reload --host 0.0.0.0 --port 9000"
+
+  frontend:
+    container_name: frontend_typst
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    env_file:
+      - ./docker/env/.env.dev
+    environment:
+      - WATCHPACK_POLLING=true
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - node_modules_typst:/app/frontend/node_modules
+      - static_volume_typst:/app/frontend/public/static
+    depends_on:
+      - postgres
+      - backend
+    command: sh -c "npm run dev"
+
+  nginx:
+    container_name: nginx_typst
+    working_dir: /app
+    image: nginx:stable-alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume_typst:/app/frontend/public/static
+      - media_volume_typst:/app/backend/media
+      - ./docker/nginx/dev/:/etc/nginx/conf.d
+    links:
+      - backend
+    depends_on:
+      - frontend
+      - backend
+
+
+volumes:
+  pg_data_typst:
+  pgadmin_typst:
+  node_modules_typst:
+  static_volume_typst:
+  media_volume_typst:

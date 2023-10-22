@@ -1,0 +1,12 @@
+FROM node:19-alpine
+
+WORKDIR ./app/frontend
+
+COPY package.json package-lock.json ./
+
+RUN npm install -D @swc/cli @swc/core
+RUN npm install
+
+COPY . ./
+
+EXPOSE 3000

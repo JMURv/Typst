@@ -1,0 +1,120 @@
+'use client';
+import UserMedia from "@/app/[userId]/UserMedia";
+import UserUpdate from "@/app/[userId]/UserUpdate";
+import TextUser from "@/app/[userId]/TextUser";
+import {CloseSharp, FavoriteBorderSharp, FavoriteSharp, HeightSharp, PlaceSharp, ScaleSharp} from "@mui/icons-material";
+import useTranslation from "next-translate/useTranslation";
+import {useState} from "react";
+import swipeUser from "@/lib/swipeUser";
+
+export default function MainUser({session, prefetchRequestUser, prefetchUserData, isAuthor, userId}) {
+    const {t} = useTranslation('user')
+    const [requestUser, setRequestUser] = useState(prefetchRequestUser)
+    const [userData, setUserData] = useState(prefetchUserData)
+
+    const isLikedByUser = userData.liked.includes(requestUser.id)
+    const isLikedByReqUser = requestUser.liked.includes(userData.id)
+    const isDislikedByReqUser = requestUser.disliked.includes(userData.id)
+    let canMessage = false
+    if (isLikedByReqUser && isLikedByUser) canMessage = true
+
+    async function handleSwipe(action){
+        const userId = userData.id
+        await swipeUser(session.access, action, userId)
+        const updatedUser = {...requestUser}
+
+        if (!requestUser.liked.includes(userId) && action === "like") {
+            updatedUser.liked.push(userId)
+            updatedUser.disliked = updatedUser.disliked.filter(item => item !== userId)
+        } else if (!requestUser.liked.includes(userId) && action === "dislike") {
+            if (isDislikedByReqUser){
+                updatedUser.disliked = updatedUser.disliked.filter(item => item !== userId)
+            } else {
+                updatedUser.disliked.push(userId)
+            }
+        } else if (requestUser.liked.includes(userId) && action === "like"){
+            updatedUser.liked = updatedUser.liked.filter(item => item !== userId)
+        } else if (requestUser.liked.includes(userId) && action === "dislike"){
+            updatedUser.liked = updatedUser.liked.filter(item => item !== userId)
+            updatedUser.disliked.push(userId)
+        }
+        setRequestUser(updatedUser)
+    }
+
+    return(
+        <>
+            <div className="h-[50vh] sm:h-[70vh] lg:h-[65vh] 2xl:h-[90vh] w-full lg:w-1/2 2xl:w-1/2">
+                <UserMedia
+                    userData={userData}
+                />
+            </div>
+            <div className="flex flex-col gap-3 w-full lg:w-1/2 h-full">
+                <div className="flex flex-row gap-3 items-center p-5 rounded-2xl bg-zinc-100 dark:bg-transparent">
+                    <div>
+                        <p className="font-medium text-3xl">{userData.username}, {userData.age} {t("years")}</p>
+                    </div>
+                    {isAuthor ? (
+                        <UserUpdate
+                            session={session}
+                            userData={userData}
+                            setUserData={setUserData}
+                        />
+                    ) : (
+                        canMessage ? (
+                            <TextUser session={session} userId={userId}/>
+                        ) : (
+                            <div className="ms-auto flex flex-row gap-5">
+                                <div
+                                    className={`cursor-pointer p-2 ring-2 ring-inset ring-green-400 ${isLikedByReqUser ? 'bg-green-400 text-green-600 hover:bg-transparent hover:text-green-400' : 'text-green-400 hover:bg-green-400 hover:text-green-600'} transition-color duration-200 text-center rounded-full`}
+                                    onClick={() => handleSwipe("like")}>
+                                    {isLikedByReqUser ? (
+                                        <FavoriteSharp fontSize={"large"}/>
+                                    ) : (
+                                        <FavoriteBorderSharp fontSize={"large"}/>
+                                    )}
+                                </div>
+                                <div
+                                    className={`cursor-pointer p-2 ring-2 ring-inset ring-red-400 ${isDislikedByReqUser ? 'bg-red-400 text-red-600 hover:bg-transparent hover:text-red-400' : 'text-red-400 hover:bg-red-400 hover:text-red-600'} transition-color duration-200 text-center rounded-full`}
+                                    onClick={() => handleSwipe("dislike")}>
+                                    <CloseSharp fontSize={"large"}/>
+                                </div>
+                            </div>
+                        )
+                    )}
+                </div>
+                <div className="flex flex-col gap-3 p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-deep-purple">
+                    <div className="flex flex-row gap-3">
+                        {userData.country && userData.city && (
+                            <>
+                                <PlaceSharp />
+                                <p>{userData.country}, {userData.city}</p>
+                            </>
+                        )}
+                    </div>
+                    <div className="flex flex-row gap-5 flex-wrap">
+                        {userData.height && (
+                            <div className="flex flex-row gap-3 items-center">
+                                <HeightSharp fontSize={"medium"}/>
+                                <p className="font-medium text-lg">{userData.height}{t("cm")}</p>
+                            </div>
+                        )}
+                        {userData.weight && (
+                            <div className="flex flex-row gap-3 items-center">
+                                <ScaleSharp fontSize={"medium"}/>
+                                <p className="font-medium text-lg">{userData.weight}{t("kg")}</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex flex-row gap-3 flex-wrap">
+                        <p className="font-medium text-base">{t("sex")}: {userData.sex}</p>
+                        <p className="font-medium text-base">{t("orientation")}: {userData.orientation}</p>
+                    </div>
+                </div>
+                <div className="p-5 rounded-2xl xl:w-4/6 font-medium text-lg bg-zinc-100 dark:bg-[#1A1B20]">
+                    {userData.about}
+                </div>
+            </div>
+        </>
+    )
+}

@@ -1,0 +1,11 @@
+{
+  "locales": ["en", "ru"],
+  "defaultLocale": "ru",
+  "pages": {
+    "*": ["common", "user"],
+    "/": ["home", "user"],
+    "/chat": ["chat", "user"],
+    "/feed": ["feed", "user"],
+    "/[userId]": ["user"]
+  }
+}

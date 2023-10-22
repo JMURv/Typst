@@ -1,0 +1,160 @@
+version: '3.3'
+
+services:
+  postgres:
+    container_name: postgres_typst
+    image: postgres:15.0-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./docker/env/.env.prod
+    volumes:
+      - pg_data_typst:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin_typst
+    image: dpage/pgadmin4
+    env_file:
+      - ./docker/env/.env.prod
+    ports:
+      - "15432:80"
+    volumes:
+      - pgadmin_typst:/var/lib/pgadmin
+    depends_on:
+      - postgres
+
+  redis:
+    container_name: redis_typst
+    image: redis:alpine
+    env_file:
+      - docker/env/.env.prod
+    ports:
+      - "6379:6379"
+
+  backend:
+    container_name: backend_typst
+    image: "typst-backend:latest"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./docker/env/.env.prod
+    volumes:
+      - .:/app
+      - static_volume_typst:/app/backend/static
+      - media_volume_typst:/app/backend/media
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+    depends_on:
+      - postgres
+      - redis
+    command: sh -c "poetry run python manage.py collectstatic --no-input &&
+                    poetry run python manage.py makemigrations &&
+                    poetry run python manage.py migrate &&
+                    poetry run python manage.py create_users &&
+                    poetry run gunicorn --workers=4 --reload --max-requests=1000 typst.wsgi -b 0.0.0.0:8000"
+
+  ws_backend:
+    container_name: ws_backend_typst
+    image: "typst-backend:latest"
+    env_file:
+      - ./docker/env/.env.prod
+    volumes:
+      - .:/app
+      - static_volume_typst:/app/backend/static
+      - media_volume_typst:/app/backend/media
+    ports:
+      - "8001:8001"
+    expose:
+      - "8001"
+    depends_on:
+      - postgres
+      - redis
+    command: sh -c "poetry run python manage.py collectstatic --no-input &&
+                    poetry run python manage.py makemigrations &&
+                    poetry run python manage.py migrate &&
+                    poetry run daphne -b 0.0.0.0 -p 8001 typst.asgi:application"
+
+  celery:
+    container_name: celery_typst
+    working_dir: /app/backend
+    image: "typst-backend:latest"
+    env_file:
+      - docker/env/.env.prod
+    command: celery -A typst worker --loglevel=info --logfile=../docker/logs/celery-worker.log
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - postgres
+
+  recommends:
+    container_name: recommends_typst
+    build:
+      context: ./recommendations
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "9000:9000"
+    expose:
+      - "9000"
+    command: sh -c "poetry run uvicorn main:app --reload --host 0.0.0.0 --port 9000"
+
+  frontend:
+    container_name: frontend_typst
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    env_file:
+      - ./docker/env/.env.prod
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - node_modules_typst:/app/frontend/node_modules
+      - static_volume_typst:/app/frontend/public/static
+    depends_on:
+      - postgres
+      - backend
+    command: sh -c "npm run build && npm run start"
+
+  nginx:
+    container_name: nginx_typst
+    working_dir: /app
+    image: nginx:stable-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_volume_typst:/app/frontend/public/static
+      - media_volume_typst:/app/backend/media
+      - ./docker/nginx/prod/:/etc/nginx/conf.d:ro
+      - ./docker/certbot/conf:/etc/letsencrypt:ro
+      - ./docker/certbot/www:/var/www/certbot:ro
+    links:
+      - backend
+    depends_on:
+      - frontend
+      - backend
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./docker/certbot/conf:/etc/letsencrypt:rw
+      - ./docker/certbot/www:/var/www/certbot:rw
+#    command: certonly --webroot --webroot-path=/var/www/certbot/ --email architect.lock@outlook.com --agree-tos --no-eff-email -d typst.ru -d www.typst.ru
+    depends_on:
+      - nginx
+
+volumes:
+  pg_data_typst:
+  pgadmin_typst:
+  node_modules_typst:
+  static_volume_typst:
+  media_volume_typst:
