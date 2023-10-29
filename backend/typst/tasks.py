@@ -1,6 +1,10 @@
 from celery import shared_task
-from .email import send_activate_email_message, send_login_email_message, compute_user_text_recommends, \
+from .email import (
+    send_activate_email_message,
+    send_login_email_message,
+    compute_user_text_recommends,
     send_password_reset_message
+)
 
 
 @shared_task

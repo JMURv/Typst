@@ -45,12 +45,19 @@ class Message(models.Model):
         return self.media_files.exists()
 
     def __str__(self):
-        return f'Message: {self.user.username} - {self.timestamp.strftime("%Y-%m-%d %H:%M:%S")}'
+        strftime = self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        return f'Message: {self.user.username} - {strftime}'
 
 
 class MessageMediaFile(models.Model):
-    message = models.ForeignKey("Message", on_delete=models.CASCADE, related_name="media_files")
-    file = models.FileField(upload_to="messages/media")
+    message = models.ForeignKey(
+        "Message",
+        on_delete=models.CASCADE,
+        related_name="media_files"
+    )
+    file = models.FileField(
+        upload_to="messages/media"
+    )
 
     def __str__(self):
         return self.file.name

@@ -29,7 +29,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         await self.accept()
 
-    async def disconnect(self, close_code):
+    async def disconnect(self):
         for room_id in self.rooms:
             room_group_name = f"chat_{room_id}"
             await self.channel_layer.group_discard(
@@ -145,8 +145,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def edit_message(self, data):
         message = data.get("message")
-        room_obj = get_object_or_404(Room, id=data.get("room"))
-        message_obj = get_object_or_404(Message, room=room_obj, id=message.get("id"))
+        room_obj = get_object_or_404(
+            Room,
+            id=data.get("room")
+        )
+        message_obj = get_object_or_404(
+            Message,
+            room=room_obj,
+            id=message.get("id")
+        )
         message_obj.content = message.get("content")
         message_obj.edited = True
         message_obj.save()
@@ -154,22 +161,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def delete_message(self, data):
-        room_obj = get_object_or_404(Room, id=data.get("room"))
-        message_obj = get_object_or_404(Message, room=room_obj, id=data.get("message"))
+        room_obj = get_object_or_404(
+            Room,
+            id=data.get("room")
+        )
+        message_obj = get_object_or_404(
+            Message,
+            room=room_obj,
+            id=data.get("message")
+        )
         message_obj.delete()
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user_id = self.scope["url_route"]["kwargs"]["user_id"]
-        await self.channel_layer.group_add(f"user_{self.user_id}", self.channel_name)
+        await self.channel_layer.group_add(
+            f"user_{self.user_id}",
+            self.channel_name
+        )
         await self.accept()
 
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(f"user_{self.user_id}", self.channel_name)
+    async def disconnect(self):
+        await self.channel_layer.group_discard(
+            f"user_{self.user_id}",
+            self.channel_name
+        )
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
+        # text_data_json = json.loads(text_data)
+        return
 
     async def send_notification(self, event):
         await self.send(text_data=json.dumps(event))

@@ -1,7 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from rest_framework import status, permissions
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
+    get_object_or_404
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,11 +28,15 @@ class RoomListCreateDelete(APIView):
 
     def post(self, request, *args, **kwargs):
         recipient = User.objects.get(id=request.data.get('recipient'))
-        if not Room.objects.filter(members=request.user).filter(members=recipient).exists():
+        if not Room.objects.filter(
+                members=request.user
+        ).filter(members=recipient).exists():
             obj = self.roomModel.objects.create()
             obj.members.add(request.user, recipient)
         else:
-            obj = self.roomModel.objects.filter(members=request.user).filter(members=recipient).first()
+            obj = self.roomModel.objects.filter(
+                members=request.user
+            ).filter(members=recipient).first()
         response = {'room_id': obj.id}
         return Response(response)
 
@@ -48,7 +55,9 @@ class MessagesPagination(PageNumberPagination):
         if not self.page.has_next():
             return None
         query_params = self.request.query_params.copy().get("room")
-        return f"api/chat/load?page={self.page.next_page_number()}&room={query_params}"
+        next_page_number = self.page.next_page_number()
+
+        return f"api/chat/load?page={next_page_number}&room={query_params}"
 
 
 class MessageRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
@@ -81,8 +90,13 @@ class RoomSearch(APIView):
     def post(self, request, *args, **kwargs):
         recipient_username = request.data.get('room_search', None)
         pre_qs = self.roomModel.objects.filter(members=request.user)
-        rooms_qs = pre_qs.filter(members__username__icontains=recipient_username)
-        serialized_rooms = self.roomSerializer(rooms_qs, many=True).data
+        rooms_qs = pre_qs.filter(
+            members__username__icontains=recipient_username
+        )
+        serialized_rooms = self.roomSerializer(
+            rooms_qs,
+            many=True
+        ).data
         return Response(serialized_rooms, status=status.HTTP_200_OK)
 
 
@@ -90,7 +104,9 @@ class ChatMedia(ListAPIView):
     serializer_class = MediaFileSerializer
 
     def get_queryset(self):
-        qs = MessageMediaFile.objects.filter(message__room_id=self.kwargs.get('room_id'))
+        qs = MessageMediaFile.objects.filter(
+            message__room_id=self.kwargs.get('room_id')
+        )
         return qs
 
     def get_object(self):

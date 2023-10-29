@@ -6,20 +6,41 @@ from django.db.models import QuerySet, Q
 from django.shortcuts import get_object_or_404
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import permissions, status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-from typst.tasks import send_login_email_message_task, send_password_reset_message_task, compute_user_text_recommends_task
+
+from rest_framework_simplejwt.token_blacklist.models import (
+    OutstandingToken,
+    BlacklistedToken
+)
+from typst.tasks import (
+    send_login_email_message_task,
+    send_password_reset_message_task,
+    compute_user_text_recommends_task
+)
 
 from django.core.cache import cache
 
-from .serializers import UserSerializer, LightUserSerializer, SettingsSerializer, MediaFileSerializer, \
-    PasswordResetSerializer, MediaFileBytesSerializer
+from .serializers import (
+    UserSerializer,
+    LightUserSerializer,
+    SettingsSerializer,
+    MediaFileSerializer,
+    PasswordResetSerializer,
+    MediaFileBytesSerializer
+)
 from .models import UserMedia
-from .utils import calculate_preferences_and_order, exclude_curr_user_and_disliked
+from .utils import (
+    calculate_preferences_and_order,
+    exclude_curr_user_and_disliked
+)
 
 
 User = get_user_model()
@@ -43,7 +64,9 @@ class CheckUsername(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         data = {
-            'username_exists': User.objects.filter(username__iexact=username).exists()
+            'username_exists': User.objects.filter(
+                username__iexact=username
+            ).exists()
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -54,7 +77,9 @@ class CheckEmail(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('email')
         data = {
-            'email_exists': User.objects.filter(email__iexact=username).exists()
+            'email_exists': User.objects.filter(
+                email__iexact=username
+            ).exists()
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -146,9 +171,17 @@ class UserListCreate(ListCreateAPIView):
 
     def get_queryset(self) -> QuerySet:
         qs = User.objects.all()
-        excluded_qs = exclude_curr_user_and_disliked(self.request.user, qs)
-        filtered_qs = excluded_qs.filter(sex=self.request.user.orientation)
-        ordered_qs = calculate_preferences_and_order(self.request.user, filtered_qs)
+        excluded_qs = exclude_curr_user_and_disliked(
+            user=self.request.user,
+            qs=qs
+        )
+        filtered_qs = excluded_qs.filter(
+            sex=self.request.user.orientation
+        )
+        ordered_qs = calculate_preferences_and_order(
+            user=self.request.user,
+            qs=filtered_qs
+        )
         return ordered_qs
 
     def get(self, request: Request, *args, **kwargs) -> Response:
@@ -165,7 +198,10 @@ class UserListCreate(ListCreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         try:
-            serializer = UserSerializer(data=request.data, context={'request': request})
+            serializer = UserSerializer(
+                data=request.data,
+                context={'request': request}
+            )
             if serializer.is_valid():
                 new_user = serializer.save()
                 return Response(
@@ -180,7 +216,10 @@ class UserListCreate(ListCreateAPIView):
                 )
         except Exception as e:
             print(e)
-            return Response({'error': 'Username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                data={'error': 'Username already exists.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class ConfirmEmail(APIView):
@@ -290,7 +329,9 @@ class MediaRetrieveCreateDestroy(APIView):
         return Response(
             status=status.HTTP_200_OK,
             data=self.user_media_bytes_serializer(
-                self.user_media_model.objects.filter(author_id=kwargs.get("pk")),
+                self.user_media_model.objects.filter(
+                    author_id=kwargs.get("pk")
+                ),
                 many=True
             ).data
         )

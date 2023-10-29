@@ -40,24 +40,61 @@ RELATIONSHIPS_CHOICES = (
 
 
 class User(AbstractUser):
-    email = models.EmailField('Email', max_length=255, unique=True)
+    email = models.EmailField(
+        'Email',
+        max_length=255,
+        unique=True
+    )
 
-    sex = models.CharField(max_length=1, choices=SEX_CHOICES, null=True)
-    orientation = models.CharField(max_length=1, choices=ORIENTATION_CHOICES, null=True)
-    relation_type = models.CharField(max_length=1, choices=RELATIONSHIPS_CHOICES, null=True)
+    sex = models.CharField(
+        max_length=1,
+        choices=SEX_CHOICES,
+        null=True
+    )
+    orientation = models.CharField(
+        max_length=1,
+        choices=ORIENTATION_CHOICES,
+        null=True
+    )
+    relation_type = models.CharField(
+        max_length=1,
+        choices=RELATIONSHIPS_CHOICES,
+        null=True
+    )
 
     age = models.PositiveIntegerField("Age", null=True)
     height = models.PositiveIntegerField("Height", null=True)
     weight = models.PositiveIntegerField("Weight", null=True)
 
-    preferred_age = models.CharField("Preferred Age", max_length=2, choices=AGE_CHOICES, null=True)
-    preferred_height = models.CharField("Preferred Height", max_length=2, choices=HEIGHT_CHOICES, null=True)
-    preferred_weight = models.CharField("Preferred Weight", max_length=2, choices=WEIGHT_CHOICES, null=True)
+    preferred_age = models.CharField(
+        "Preferred Age",
+        max_length=2,
+        choices=AGE_CHOICES,
+        null=True
+    )
+    preferred_height = models.CharField(
+        "Preferred Height",
+        max_length=2,
+        choices=HEIGHT_CHOICES,
+        null=True
+    )
+    preferred_weight = models.CharField(
+        "Preferred Weight",
+        max_length=2,
+        choices=WEIGHT_CHOICES,
+        null=True
+    )
 
     about = models.TextField('About', max_length=700, null=True)
     country = models.CharField('Country', max_length=60, null=True)
     preferred_country = models.CharField('Country', max_length=60, null=True)
     city = models.CharField('City', max_length=60, null=True)
+
+    zodiac_sign = models.ForeignKey(
+        "services.ZodiacSign",
+        on_delete=models.CASCADE,
+        related_name="zodiac"
+    )
 
     liked = models.ManyToManyField(
         'self',
@@ -113,7 +150,7 @@ class UserMedia(models.Model):
 
 
 @receiver(m2m_changed, sender=User.liked.through)
-def create_like_and_match_notification(sender, instance, action, **kwargs):
+def create_like_and_match_notification(instance, action, **kwargs):
     """Create a Notification when user gets a new like or match"""
     if action == 'post_add':
         actor = instance
@@ -121,7 +158,11 @@ def create_like_and_match_notification(sender, instance, action, **kwargs):
         recipient = User.objects.get(id=follow_id)
         if actor in recipient.liked.all() and recipient in actor.liked.all():
             message = f'You have a new match!'
-            if not Room.objects.filter(members=actor).filter(members=recipient).exists():
+            is_room_exists = Room.objects.filter(members=actor).filter(
+                members=recipient
+            ).exists()
+
+            if not is_room_exists:
                 chat_room_obj = Room.objects.create()
                 chat_room_obj.members.add(actor, recipient)
             if actor.new_match_notification:

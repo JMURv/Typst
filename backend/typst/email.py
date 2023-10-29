@@ -44,14 +44,18 @@ def compute_user_text_recommends(user_id: int):
 
 def send_activate_email_message(user_id):
     user = get_object_or_404(get_user_model(), id=user_id)
-    current_site = Site.objects.get_current().domain
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    activation_url = f'{settings.FRONTEND_EMAIL_CONFIRM_URL}?uidb64={uid}&token={token}'
+
     subject = f'Активируйте свой аккаунт, {user.username}!'
+    current_site = Site.objects.get_current().domain
+    current_scheme = settings.CURRENT_SCHEME
+    confirm_email_url = settings.FRONTEND_EMAIL_CONFIRM_URL
+    activation_url = f'{confirm_email_url}?uidb64={uid}&token={token}'
+
     message = render_to_string('email/activate_email_send.html', {
         'user': user,
-        'activation_url': f'http://{current_site}{activation_url}',
+        'activation_url': f'{current_scheme}{current_site}{activation_url}',
     })
     return user.email_user(subject, message)
 
@@ -72,12 +76,16 @@ def send_password_reset_message(user_id: int):
     user = get_object_or_404(get_user_model(), id=user_id)
     uid = urlsafe_base64_encode(force_bytes(user.id))
     token = default_token_generator.make_token(user)
+
     subject = f'Reset password'
-    activation_url = f'{Site.objects.get_current().domain}{settings.FRONTEND_PASSWORD_RESET_URL}?uidb64={uid}&token={token}'
+    current_site = Site.objects.get_current().domain
+    current_scheme = settings.CURRENT_SCHEME
+    password_reset_url = settings.FRONTEND_PASSWORD_RESET_URL
+    reset_url = f'{current_site}{password_reset_url}?uidb64={uid}&token={token}'
 
     cache.set(f'password_reset_code_{user_id}', token, timeout=300)
 
     message = render_to_string('email/password_reset_email_send.html', {
-        'activation_url': f'{settings.CURRENT_SCHEME}{activation_url}',
+        'activation_url': f'{current_scheme}{reset_url}',
     })
     return user.email_user(subject, message)

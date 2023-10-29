@@ -3,7 +3,10 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken
+)
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -35,7 +38,10 @@ class DeleteAllTokens(APIView):
     def post(self, request, *args, **kwargs):
         for token in OutstandingToken.objects.filter(user=request.user):
             _, _ = BlacklistedToken.objects.get_or_create(token=token)
-        return Response(status=status.HTTP_200_OK, data={"message": "OK, goodbye, all tokens are blacklisted now"})
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"message": "OK, goodbye, all tokens are blacklisted now"}
+        )
 
 
 class LogoutView(APIView):
@@ -45,8 +51,8 @@ class LogoutView(APIView):
         if self.request.data.get('all'):
             for token in OutstandingToken.objects.filter(user=request.user):
                 _, _ = BlacklistedToken.objects.get_or_create(token=token)
-            return Response({"status": "OK, goodbye, all refresh tokens blacklisted"})
+            return Response(status=status.HTTP_200_OK)
         refresh_token = self.request.data.get('refresh_token')
         token = RefreshToken(token=refresh_token)
         token.blacklist()
-        return Response({"status": "OK, goodbye"})
+        return Response(status=status.HTTP_200_OK)

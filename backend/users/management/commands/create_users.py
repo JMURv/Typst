@@ -6,7 +6,10 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.hashers import make_password
 from django.core.files import File
 from django.conf import settings
-from users.models import User, UserMedia, SEX_CHOICES, ORIENTATION_CHOICES, RELATIONSHIPS_CHOICES, BASE_CHOICES
+from users.models import (
+    User, UserMedia,
+    SEX_CHOICES, ORIENTATION_CHOICES, RELATIONSHIPS_CHOICES, BASE_CHOICES
+)
 
 
 DEFAULT_IMAGE_PATH = os.path.join('media', 'defaults')
@@ -55,7 +58,9 @@ class Command(BaseCommand):
             "country": "RU",
             "city": "Moscow",
         }
-        is_admin = User.objects.filter(username=admin_user_data.get('username')).exists()
+        is_admin = User.objects.filter(
+            username=admin_user_data.get('username')
+        ).exists()
         if not is_admin:
             User.objects.create_superuser(**admin_user_data)
         if User.objects.count() > 5:
@@ -65,11 +70,15 @@ class Command(BaseCommand):
                 'username': generate_random_username(),
                 'password': make_password('794613825Zx'),
                 'email': f"test_email{i}@mail.ru",
-                'about': "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt "
-                         "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
-                         "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
+                'about': "Lorem ipsum dolor sit amet, consectetur adipiscing "
+                         "elit, sed do eiusmod tempor incididunt "
+                         "ut labore et dolore magna aliqua. Ut enim ad minim "
+                         "veniam, quis nostrud "
+                         "exercitation ullamco laboris nisi ut aliquip ex ea "
+                         "commodo consequat. "
                          "Duis aute irure dolor in reprehenderit "
-                         "in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+                         "in voluptate velit esse cillum dolore eu fugiat "
+                         "nulla pariatur.",
                 "age": random.randint(18, 45),
                 "sex": random.choice(SEX_CHOICES)[0],
                 "orientation": random.choice(ORIENTATION_CHOICES)[0],
@@ -89,6 +98,11 @@ class Command(BaseCommand):
             new_user = User.objects.create(**user)
             with open(random.choice(IMAGES_PATHS), "rb") as default_image:
                 default_image_file = File(default_image)
-                new_user_media = UserMedia(author=new_user, file=default_image_file)
+                new_user_media = UserMedia(
+                    author=new_user,
+                    file=default_image_file
+                )
                 new_user_media.save()
-        return self.stdout.write(self.style.SUCCESS('Successfully created users'))
+        return self.stdout.write(
+            self.style.SUCCESS('Successfully created users')
+        )

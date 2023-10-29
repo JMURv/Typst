@@ -1,4 +1,11 @@
-from django.db.models import F, Case, When, Value, PositiveIntegerField, QuerySet
+from django.db.models import (
+    F,
+    Case,
+    When,
+    Value,
+    PositiveIntegerField,
+    QuerySet
+)
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -37,7 +44,9 @@ def calculate_preferences_and_order(user, qs: QuerySet) -> QuerySet:
             age_rank=Case(
                 When(
                     age__in=[
-                        value for value in range(pref_age_range[0], pref_age_range[-1])
+                        value for value in range(
+                            pref_age_range[0], pref_age_range[-1]
+                        )
                     ], then=Value(1)
                 ),
                 default=Value(2),
@@ -50,7 +59,9 @@ def calculate_preferences_and_order(user, qs: QuerySet) -> QuerySet:
             height_rank=Case(
                 When(
                     height__in=[
-                        value for value in range(pref_height_range[0], pref_height_range[-1])
+                        value for value in range(
+                            pref_height_range[0], pref_height_range[-1]
+                        )
                     ], then=Value(1)
                 ),
                 default=Value(2),
@@ -62,7 +73,9 @@ def calculate_preferences_and_order(user, qs: QuerySet) -> QuerySet:
             weight_rank=Case(
                 When(
                     weight__in=[
-                        value for value in range(pref_weight_range[0], pref_weight_range[-1])
+                        value for value in range(
+                            pref_weight_range[0], pref_weight_range[-1]
+                        )
                     ], then=Value(1)
                 ),
                 default=Value(2),
@@ -71,7 +84,9 @@ def calculate_preferences_and_order(user, qs: QuerySet) -> QuerySet:
         ).order_by('weight_rank')
 
     if user.recommends.count() > 0:
-        recommended_ids = list(user.recommends.all().values_list('id', flat=True))
+        recommended_ids = list(
+            user.recommends.all().values_list('id', flat=True)
+        )
         qs = qs.annotate(
             recommended_weight=Case(
                 When(

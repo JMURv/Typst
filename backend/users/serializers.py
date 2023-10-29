@@ -28,7 +28,7 @@ class MediaFileSerializer(serializers.ModelSerializer):
         file_ext = file_ext.strip('.')
         if file_ext in ('png', 'jpg', 'jpeg'):
             return f"image/{file_ext}"
-        elif file_ext in ('mp4'):
+        elif file_ext in ('mp4', 'avi'):
             return f"video/{file_ext}"
         else:
             return f"file/{file_ext}"

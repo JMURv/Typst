@@ -25,8 +25,13 @@ class UserAPITestCase(APITestCase):
 
         self.user_login_url = reverse('login')
         self.user_list_create_url = reverse('user-list-create')
-        self.user_subscribe_url = reverse('user-match', kwargs={'slug': self.second_user.slug})
-        self.user_retrieve_update_destroy_url = reverse('user-retrieve-update-destroy', kwargs={'slug': self.user.slug})
+        self.user_subscribe_url = reverse('user-match', kwargs={
+            'slug': self.second_user.slug
+        })
+        self.user_retrieve_update_destroy_url = reverse(
+            'user-retrieve-update-destroy', kwargs={
+                'slug': self.user.slug
+            })
 
     def test_user_login(self):
         good_login_data = {
@@ -81,7 +86,10 @@ class UserAPITestCase(APITestCase):
             'email': 'updateduser@example.com',
             'password': 'updatedpassword',
         }
-        response = self.client.patch(self.user_retrieve_update_destroy_url, data)
+        response = self.client.patch(
+            self.user_retrieve_update_destroy_url,
+            data
+        )
         new_data = response.data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_data.get('username'), "updateduser")
