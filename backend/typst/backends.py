@@ -13,7 +13,9 @@ class EmailBackend(ModelBackend):
         except MultipleObjectsReturned:
             return User.objects.filter(email=email).order_by('id').first()
         else:
-            if user.check_password(password) and self.user_can_authenticate(user):
+            is_password_valid = user.check_password(password)
+            is_can_authenticate = self.user_can_authenticate(user)
+            if is_password_valid and is_can_authenticate:
                 return user
 
     def get_user(self, user_id):

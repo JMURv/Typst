@@ -25,8 +25,13 @@ class RoomSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['messages'], representation['last_message'] = self.get_messages(instance)
-        representation['next'] = f"{reverse_lazy('load-more-messages')}?page=2&room={instance.id}"
+        next_url = reverse_lazy('load-more-messages')
+        messages, last_message = self.get_messages(instance)
+        representation.update({
+            'messages': messages,
+            'last_message': last_message,
+            'next': f"{next_url}?page=2&room={instance.id}"
+        })
         return representation
 
     class Meta:

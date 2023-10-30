@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.files.base import ContentFile
-from django.db.models import QuerySet, Q
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import permissions, status
@@ -43,92 +43,126 @@ from .utils import (
 )
 
 
-User = get_user_model()
-
-
 class GetCurrentUser(APIView):
-    def get(self, request, *args, **kwargs) -> Response:
-        user_obj = get_object_or_404(User, id=request.user.id)
-        return Response(data=LightUserSerializer(user_obj).data)
+    user_model = get_user_model()
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        return Response(
+            status=status.HTTP_200_OK,
+            data=LightUserSerializer(
+                get_object_or_404(
+                    klass=self.user_model,
+                    id=request.user.id
+                )
+            ).data
+        )
 
 
 class GetCurrentUserSettings(APIView):
-    def get(self, request, *args, **kwargs) -> Response:
-        user_obj = get_object_or_404(User, id=request.user.id)
-        return Response(data=SettingsSerializer(user_obj).data)
+    user_model = get_user_model()
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        return Response(
+            status=status.HTTP_200_OK,
+            data=SettingsSerializer(
+                get_object_or_404(
+                    klass=self.user_model,
+                    id=request.user.id
+                )
+            ).data
+        )
 
 
 class CheckUsername(APIView):
+    user_model = get_user_model()
     permission_classes = (permissions.AllowAny, )
 
-    def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        data = {
-            'username_exists': User.objects.filter(
-                username__iexact=username
-            ).exists()
-        }
-        return Response(data, status=status.HTTP_200_OK)
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        return Response(
+            status=status.HTTP_200_OK,
+            data={
+                'username_exists': self.user_model.objects.filter(
+                    username__iexact=request.data.get('username')
+                ).exists()
+            },
+        )
 
 
 class CheckEmail(APIView):
+    user_model = get_user_model()
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, *args, **kwargs):
-        username = request.data.get('email')
-        data = {
-            'email_exists': User.objects.filter(
-                email__iexact=username
-            ).exists()
-        }
-        return Response(data, status=status.HTTP_200_OK)
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        return Response(
+            status=status.HTTP_200_OK,
+            data={
+                'email_exists': self.user_model.objects.filter(
+                    email__iexact=request.data.get('email')
+                ).exists()
+            },
+        )
 
 
 class ForgotPassword(APIView):
+    user_model = get_user_model()
     serializer_class = PasswordResetSerializer
     permission_classes = (permissions.AllowAny,)
 
-    def get(self, request, *args, **kwargs) -> Response:
+    def get(self, request: Request, *args, **kwargs) -> Response:
         email = request.GET.get('email')
         try:
-            user = User.objects.filter(email=email).first()
-        except User.DoesNotExist:
-            return Response(status.HTTP_400_BAD_REQUEST)
+            user = self.user_model.objects.filter(email=email).first()
+        except self.user_model.DoesNotExist:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
+            )
         else:
             send_password_reset_message_task.delay(user.id)
-            return Response(status.HTTP_200_OK)
+            return Response(
+                status=status.HTTP_200_OK
+            )
 
-    def post(self, request, *args, **kwargs) -> Response:
+    def post(self, request: Request, *args, **kwargs) -> Response:
         uidb64 = request.data.get('uidb64', None)
         token = request.data.get('token', None)
         new_password = request.data.get('newPassword', None)
 
         if not uidb64 or not token or not new_password:
-            return Response(status.HTTP_400_BAD_REQUEST)
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
-            user = User.objects.get(
+            user = self.user_model.objects.get(
                 id=urlsafe_base64_decode(uidb64).decode('utf-8')
             )
-        except User.DoesNotExist:
-            return Response(status.HTTP_400_BAD_REQUEST)
+        except self.user_model.DoesNotExist:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
+            )
         stored_token = cache.get(f'password_reset_code_{user.id}')
         if stored_token is not None and stored_token == token:
             for token in OutstandingToken.objects.filter(user=user):
                 _, _ = BlacklistedToken.objects.get_or_create(token=token)
             user.password = make_password(new_password)
             user.save()
-            return Response(status.HTTP_200_OK)
-        return Response(status.HTTP_400_BAD_REQUEST)
+            return Response(
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class LoginCodeSend(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, *args, **kwargs) -> Response:
-        email = request.data.get('email', None)
-        password = request.data.get('password', None)
-        user = authenticate(request, email=email, password=password)
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        user = authenticate(
+            request,
+            email=request.data.get('email', None),
+            password=request.data.get('password', None)
+        )
         if user is not None:
             send_login_email_message_task.delay(user.id)
             return Response(status.HTTP_200_OK)
@@ -136,20 +170,26 @@ class LoginCodeSend(APIView):
 
 
 class LoginCodeSubmit(APIView):
+    user_model = get_user_model()
     permission_classes = (permissions.AllowAny, )
 
-    def post(self, request) -> Response:
-        email = request.data.get('email', None)
-        code = request.data.get('code', None)
-        user = User.objects.get(email=email)
+    def post(self, request: Request) -> Response:
+        user = get_object_or_404(
+            klass=self.user_model,
+            email=request.data.get('email', None)
+        )
 
         stored_code = cache.get(f'login_code_{user.id}')
-        if code == stored_code:
-            return Response(status.HTTP_200_OK)
+        if request.data.get('code', None) == stored_code:
+            return Response(
+                status=status.HTTP_200_OK
+            )
         else:
             return Response(
-                data={'error': 'Invalid code'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'error': 'Invalid code'
+                },
             )
 
 
@@ -165,12 +205,13 @@ class UsersPagination(PageNumberPagination):
 
 
 class UserListCreate(ListCreateAPIView):
+    user_model = get_user_model()
     serializer_class = UserSerializer
     permission_classes = (permissions.AllowAny, )
     pagination_class = UsersPagination
 
     def get_queryset(self) -> QuerySet:
-        qs = User.objects.all()
+        qs = self.user_model.objects.all()
         excluded_qs = exclude_curr_user_and_disliked(
             user=self.request.user,
             qs=qs
@@ -186,7 +227,9 @@ class UserListCreate(ListCreateAPIView):
 
     def get(self, request: Request, *args, **kwargs) -> Response:
         if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                status=status.HTTP_401_UNAUTHORIZED
+            )
         return super().get(request, *args, **kwargs)
 
     def post(self, request: Request, *args, **kwargs) -> Response:
@@ -194,19 +237,25 @@ class UserListCreate(ListCreateAPIView):
         email = request.data.get('email')
         if not password or not email:
             return Response(
-                data={'error': 'Please provide password and email.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'error': 'Please provide password and email.'
+                },
             )
         try:
             serializer = UserSerializer(
                 data=request.data,
-                context={'request': request}
+                context={
+                    'request': request
+                }
             )
             if serializer.is_valid():
                 new_user = serializer.save()
                 return Response(
-                    data={'user_id': new_user.id},
-                    status=status.HTTP_201_CREATED
+                    status=status.HTTP_201_CREATED,
+                    data={
+                        'user_id': new_user.id
+                    },
                 )
             else:
                 print(serializer.errors)
@@ -217,70 +266,88 @@ class UserListCreate(ListCreateAPIView):
         except Exception as e:
             print(e)
             return Response(
-                data={'error': 'Username already exists.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'error': 'Username already exists.'
+                },
             )
 
 
 class ConfirmEmail(APIView):
+    user_model = get_user_model()
     permission_classes = (permissions.AllowAny,)
 
-    def get(self, request, uidb64: str, token: str) -> Response:
+    def get(self, request: Request, uidb64: str, token: str) -> Response:
         try:
             uid = urlsafe_base64_decode(uidb64)
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = self.user_model.objects.get(pk=uid)
+        except (
+                TypeError,
+                ValueError,
+                OverflowError,
+                self.user_model.DoesNotExist
+        ):
             user = None
-        if user is not None and default_token_generator.check_token(user, token):
+        if default_token_generator.check_token(user, token):
             user.is_active = True
             user.save()
-            return Response(status=status.HTTP_200_OK)
+            return Response(
+                status=status.HTTP_200_OK
+            )
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.AllowAny,)
-    queryset = User.objects.all()
+    queryset = get_user_model().objects.all()
     serializer_class = LightUserSerializer
 
-    def update(self, request, *args, **kwargs) -> Response:
+    def update(self, request: Request, *args, **kwargs) -> Response:
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
         if not serializer.is_valid():
             print(serializer.errors)
         if request.user != instance:
             return Response(
-                {'detail': 'You do not have permission to perform this action.'},
                 status=status.HTTP_403_FORBIDDEN
             )
         return super().update(request, *args, **kwargs)
 
-    def destroy(self, request, *args, **kwargs) -> Response:
+    def destroy(self, request: Request, *args, **kwargs) -> Response:
         instance = self.get_object()
         if request.user != instance:
             return Response(
-                {'detail': 'You do not have permission to perform this action.'},
                 status=status.HTTP_403_FORBIDDEN
             )
         return super().destroy(request, *args, **kwargs)
 
 
 class UserBlackList(APIView):
+    user_model = get_user_model()
     permission_classes = (permissions.IsAuthenticated, )
 
-    def post(self, request, *args, **kwargs):
-        blacklisted_user = get_object_or_404(User, id=self.kwargs.get('pk'))
+    def post(self, request: Request, *args, **kwargs):
+        blacklisted_user = get_object_or_404(
+            klass=self.user_model,
+            id=self.kwargs.get('pk')
+        )
         if request.user.blacklist.contains(blacklisted_user):
             request.user.blacklist.remove(blacklisted_user.id)
         else:
             request.user.blacklist.add(blacklisted_user.id)
         request.user.save()
-        return Response(status=status.HTTP_200_OK)
+        return Response(
+            status=status.HTTP_200_OK
+        )
 
 
 class UserLike(APIView):
-    def post(self, request, *args, **kwargs) -> Response:
+    user_model = get_user_model()
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
         user_profile = self.get_object()
         if request.user.liked.contains(user_profile):
             request.user.liked.remove(user_profile.id)
@@ -291,17 +358,28 @@ class UserLike(APIView):
             request.user.disliked.remove(user_profile.id)
 
         request.user.save()
-        if request.user.liked.count() % 30 == 0:
-            compute_user_text_recommends_task(user_id=request.user.id)
-        return Response(status=status.HTTP_200_OK)
+
+        liked_count = request.user.liked.count()
+        if liked_count > 1 and liked_count % 30 == 0:
+            compute_user_text_recommends_task(
+                user_id=request.user.id
+            )
+        return Response(
+            status=status.HTTP_200_OK
+        )
 
     def get_object(self):
-        obj = get_object_or_404(User, id=self.kwargs.get('pk'))
+        obj = get_object_or_404(
+            klass=self.user_model,
+            id=self.kwargs.get('pk')
+        )
         return obj
 
 
 class UserDislike(APIView):
-    def post(self, request, *args, **kwargs) -> Response:
+    user_model = get_user_model()
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
         user_profile = self.get_object()
         if request.user.disliked.contains(user_profile):
             request.user.disliked.remove(user_profile.id)
@@ -311,10 +389,15 @@ class UserDislike(APIView):
         if request.user.liked.contains(user_profile):
             request.user.liked.remove(user_profile.id)
         request.user.save()
-        return Response(status=status.HTTP_200_OK)
+        return Response(
+            status=status.HTTP_200_OK
+        )
 
     def get_object(self):
-        obj = get_object_or_404(User, id=self.kwargs.get('pk'))
+        obj = get_object_or_404(
+            klass=self.user_model,
+            id=self.kwargs.get('pk')
+        )
         return obj
 
 
@@ -325,7 +408,7 @@ class MediaRetrieveCreateDestroy(APIView):
     user_media_bytes_serializer = MediaFileBytesSerializer
     permission_classes = (permissions.AllowAny, )
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args, **kwargs):
         return Response(
             status=status.HTTP_200_OK,
             data=self.user_media_bytes_serializer(
@@ -336,22 +419,29 @@ class MediaRetrieveCreateDestroy(APIView):
             ).data
         )
 
-    def post(self, request, *args, **kwargs) -> Response:
-        if request.user.is_authenticated and request.user.id == kwargs.get('pk'):
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        user = request.user
+        if user.is_authenticated and user.id == kwargs.get('pk'):
             file = request.data.get('file')
             data = file.read()
-            new_file = self.user_media_model(author=request.user)
-            new_file.file.save(name=file.name, content=ContentFile(data))
+            new_file = self.user_media_model(author=user)
+            new_file.file.save(
+                name=file.name,
+                content=ContentFile(data)
+            )
             new_file.save()
 
             return Response(
                 status=status.HTTP_200_OK,
                 data=self.user_media_serializer(new_file).data
             )
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            status=status.HTTP_403_FORBIDDEN
+        )
 
-    def delete(self, request, *args, **kwargs) -> Response:
-        if request.user.is_authenticated and request.user.id == kwargs.get('pk'):
+    def delete(self, request: Request, *args, **kwargs) -> Response:
+        user = request.user
+        if user.is_authenticated and user.id == kwargs.get('pk'):
             media_object = get_object_or_404(
                 self.user_media_model,
                 id=request.data.get('mediaId')
@@ -364,10 +454,10 @@ class MediaRetrieveCreateDestroy(APIView):
 
 class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAuthenticated, )
-    queryset = User.objects.all()
+    queryset = get_user_model().objects.all()
     serializer_class = SettingsSerializer
 
-    def post(self, request, *args, **kwargs) -> Response:
+    def post(self, request: Request, *args, **kwargs) -> Response:
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
         print(request.data)
@@ -375,7 +465,6 @@ class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
             print(serializer.errors)
         if request.user != instance:
             return Response(
-                {'detail': 'You do not have permission to perform this action.'},
                 status=status.HTTP_403_FORBIDDEN
             )
         return super().update(request, *args, **kwargs)

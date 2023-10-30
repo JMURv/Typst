@@ -17,7 +17,11 @@ from users.serializers import UserRecommendSystemSerializer
 
 def compute_user_text_recommends(user_id: int):
     user = get_user_model()
-    curr_user = user.objects.get(id=user_id)
+    curr_user = get_object_or_404(
+        klass=user,
+        id=user_id
+    )
+
     qs = exclude_curr_user_and_disliked(
         user=curr_user,
         qs=user.objects.all()
@@ -38,7 +42,7 @@ def compute_user_text_recommends(user_id: int):
             "users_list": UserRecommendSystemSerializer(qs, many=True).data
         }
     ).json()
-    curr_user.recommends.set(text_response)
+    curr_user.recommends.set(text_response | image_response)
     return
 
 
@@ -48,14 +52,14 @@ def send_activate_email_message(user_id):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
 
     subject = f'Активируйте свой аккаунт, {user.username}!'
-    current_site = Site.objects.get_current().domain
-    current_scheme = settings.CURRENT_SCHEME
+    domain = Site.objects.get_current().domain
+    scheme = settings.CURRENT_SCHEME
     confirm_email_url = settings.FRONTEND_EMAIL_CONFIRM_URL
     activation_url = f'{confirm_email_url}?uidb64={uid}&token={token}'
 
     message = render_to_string('email/activate_email_send.html', {
         'user': user,
-        'activation_url': f'{current_scheme}{current_site}{activation_url}',
+        'activation_url': f'{scheme}{domain}{activation_url}',
     })
     return user.email_user(subject, message)
 
@@ -65,7 +69,7 @@ def send_login_email_message(user_id):
     cache.set(f'login_code_{user_id}', code, timeout=300)
 
     user = get_object_or_404(get_user_model(), id=user_id)
-    subject = f'Login Code'
+    subject = 'Login Code'
     message = render_to_string('email/login_email_send.html', {
         'code': code,
     })
@@ -77,15 +81,15 @@ def send_password_reset_message(user_id: int):
     uid = urlsafe_base64_encode(force_bytes(user.id))
     token = default_token_generator.make_token(user)
 
-    subject = f'Reset password'
-    current_site = Site.objects.get_current().domain
-    current_scheme = settings.CURRENT_SCHEME
+    subject = 'Reset password'
+    domain = Site.objects.get_current().domain
+    scheme = settings.CURRENT_SCHEME
     password_reset_url = settings.FRONTEND_PASSWORD_RESET_URL
-    reset_url = f'{current_site}{password_reset_url}?uidb64={uid}&token={token}'
-
-    cache.set(f'password_reset_code_{user_id}', token, timeout=300)
+    url_params = f"?uidb64={uid}&token={token}"
+    reset_url = f'{scheme}{domain}{password_reset_url}{url_params}'
 
     message = render_to_string('email/password_reset_email_send.html', {
-        'activation_url': f'{current_scheme}{reset_url}',
+        'activation_url': reset_url,
     })
+    cache.set(f'password_reset_code_{user_id}', token, timeout=300)
     return user.email_user(subject, message)

@@ -1,0 +1,1 @@
+## This is a fullstack project written with DRF and Next.js

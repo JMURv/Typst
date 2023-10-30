@@ -5,10 +5,13 @@ import string
 from django.core.management.base import BaseCommand
 from django.contrib.auth.hashers import make_password
 from django.core.files import File
-from django.conf import settings
 from users.models import (
-    User, UserMedia,
-    SEX_CHOICES, ORIENTATION_CHOICES, RELATIONSHIPS_CHOICES, BASE_CHOICES
+    User,
+    UserMedia,
+    SEX_CHOICES,
+    ORIENTATION_CHOICES,
+    RELATIONSHIPS_CHOICES,
+    BASE_CHOICES
 )
 
 
@@ -64,7 +67,9 @@ class Command(BaseCommand):
         if not is_admin:
             User.objects.create_superuser(**admin_user_data)
         if User.objects.count() > 5:
-            return self.stdout.write(self.style.SUCCESS('Users already exist'))
+            return self.stdout.write(
+                self.style.SUCCESS('Users already exist')
+            )
         users_list = [
             {
                 'username': generate_random_username(),

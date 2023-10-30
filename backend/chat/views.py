@@ -6,6 +6,7 @@ from rest_framework.generics import (
     get_object_or_404
 )
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -13,35 +14,38 @@ from .models import Room, Message, MessageMediaFile
 from .serializers import RoomSerializer, MessageSerializer, MediaFileSerializer
 
 
-User = get_user_model()
-
-
 class RoomListCreateDelete(APIView):
-    roomModel = Room
-    roomSerializer = RoomSerializer
+    user_model = get_user_model()
+    room_model = Room
+    room_serializer = RoomSerializer
     permission_classes = (permissions.IsAuthenticated, )
 
-    def get(self, request, *args, **kwargs):
-        rooms_qs = self.roomModel.objects.filter(members=request.user)
-        serialized_rooms = self.roomSerializer(rooms_qs, many=True).data
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        rooms_qs = self.room_model.objects.filter(members=request.user)
+        serialized_rooms = self.room_serializer(rooms_qs, many=True).data
         return Response(serialized_rooms)
 
-    def post(self, request, *args, **kwargs):
-        recipient = User.objects.get(id=request.data.get('recipient'))
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        recipient = self.user_model.objects.get(
+            id=request.data.get('recipient')
+        )
         if not Room.objects.filter(
                 members=request.user
         ).filter(members=recipient).exists():
-            obj = self.roomModel.objects.create()
+            obj = self.room_model.objects.create()
             obj.members.add(request.user, recipient)
         else:
-            obj = self.roomModel.objects.filter(
+            obj = self.room_model.objects.filter(
                 members=request.user
             ).filter(members=recipient).first()
         response = {'room_id': obj.id}
         return Response(response)
 
     def delete(self, request, *args, **kwargs):
-        room = get_object_or_404(self.roomModel, id=request.data.get('roomId'))
+        room = get_object_or_404(
+            queryset=self.room_model,
+            id=request.data.get('roomId')
+        )
         room.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -75,7 +79,7 @@ class ChatLoadMore(ListAPIView):
 
     def get_queryset(self):
         request = self.request
-        room_id = request.GET.get('room')
+        room_id = request.GET.get('room', None)
         if room_id:
             qs = Message.objects.filter(room_id=room_id)
         else:
@@ -87,7 +91,7 @@ class RoomSearch(APIView):
     roomModel = Room
     roomSerializer = RoomSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs) -> Response:
         recipient_username = request.data.get('room_search', None)
         pre_qs = self.roomModel.objects.filter(members=request.user)
         rooms_qs = pre_qs.filter(
@@ -111,5 +115,3 @@ class ChatMedia(ListAPIView):
 
     def get_object(self):
         return Room.objects.get(id=self.kwargs.get('room_id'))
-
-

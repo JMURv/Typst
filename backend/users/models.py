@@ -90,11 +90,11 @@ class User(AbstractUser):
     preferred_country = models.CharField('Country', max_length=60, null=True)
     city = models.CharField('City', max_length=60, null=True)
 
-    zodiac_sign = models.ForeignKey(
-        "services.ZodiacSign",
-        on_delete=models.CASCADE,
-        related_name="zodiac"
-    )
+    # zodiac_sign = models.ForeignKey(
+    #     "services.ZodiacSign",
+    #     on_delete=models.CASCADE,
+    #     related_name="zodiac"
+    # )
 
     liked = models.ManyToManyField(
         'self',
@@ -157,7 +157,7 @@ def create_like_and_match_notification(instance, action, **kwargs):
         follow_id = list(kwargs['pk_set'])[0]
         recipient = User.objects.get(id=follow_id)
         if actor in recipient.liked.all() and recipient in actor.liked.all():
-            message = f'You have a new match!'
+            message = 'You have a new match!'
             is_room_exists = Room.objects.filter(members=actor).filter(
                 members=recipient
             ).exists()
@@ -189,7 +189,7 @@ def create_like_and_match_notification(instance, action, **kwargs):
                 )
             return
         if recipient.new_like_notification:
-            message = f'You have a new like!'
+            message = 'You have a new like!'
             notification = Notification.objects.create(
                 recipient=recipient,
                 actor=actor,

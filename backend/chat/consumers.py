@@ -29,7 +29,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         await self.accept()
 
-    async def disconnect(self):
+    async def disconnect(self, **kwargs):
         for room_id in self.rooms:
             room_group_name = f"chat_{room_id}"
             await self.channel_layer.group_discard(
@@ -37,8 +37,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
 
-    async def receive(self, text_data):
-        data = json.loads(text_data)
+    async def receive(self, **kwargs):
+        data = json.loads(kwargs.get("text_data"))
         room_group_name = f"chat_{data.get('room')}"
         received_type = data.get('type')
 
@@ -182,16 +182,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
         await self.accept()
 
-    async def disconnect(self):
+    async def disconnect(self, **kwargs):
         await self.channel_layer.group_discard(
             f"user_{self.user_id}",
             self.channel_name
         )
 
-    async def receive(self, text_data):
+    async def receive(self, **kwargs):
         # text_data_json = json.loads(text_data)
         return
 
     async def send_notification(self, event):
         await self.send(text_data=json.dumps(event))
-

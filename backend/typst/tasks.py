@@ -25,4 +25,3 @@ def send_login_email_message_task(user_id: int):
 @shared_task
 def send_password_reset_message_task(user_id: int):
     return send_password_reset_message(user_id)
-
