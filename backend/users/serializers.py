@@ -1,10 +1,9 @@
 import os
 import base64
-
 from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
 from rest_framework import serializers
 from users.models import UserMedia
+from users.utils import save_or_update_user_media, calculate_compatibility
 
 
 class UserRecommendSystemSerializer(serializers.ModelSerializer):
@@ -72,7 +71,11 @@ class MediaFileBytesSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    from services.serializers import ZodiacSignSerializer
+
     media = MediaFileSerializer(many=True, required=False)
+    compatibility_percentage = serializers.SerializerMethodField()
+    zodiac_sign = ZodiacSignSerializer(required=False)
 
     def create(self, validated_data):
         user_model = get_user_model()
@@ -88,20 +91,17 @@ class UserSerializer(serializers.ModelSerializer):
         instance.new_like_notification = True
         instance.new_match_notification = True
         instance.new_message_notification = True
+        instance.save()
 
-        files = [
-            request.FILES.get(f'media-{i}')
-            for i in range(0, len(request.FILES))
-            if request.FILES.get(f'media-{i}') is not None
-        ]
-
-        if files:
-            for media in files:
-                data = media.read()
-                new_file = UserMedia(author=instance)
-                new_file.file.save(media.name, ContentFile(data))
-                new_file.save()
+        save_or_update_user_media(request, instance)
         return instance
+
+    def get_compatibility_percentage(self, instance) -> int:
+        request = self.context.get('request')
+        return calculate_compatibility(
+            request_user=request.user,
+            inspected_user=instance
+        )
 
     class Meta:
         model = get_user_model()
@@ -131,6 +131,8 @@ class UserSerializer(serializers.ModelSerializer):
             "new_like_notification",
             "new_match_notification",
             "new_message_notification",
+            "compatibility_percentage",
+            "zodiac_sign",
         ]
         extra_kwargs = {
             'about': {'required': False},
@@ -150,7 +152,10 @@ class BlackListedUserSerializer(serializers.ModelSerializer):
 
 
 class LightUserSerializer(serializers.ModelSerializer):
+    from services.serializers import ZodiacSignSerializer
+
     media = MediaFileSerializer(many=True, required=False)
+    zodiac_sign = ZodiacSignSerializer(required=False)
 
     def update(self, instance, validated_data):
         request = self.context.get('request')
@@ -166,17 +171,7 @@ class LightUserSerializer(serializers.ModelSerializer):
         validated_data.pop('new_message_notification', None)
         super().update(instance, validated_data)
 
-        files = [
-            request.FILES.get(f'media-{i}')
-            for i in range(0, len(request.FILES))
-            if request.FILES.get(f'media-{i}') is not None
-        ]
-        if files:
-            for media in files:
-                data = media.read()
-                new_file = UserMedia(author=instance)
-                new_file.file.save(media.name, ContentFile(data))
-                new_file.save()
+        save_or_update_user_media(request, instance)
         instance.save()
         return instance
 
@@ -195,6 +190,7 @@ class LightUserSerializer(serializers.ModelSerializer):
             "preferred_age",
             "preferred_height",
             "preferred_weight",
+            "zodiac_sign",
             "media",
             "liked",
             "liked_by",

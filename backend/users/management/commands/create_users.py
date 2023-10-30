@@ -5,6 +5,8 @@ import string
 from django.core.management.base import BaseCommand
 from django.contrib.auth.hashers import make_password
 from django.core.files import File
+
+from services.models import ZodiacSign
 from users.models import (
     User,
     UserMedia,
@@ -90,6 +92,9 @@ class Command(BaseCommand):
                 "relation_type": random.choice(RELATIONSHIPS_CHOICES)[0],
                 "height": random.randint(160, 210),
                 "weight": random.randint(45, 100),
+                "zodiac_sign": ZodiacSign.objects.get(
+                    pk=random.choice(range(1, 11))
+                ),
                 "preferred_age": random.choice(BASE_CHOICES)[0],
                 "preferred_height": random.choice(BASE_CHOICES)[0],
                 "preferred_weight": random.choice(BASE_CHOICES)[0],

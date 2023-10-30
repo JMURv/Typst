@@ -6,7 +6,6 @@ from django.dispatch import receiver
 from services.models import Notification
 from chat.models import Room
 
-from .utils import send_ws_notification
 
 BASE_CHOICES = (
     ("sm", "Small"),
@@ -62,9 +61,18 @@ class User(AbstractUser):
         null=True
     )
 
-    age = models.PositiveIntegerField("Age", null=True)
-    height = models.PositiveIntegerField("Height", null=True)
-    weight = models.PositiveIntegerField("Weight", null=True)
+    age = models.PositiveIntegerField(
+        "Age",
+        null=True
+    )
+    height = models.PositiveIntegerField(
+        "Height",
+        null=True
+    )
+    weight = models.PositiveIntegerField(
+        "Weight",
+        null=True
+    )
 
     preferred_age = models.CharField(
         "Preferred Age",
@@ -85,16 +93,35 @@ class User(AbstractUser):
         null=True
     )
 
-    about = models.TextField('About', max_length=700, null=True)
-    country = models.CharField('Country', max_length=60, null=True)
-    preferred_country = models.CharField('Country', max_length=60, null=True)
-    city = models.CharField('City', max_length=60, null=True)
+    about = models.TextField(
+        'About',
+        max_length=700,
+        null=True
+    )
 
-    # zodiac_sign = models.ForeignKey(
-    #     "services.ZodiacSign",
-    #     on_delete=models.CASCADE,
-    #     related_name="zodiac"
-    # )
+    country = models.CharField(
+        'Country',
+        max_length=60,
+        null=True
+    )
+    preferred_country = models.CharField(
+        'Preffered Country',
+        max_length=60,
+        null=True
+    )
+    city = models.CharField(
+        'City',
+        max_length=60,
+        null=True
+    )
+
+    zodiac_sign = models.ForeignKey(
+        "services.ZodiacSign",
+        on_delete=models.CASCADE,
+        related_name="zodiac",
+        blank=True,
+        null=True,
+    )
 
     liked = models.ManyToManyField(
         'self',
@@ -152,6 +179,7 @@ class UserMedia(models.Model):
 @receiver(m2m_changed, sender=User.liked.through)
 def create_like_and_match_notification(instance, action, **kwargs):
     """Create a Notification when user gets a new like or match"""
+    from .utils import send_ws_notification
     if action == 'post_add':
         actor = instance
         follow_id = list(kwargs['pk_set'])[0]

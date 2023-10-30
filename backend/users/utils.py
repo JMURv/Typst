@@ -1,3 +1,4 @@
+from django.core.files.base import ContentFile
 from django.db.models import (
     Case,
     When,
@@ -7,7 +8,9 @@ from django.db.models import (
 )
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from rest_framework.request import Request
 
+from users.models import UserMedia, User
 
 AGE_MAPPING = {
     "sm": [18, 25],
@@ -29,6 +32,34 @@ WEIGHT_MAPPING = {
     "lg": [65, 75],
     "xl": [75, 100],
 }
+
+
+def calculate_compatibility(request_user: User, inspected_user: User) -> int:
+
+    def calculate_score(value, preference_range):
+        min_value, max_value = preference_range
+        if min_value <= value <= max_value:
+            return 100
+        else:
+            distance = min(abs(value - min_value), abs(value - max_value))
+            max_distance = max_value - min_value
+            score = max(0, 100 - (100 * distance / max_distance))
+            return score
+
+    pref_age_range = AGE_MAPPING.get(request_user.preferred_age, None)
+    pref_height_range = HEIGHT_MAPPING.get(request_user.preferred_height, None)
+    pref_weight_range = WEIGHT_MAPPING.get(request_user.preferred_weight, None)
+
+    if not all([pref_age_range, pref_height_range, pref_weight_range]):
+        return 0
+
+    age_score = calculate_score(inspected_user.age, pref_age_range)
+    height_score = calculate_score(inspected_user.height, pref_height_range)
+    weight_score = calculate_score(inspected_user.weight, pref_weight_range)
+
+    total_score = (age_score + height_score + weight_score) / 3
+
+    return int(total_score)
 
 
 def calculate_preferences_and_order(user, qs: QuerySet) -> QuerySet:
@@ -113,7 +144,8 @@ def exclude_curr_user_and_disliked(user, qs: QuerySet) -> QuerySet:
 
 
 def send_ws_notification(user_id, notification):
-    """Trigger a notification in Django when a user receives a new like"""
+    """Trigger a notification in Django when a user receives a new like,
+    message or match """
     from services.serializers import NotificationSerializer
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
@@ -123,3 +155,17 @@ def send_ws_notification(user_id, notification):
             "notification": NotificationSerializer(notification).data,
         },
     )
+
+
+def save_or_update_user_media(request: Request, instance: User) -> None:
+    files = [
+        request.FILES.get(f'media-{i}')
+        for i in range(0, len(request.FILES))
+        if request.FILES.get(f'media-{i}') is not None
+    ]
+    if files:
+        for media in files:
+            data = media.read()
+            new_file = UserMedia(author=instance)
+            new_file.file.save(media.name, ContentFile(data))
+            new_file.save()

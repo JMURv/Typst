@@ -1,4 +1,4 @@
-migrate:
+db:
 	poetry run python manage.py makemigrations
 	poetry run python manage.py migrate
 
@@ -22,3 +22,6 @@ reset:
 
 create_users:
 	poetry run python manage.py create_users
+
+zodiac:
+	poetry run python manage.py create_zodiac

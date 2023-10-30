@@ -1,11 +1,11 @@
 import {
-    KeyboardArrowLeft,
     KeyboardArrowLeftSharp,
-    KeyboardArrowRight,
     KeyboardArrowRightSharp
 } from "@mui/icons-material";
+import {useState} from "react";
 
-export default function ImageSlider({currentUser, currentSlide, setCurrentSlide}) {
+export default function ImageSlider({currentUser}) {
+    const [currentSlide, setCurrentSlide] = useState(0)
 
     function nextSlide(){
         if (currentSlide + 1 >= currentUser.media.length) return

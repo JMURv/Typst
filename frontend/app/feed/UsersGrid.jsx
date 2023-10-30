@@ -103,7 +103,6 @@ export default function UsersGrid({reqUser, session, usersData, swipe, loadMore,
     const router = useRouter()
     const [isOpen, setIsOpen] = useState(false)
     const [currentUser, setCurrentUser] = useState({})
-    const [currentSlide, setCurrentSlide] = useState(0)
 
     async function handleTextUser(userId){
         const data = await textUserAPI(session.access, userId)
@@ -134,8 +133,6 @@ export default function UsersGrid({reqUser, session, usersData, swipe, loadMore,
                     <div className="h-96 relative">
                         <ImageSlider
                             currentUser={currentUser}
-                            currentSlide={currentSlide}
-                            setCurrentSlide={setCurrentSlide}
                         />
                         {currentUser.country && currentUser.city && (
                             <div className="absolute bottom-5 left-4 flex flex-row gap-3">
@@ -201,11 +198,6 @@ export default function UsersGrid({reqUser, session, usersData, swipe, loadMore,
                     />
                 ))}
             </div>
-            {isFetching && (
-                <div className="flex flex-col justify-center items-center w-full h-full">
-                    <p>LOADIGN</p>
-                </div>
-            )}
         </>
     )
 }

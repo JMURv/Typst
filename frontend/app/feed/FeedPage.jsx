@@ -66,7 +66,11 @@ export default function FeedPage({session, usersData, usersNextLink, requestUser
                     <div onClick={() => setIsSwipe((value) => !value)} className="cursor-pointer">
                         <ViewCompactSharp fontSize={"large"}/>
                     </div>
-                    <UsersSwipe usersData={users} swipe={handleSwipe}/>
+                    <UsersSwipe
+                        usersData={users}
+                        loadMore={fetchMoreUsers}
+                        swipe={handleSwipe}
+                    />
                 </div>
             ) : (
                 <div className="flex flex-col gap-3">

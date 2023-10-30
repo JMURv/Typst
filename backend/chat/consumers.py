@@ -29,7 +29,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         await self.accept()
 
-    async def disconnect(self, **kwargs):
+    async def disconnect(self, *args, **kwargs):
         for room_id in self.rooms:
             room_group_name = f"chat_{room_id}"
             await self.channel_layer.group_discard(
@@ -182,7 +182,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
         await self.accept()
 
-    async def disconnect(self, **kwargs):
+    async def disconnect(self, *args, **kwargs):
         await self.channel_layer.group_discard(
             f"user_{self.user_id}",
             self.channel_name

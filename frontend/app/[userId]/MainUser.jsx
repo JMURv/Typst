@@ -2,7 +2,7 @@
 import UserMedia from "@/app/[userId]/UserMedia";
 import UserUpdate from "@/app/[userId]/UserUpdate";
 import TextUser from "@/app/[userId]/TextUser";
-import {CloseSharp, FavoriteBorderSharp, FavoriteSharp, HeightSharp, PlaceSharp, ScaleSharp} from "@mui/icons-material";
+import {CloseSharp, FavoriteBorderSharp, FavoriteSharp, HeightSharp, PlaceSharp, ScaleSharp, ManSharp, WomanSharp} from "@mui/icons-material";
 import useTranslation from "next-translate/useTranslation";
 import {useState} from "react";
 import swipeUser from "@/lib/swipeUser";
@@ -50,9 +50,7 @@ export default function MainUser({session, prefetchRequestUser, prefetchUserData
             </div>
             <div className="flex flex-col gap-3 w-full lg:w-1/2 h-full">
                 <div className="flex flex-row gap-3 items-center p-5 rounded-2xl bg-zinc-100 dark:bg-transparent">
-                    <div>
-                        <p className="font-medium text-3xl">{userData.username}, {userData.age} {t("years")}</p>
-                    </div>
+                    <p className="font-medium text-3xl">{userData.username}, {userData.age}</p>
                     {isAuthor ? (
                         <UserUpdate
                             session={session}
@@ -82,7 +80,7 @@ export default function MainUser({session, prefetchRequestUser, prefetchUserData
                         )
                     )}
                 </div>
-                <div className="flex flex-col gap-3 p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-deep-purple">
+                <div className="relative flex flex-col gap-3 p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-deep-purple">
                     <div className="flex flex-row gap-3">
                         {userData.country && userData.city && (
                             <>
@@ -90,6 +88,12 @@ export default function MainUser({session, prefetchRequestUser, prefetchUserData
                                 <p>{userData.country}, {userData.city}</p>
                             </>
                         )}
+                        {userData.compatibility_percentage && (
+                            <p>{userData.compatibility_percentage}</p>
+                        )}
+                        <div className={`absolute flex flex-row gap-3 right-5 top-5 bg-pink-pastel dark:bg-purple-300 rounded-full p-3`}>
+                            <img src={`/media/defaults/zodiac/${userData.zodiac_sign.title}.svg`} width="30" height="30" alt={''}/>
+                        </div>
                     </div>
                     <div className="flex flex-row gap-5 flex-wrap">
                         {userData.height && (
@@ -104,11 +108,6 @@ export default function MainUser({session, prefetchRequestUser, prefetchUserData
                                 <p className="font-medium text-lg">{userData.weight}{t("kg")}</p>
                             </div>
                         )}
-                    </div>
-
-                    <div className="flex flex-row gap-3 flex-wrap">
-                        <p className="font-medium text-base">{t("sex")}: {userData.sex}</p>
-                        <p className="font-medium text-base">{t("orientation")}: {userData.orientation}</p>
                     </div>
                 </div>
                 <div className="p-5 rounded-2xl xl:w-4/6 font-medium text-lg bg-zinc-100 dark:bg-[#1A1B20]">

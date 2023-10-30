@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Notification
+from .models import Notification, ZodiacSign
 from users.serializers import MediaFileSerializer
 
 
@@ -30,4 +30,13 @@ class NotificationSerializer(serializers.ModelSerializer):
             "action",
             "is_read",
             "created_at",
+        ]
+
+
+class ZodiacSignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ZodiacSign
+        fields = [
+            "title",
+            "icon",
         ]
