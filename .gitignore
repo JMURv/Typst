@@ -6,6 +6,9 @@ docker/logs/celery-worker.log
 
 backend/media/
 backend/*/__pycache__/*
+backend/*/*/__pycache__/*
+backend/*/migrations/*
+!backend/*/migrations/__init__.py
 backend/static_root/*
 
 recommendations/__pycache__/*
