@@ -54,6 +54,8 @@ services:
     command: sh -c "poetry run python manage.py collectstatic --no-input &&
                     poetry run python manage.py makemigrations &&
                     poetry run python manage.py migrate &&
+                    poetry run python manage.py create_tags &&
+                    poetry run python manage.py create_zodiac &&
                     poetry run python manage.py create_users &&
                     poetry run gunicorn --workers=4 --reload --max-requests=1000 typst.wsgi -b 0.0.0.0:8000"
 

@@ -4,7 +4,7 @@ import {
     ArrowLeftSharp,
     ArrowRightSharp,
     CheckSharp,
-    CloseSharp, DeleteSharp,
+    CloseSharp, DeleteSharp, LocalOfferSharp,
     LockSharp, LogoutSharp, NotificationsSharp, NotInterestedSharp,
     RoomSharp, SupportSharp, SyncSharp
 } from "@mui/icons-material";
@@ -21,6 +21,7 @@ import resetPassword from "@/lib/resetPassword";
 
 
 export default function NavSettings({session, isSettings, setIsSettings, signOut}) {
+    const maxTags = 5
     const { t } = useTranslation('user')
     const router = useRouter()
 
@@ -35,6 +36,25 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
     const [recoveryEmail, setRecoveryEmail] = useState('')
     const [blacklist, setBlacklist] = useState([])
 
+    const [allTags, setAllTags] = useState([])
+    const [selectedTags, setSelectedTags] = useState([])
+
+    useEffect(() => {
+        const fetchAllTags = async () => {
+            const tagsResponse = await fetch(`/api/v1/services/tags/`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${session.access}`
+                }
+            })
+            if (!tagsResponse.ok) new Error('Failed to get tags')
+            return await tagsResponse.json()
+        }
+        fetchAllTags().then(
+            r => setAllTags(r)
+        )
+    }, [])
+
     useEffect(() => {
         const fetchReqUser = async () => {
             setIsFetching(true)
@@ -46,7 +66,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                         "Authorization": `Bearer ${session.access}`
                     }
                 })
-                if (!response.ok) throw new Error('Failed to get user data')
+                if (!response.ok) new Error('Failed to get user data')
                 const data = await response.json()
                 setNewLike(data.new_like_notification)
                 setNewMessage(data.new_message_notification)
@@ -55,6 +75,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                 setCountry(data.country)
                 setPrefCountry(data.preferred_country)
                 setBlacklist(data.blacklist)
+                setSelectedTags(data.tags.map(obj => obj.title))
             } catch (error) {
                 console.error("An error occurred while fetching user data:", error)
             }
@@ -71,6 +92,9 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
         formData.append("country", country)
         formData.append("preferred_country", prefCountry)
         formData.append("city", city)
+        selectedTags.forEach((tag, index) => {
+            formData.append(`tag-${index}`, tag)
+        })
         return await fetch(`/api/v1/users/${session.user.user_id}/settings/`,{
             method: "POST",
             headers: {
@@ -78,6 +102,22 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
             },
             body: formData
         })
+    }
+
+    function handleSelectedTags(tag) {
+        if (selectedTags.includes(tag)) {
+            setSelectedTags(
+                tags => tags.filter(
+                    selectedTag => selectedTag !== tag
+                )
+            )
+        } else {
+            if (selectedTags.length < maxTags) {
+                setSelectedTags(
+                    (tags) => [...tags, tag]
+                )
+            }
+        }
     }
 
     async function deleteAccountHandler(){
@@ -113,14 +153,18 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
     }
 
     async function handleUnBlacklist(userId){
-        const updatedBlacklist = blacklist.filter(user => user.id !== userId)
+        const updatedBlacklist = blacklist.filter(
+            user => user.id !== userId
+        )
         setBlacklist(updatedBlacklist)
         await handleBlacklist(session.access, userId)
     }
 
     function handleSettingsNavigation() {
         if (currPage === 'main') {
-            setIsSettings((value) => !value)
+            setIsSettings(
+                (value) => !value
+            )
         } else {
             setCurrPage('main')
         }
@@ -135,7 +179,12 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                         <ArrowLeftSharp />
                     )}
                 </DangerButton>
-                <PrimaryButton iconSize={"medium"} IconComponent={CheckSharp} text={t("save")} onClickHandler={update} />
+                <PrimaryButton
+                    iconSize={"medium"}
+                    IconComponent={CheckSharp}
+                    text={t("save")}
+                    onClickHandler={update}
+                />
             </div>
             <div className="flex flex-col gap-3 w-full h-full">
                 {isFetching ? (
@@ -163,6 +212,13 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                 <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={() => setCurrPage('notifications')}>
                                     <NotificationsSharp />
                                     <p className="font-medium">{t("notifications")}</p>
+                                    <div className="ms-auto">
+                                        <ArrowRightSharp/>
+                                    </div>
+                                </div>
+                                <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={() => setCurrPage('tags')}>
+                                    <LocalOfferSharp />
+                                    <p className="font-medium">{t("tags")}</p>
                                     <div className="ms-auto">
                                         <ArrowRightSharp/>
                                     </div>
@@ -207,19 +263,38 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                     onClickHandler={resetPasswordHandler}
                                 />
                                 <div className="mt-auto">
-                                    <PrimaryButton text={t("terminate all sessions")} onClickHandler={terminateAllSessions}/>
+                                    <PrimaryButton
+                                        text={t("terminate all sessions")}
+                                        onClickHandler={terminateAllSessions}
+                                    />
                                 </div>
                             </div>
                         )}
                         {currPage === "geo" && (
                             <div className="p-3 flex flex-col gap-5">
-                                <p className="font-medium text-xl">{t("where am i")}?</p>
-                                <HintsInput currValue={country} setValue={setCountry} hintsData={countriesData}/>
-                                <input type="text" className="base-input" placeholder="Moscow" value={city}
-                                       onChange={(e) => setCity(e.target.value)}/>
-                                <p className="font-medium text-xl">{t("i am looking in")}...</p>
-                                <HintsInput currValue={prefCountry} setValue={setPrefCountry}
-                                            hintsData={countriesData}/>
+                                <p className="font-medium text-xl">
+                                    {t("where am i")}?
+                                </p>
+                                <HintsInput
+                                    currValue={country}
+                                    setValue={setCountry}
+                                    hintsData={countriesData}
+                                />
+                                <input
+                                    type="text"
+                                    className="base-input"
+                                    placeholder="Moscow"
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                />
+                                <p className="font-medium text-xl">
+                                    {t("i am looking in")}...
+                                </p>
+                                <HintsInput
+                                    currValue={prefCountry}
+                                    setValue={setPrefCountry}
+                                    hintsData={countriesData}
+                                />
                             </div>
                         )}
                         {currPage === "notifications" && (
@@ -227,6 +302,24 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                 <Switch value={newLike} setValue={setNewLike} label={t("new like")}/>
                                 <Switch value={newMessage} setValue={setNewMessage} label={t("new message")}/>
                                 <Switch value={newMatch} setValue={setNewMatch} label={t("new match")}/>
+                            </div>
+                        )}
+                        {currPage === "tags" && (
+                            <div className={`p-3 flex flex-row flex-wrap gap-3`}>
+                                {allTags.map((tag) => (
+                                    <div
+                                        key={tag.title}
+                                        onClick={() => handleSelectedTags(tag.title)}
+                                        className={
+                                            `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                            `${selectedTags.includes(tag.title) ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                        }
+                                    >
+                                        <p className={`font-medium text-sm`}>
+                                            {tag.title.charAt(0).toUpperCase() + tag.title.slice(1)}
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
                         )}
                         {currPage === "blackList" && (

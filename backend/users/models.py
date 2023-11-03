@@ -152,6 +152,13 @@ class User(AbstractUser):
         null=True
     )
 
+    tags = models.ManyToManyField(
+        "services.Tag",
+        related_name='tagged_by',
+        blank=True,
+        null=True
+    )
+
     new_like_notification = models.BooleanField(default=True)
     new_match_notification = models.BooleanField(default=True)
     new_message_notification = models.BooleanField(default=True)

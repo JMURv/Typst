@@ -79,11 +79,9 @@ export default function FeedPage({session, usersData, usersNextLink, requestUser
                     </div>
                     <UsersGrid
                         reqUser={reqUser}
-                        session={session}
                         usersData={users}
                         swipe={handleSwipe}
                         loadMore={fetchMoreUsers}
-                        isFetching={isFetching}
                     />
                 </div>
             )}

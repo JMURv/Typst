@@ -17,10 +17,17 @@ from users.models import (
 )
 
 
-DEFAULT_IMAGE_PATH = os.path.join('media', 'defaults')
-IMAGES_PATHS = [
-    os.path.join(DEFAULT_IMAGE_PATH, "test_image_0.jpg"),
-    os.path.join(DEFAULT_IMAGE_PATH, "test_image_1.png"),
+MAX_IMAGES = 5
+DEFAULT_IMAGE_PATH = os.path.join('media', 'defaults', 'people')
+MAN_IMAGES_PATHS = [
+    os.path.join(
+        DEFAULT_IMAGE_PATH, "man", f"test_image_{i}.jpg"
+    ) for i in range(0, 14)
+]
+WOMAN_IMAGES_PATHS = [
+    os.path.join(
+        DEFAULT_IMAGE_PATH, "woman", f"test_image_{i}.jpg"
+    ) for i in range(0, 14)
 ]
 
 
@@ -106,13 +113,17 @@ class Command(BaseCommand):
         ]
         for user in users_list:
             new_user = User.objects.create(**user)
-            with open(random.choice(IMAGES_PATHS), "rb") as default_image:
-                default_image_file = File(default_image)
-                new_user_media = UserMedia(
-                    author=new_user,
-                    file=default_image_file
-                )
-                new_user_media.save()
+            image_paths = MAN_IMAGES_PATHS if new_user.sex == "m"\
+                else WOMAN_IMAGES_PATHS
+            for image in range(0, MAX_IMAGES):
+                with open(random.choice(image_paths), "rb") as user_image:
+                    new_user_media = UserMedia(
+                        author=new_user,
+                        file=File(
+                            user_image
+                        )
+                    )
+                    new_user_media.save()
         return self.stdout.write(
             self.style.SUCCESS('Successfully created users')
         )

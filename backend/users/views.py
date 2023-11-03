@@ -301,7 +301,7 @@ class ConfirmEmail(APIView):
 
 
 class UserRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = get_user_model().objects.all()
     serializer_class = LightUserSerializer
 
@@ -448,8 +448,12 @@ class MediaRetrieveCreateDestroy(APIView):
             )
             media_object.file.delete(save=False)
             media_object.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                status=status.HTTP_204_NO_CONTENT
+            )
+        return Response(
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
@@ -460,7 +464,7 @@ class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
     def post(self, request: Request, *args, **kwargs) -> Response:
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
-        print(request.data)
+        # print(request.data)
         if not serializer.is_valid():
             print(serializer.errors)
         if request.user != instance:

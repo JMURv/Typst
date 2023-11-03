@@ -11,14 +11,11 @@ import {useRouter} from "next/navigation";
 import textUserAPI from "@/lib/textUser";
 import useTranslation from "next-translate/useTranslation";
 
-export function UserGrid({user, reqUser, textUser, swipe, setIsOpen, setCurrentUser}) {
+export function UserGrid({user, reqUser, swipe, setIsOpen, setCurrentUser}) {
     const { t } = useTranslation('user')
     const router = useRouter()
     const maxContentLength = 100
-    const isLikedByUser = user.liked.includes(reqUser.id)
     const isLikedByReqUser = reqUser.liked.includes(user.id)
-    let canMessage = false
-    if (isLikedByReqUser && isLikedByUser) canMessage = true
 
     return(
         <div className="w-[300px] h-[300px] bg-pink-pastel relative group overflow-hidden rounded-md transform transition-all duration-200 hover:scale-110 hover:z-20">
@@ -47,12 +44,8 @@ export function UserGrid({user, reqUser, textUser, swipe, setIsOpen, setCurrentU
                     </div>
 
                     <div className="flex flex-col justify-between gap-2">
-                        <p onClick={() => router.push(`${user.id}/`)} className="text-lg font-medium cursor-pointer hover:text-blue-400 transition-color duration-200">{user.username}, {user.age} {t("years")}</p>
+                        <p onClick={() => router.push(`${user.id}/`)} className="text-lg font-medium cursor-pointer transition-color duration-200">{user.username}, {user.age}</p>
 
-                        <div className="flex flex-row gap-3 flex-wrap">
-                            <p className="font-medium text-sm">{t("sex")}: {user.sex}</p>
-                            <p className="font-medium text-sm">{t("orientation")}: {user.orientation}</p>
-                        </div>
                         <div className="flex flex-row gap-5 flex-wrap">
                             {user.height && (
                                 <div className="flex flex-row gap-3 items-center">
@@ -71,7 +64,7 @@ export function UserGrid({user, reqUser, textUser, swipe, setIsOpen, setCurrentU
                     <p className="overflow-ellipsis overflow-hidden font-medium text-sm">
                         {user.about?.length || '' > maxContentLength ? `${user.about.slice(0, maxContentLength)}...` : user.about}
                     </p>
-                    <div className="w-full flex flex-row justify-between gap-3">
+                    <div className="w-full flex flex-row justify-between items-center gap-3">
                         <div
                             className="cursor-pointer p-2 text-green-400 hover:text-green-300 transition-color duration-200 text-center rounded-full"
                             onClick={() => swipe("like", user.id, true)}>
@@ -81,9 +74,12 @@ export function UserGrid({user, reqUser, textUser, swipe, setIsOpen, setCurrentU
                                 <FavoriteBorderSharp fontSize={"large"} />
                             )}
                         </div>
-                        {canMessage && (
-                            <div className="cursor-pointer p-2 text-zinc-100 transition-color duration-200 text-center rounded-full" onClick={() => textUser(user.id)}>
-                                <MessageSharp fontSize={"large"}/>
+                        {user.compatibility_percentage && (
+                            <div className={
+                                `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
+                                `${user.compatibility_percentage > 75 ? 'ring-green-500':'ring-orange-400'}`
+                            }>
+                                <p className={`font-medium`}>{user.compatibility_percentage}</p>
                             </div>
                         )}
                         <div
@@ -98,16 +94,10 @@ export function UserGrid({user, reqUser, textUser, swipe, setIsOpen, setCurrentU
     )
 }
 
-export default function UsersGrid({reqUser, session, usersData, swipe, loadMore, isFetching}) {
+export default function UsersGrid({reqUser, usersData, swipe, loadMore}) {
     const {t} = useTranslation('user')
-    const router = useRouter()
     const [isOpen, setIsOpen] = useState(false)
     const [currentUser, setCurrentUser] = useState({})
-
-    async function handleTextUser(userId){
-        const data = await textUserAPI(session.access, userId)
-        router.push(`/chat/?r=${data.room_id}`)
-    }
 
     useEffect(() => {
         function handleScroll() {
@@ -190,7 +180,6 @@ export default function UsersGrid({reqUser, session, usersData, swipe, loadMore,
                     <UserGrid
                         key={user.id}
                         reqUser={reqUser}
-                        textUser={handleTextUser}
                         user={user}
                         setIsOpen={setIsOpen}
                         setCurrentUser={setCurrentUser}

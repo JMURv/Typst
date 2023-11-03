@@ -64,5 +64,18 @@
   "Username must contain only one word": "Username must contain only one word",
   "Username already taken":  "Username already taken",
   "E-mail is not valid": "E-mail is not valid",
-  "E-mail is already taken":  "E-mail is already taken"
+  "E-mail is already taken":  "E-mail is already taken",
+  "aquarius": "Aquarius",
+  "aries": "Aries",
+  "cancer": "Cancer",
+  "capricorn": "Capricorn",
+  "gemini": "Gemini",
+  "leo": "Leo",
+  "libra": "Libra",
+  "pisces": "Pisces",
+  "sagittarius": "Sagittarius",
+  "scorpio": "Scorpio",
+  "taurus": "Taurus",
+  "virgo": "Virgo",
+  "tags": "Tags"
 }

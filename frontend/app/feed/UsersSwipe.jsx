@@ -55,7 +55,7 @@ export default function UsersSwipe({usersData, swipe, loadMore}) {
                         <ImageSlider currentUser={user} />
                     )}
                     <div className="absolute inset-0 w-full flex flex-col gap-3 justify-end items-start text-white p-5 rounded-3xl bg-gradient-to-t from-[#00000051] via-transparent">
-                        <div className="flex flex-row gap-3 mb-auto w-full mt-4">
+                        <div className="flex flex-row gap-3 mb-auto w-full mt-6">
                             <div className={`flex flex-row w-full items-start`}>
                                 {user.country && user.city && (
                                     <>
@@ -64,7 +64,10 @@ export default function UsersSwipe({usersData, swipe, loadMore}) {
                                     </>
                                 )}
                                 {user.compatibility_percentage && (
-                                    <div className={`ms-auto p-3 rounded-full bg-green-400`}>
+                                    <div className={
+                                        `ms-auto p-3 rounded-full flex items-center justify-center w-12 h-12 rounded-full ring-4 ring-inset ` +
+                                        `${user.compatibility_percentage > 75 ? 'ring-green-500' : 'ring-orange-400'}`
+                                    }>
                                         <p className="font-medium text-lg">
                                             {user.compatibility_percentage}
                                         </p>
@@ -75,8 +78,9 @@ export default function UsersSwipe({usersData, swipe, loadMore}) {
                         <div className={`flex flex-row items-center w-full`}>
                             <p className="text-3xl font-medium">{user.username}, {user.age}</p>
                             {user.zodiac_sign && (
-                                <div className={`ms-auto`}>
+                                <div className={`flex flex-col items-center justify-center ms-auto`}>
                                     <img src={`/media/defaults/zodiac/${user.zodiac_sign.title}.svg`} width="30" height="30" alt={''}/>
+                                    <p className={`font-medium`}>{user.zodiac_sign.title}</p>
                                 </div>
                             )}
                         </div>

@@ -18,6 +18,10 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class Tag(models.Model):
+    title = models.CharField(max_length=100)
+
+
 class ZodiacSign(models.Model):
     title = models.CharField(max_length=255)
     icon = models.FileField(

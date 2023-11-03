@@ -8,7 +8,10 @@ class RecSystem:
         for dict_el in users_list:
             users_dict[dict_el['id']] = dict_el
         SimilarUsersBio.process_text(users_dict)
-        similar_by_user = SimilarUsersBio.find_similarity(current_user, users_dict)
+        similar_by_user = SimilarUsersBio.find_similarity(
+            current_user,
+            users_dict
+        )
         return similar_by_user
 
     def find_similar_text_for_all(self, users: list):

@@ -6,11 +6,13 @@ import MainUser from "@/app/[userId]/MainUser";
 import getRequestUser from "@/lib/getRequestUser";
 
 
-export async function getUserPageById(userId) {
+export async function getUserPageById(userId, accessToken) {
     const response = await fetch(`${process.env.NEXTAUTH_URL_INTERNAL}/api/users/${userId}/`, {
         cache: "no-cache",
         method: 'GET',
-        credentials: 'include',
+        headers: {
+            "Authorization": `Bearer ${accessToken}`
+        }
     })
     return await response.json()
 }
@@ -18,7 +20,8 @@ export async function getUserPageById(userId) {
 
 export async function generateMetadata(props) {
     const {userId} = props.params
-    const user = await getUserPageById(userId)
+    const session = await getServerSession(options)
+    const user = await getUserPageById(userId, session.access)
     return {
         title: user.username,
         description: user.about,
@@ -33,7 +36,7 @@ export default async function Page({params, searchParams}) {
     }
 
     const [prefetchUserData, prefetchRequestUser] = await Promise.all([
-        getUserPageById(userId),
+        getUserPageById(userId, session.access),
         getRequestUser(session.access),
     ])
 

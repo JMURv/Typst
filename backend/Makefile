@@ -25,3 +25,6 @@ create_users:
 
 zodiac:
 	poetry run python manage.py create_zodiac
+
+tags:
+	poetry run python manage.py create_tags

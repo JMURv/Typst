@@ -64,5 +64,18 @@
   "Username must contain only one word": "Никнейм должен быть из одного слова",
   "Username already taken":  "Никнейм уже занят",
   "E-mail is not valid": "Неправильный формат E-mail",
-  "E-mail is already taken":  "E-mail уже занят"
+  "E-mail is already taken":  "E-mail уже занят",
+  "aquarius": "Водолей",
+  "aries": "Овен",
+  "cancer": "Рак",
+  "capricorn": "Козерог",
+  "gemini": "Близнецы",
+  "leo": "Лев",
+  "libra": "Весы",
+  "pisces": "Рыбы",
+  "sagittarius": "Стрелец",
+  "scorpio": "Скорпион",
+  "taurus": "Телец",
+  "virgo": "Дева",
+  "tags": "Интересы"
 }

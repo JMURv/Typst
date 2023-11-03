@@ -2,7 +2,7 @@ import {SearchSharp} from "@mui/icons-material";
 
 export function ChatRoomLoadingSkeleton(){
     return(
-        <div className="w-full flex flex-row p-3 bg-zinc-100 dark:bg-gray-700 hover:bg-zinc-200 dark:hover:bg-gray-600 justify-between transition-color duration-200">
+        <div className="w-full flex flex-row p-3 bg-zinc-100 dark:bg-purple-200 hover:bg-zinc-200 dark:hover:bg-purple-300 cursor-pointer justify-between transition-color duration-200">
             <div className="flex flex-row gap-3 justify-start">
                 <div className="w-[50px] h-[50px] rounded-full bg-pink-pastel"/>
                 <div className="animate-pulse chat-info">
@@ -21,7 +21,7 @@ export function ChatRoomLoadingSkeleton(){
 
 export default function ChatRoomsLoadingSkeleton() {
     return(
-        <div className="w-full xl:w-1/4 bg-zinc-100 rounded-xl shadow-sm border-[1.5px] border-zinc-200 border-solid dark:border-slate-500 dark:bg-gray-700">
+        <div className="w-full lg:w-1/4 bg-zinc-100 rounded-xl shadow-sm border-[1.5px] border-zinc-200 border-solid dark:border-pink-pastel dark:bg-purple-200">
             <div className="w-full flex flex-row items-center">
                 <div className="relative w-full">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-pink-pastel dark:text-stone-50">
@@ -42,7 +42,7 @@ export default function ChatRoomsLoadingSkeleton() {
                     />
                 </div>
             </div>
-            <div className="flex flex-col w-full h-full divide-y dark:divide-gray-600">
+            <div className="flex flex-col w-full h-full divide-y dark:divide-pink-pastel">
                 <ChatRoomLoadingSkeleton />
                 <ChatRoomLoadingSkeleton />
                 <ChatRoomLoadingSkeleton />

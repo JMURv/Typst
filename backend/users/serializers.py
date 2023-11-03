@@ -2,19 +2,14 @@ import os
 import base64
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from users.models import UserMedia
-from users.utils import save_or_update_user_media, calculate_compatibility
 
-
-class UserRecommendSystemSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = get_user_model()
-        fields = [
-            "id",
-            "username",
-            "about",
-        ]
+from services.models import Tag
+from .models import UserMedia
+from .utils import save_or_update_user_media, calculate_compatibility
+from services.serializers import (
+    ZodiacSignSerializer,
+    TagSerializer
+)
 
 
 class MediaFileSerializer(serializers.ModelSerializer):
@@ -71,11 +66,10 @@ class MediaFileBytesSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    from services.serializers import ZodiacSignSerializer
-
     media = MediaFileSerializer(many=True, required=False)
-    compatibility_percentage = serializers.SerializerMethodField()
     zodiac_sign = ZodiacSignSerializer(required=False)
+    tags = TagSerializer(many=True, required=False)
+    compatibility_percentage = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         user_model = get_user_model()
@@ -133,6 +127,7 @@ class UserSerializer(serializers.ModelSerializer):
             "new_message_notification",
             "compatibility_percentage",
             "zodiac_sign",
+            "tags"
         ]
         extra_kwargs = {
             'about': {'required': False},
@@ -152,10 +147,10 @@ class BlackListedUserSerializer(serializers.ModelSerializer):
 
 
 class LightUserSerializer(serializers.ModelSerializer):
-    from services.serializers import ZodiacSignSerializer
-
     media = MediaFileSerializer(many=True, required=False)
     zodiac_sign = ZodiacSignSerializer(required=False)
+    tags = TagSerializer(many=True, required=False)
+    compatibility_percentage = serializers.SerializerMethodField()
 
     def update(self, instance, validated_data):
         request = self.context.get('request')
@@ -174,6 +169,17 @@ class LightUserSerializer(serializers.ModelSerializer):
         save_or_update_user_media(request, instance)
         instance.save()
         return instance
+
+    def get_compatibility_percentage(self, instance) -> int:
+        request = self.context.get('request')
+        if not request:
+            return 0
+        if request.user.id == instance.id:
+            return 0
+        return calculate_compatibility(
+            request_user=request.user,
+            inspected_user=instance
+        )
 
     class Meta:
         model = get_user_model()
@@ -204,6 +210,8 @@ class LightUserSerializer(serializers.ModelSerializer):
             "new_like_notification",
             "new_match_notification",
             "new_message_notification",
+            "tags",
+            "compatibility_percentage",
         ]
         extra_kwargs = {
             'about': {'required': False},
@@ -211,7 +219,29 @@ class LightUserSerializer(serializers.ModelSerializer):
 
 
 class SettingsSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(many=True, required=False)
     blacklist = BlackListedUserSerializer(many=True, required=False)
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+
+        tags = [
+            request.data.get(f'tag-{i}')
+            for i in range(0, len(request.data))
+            if request.data.get(f'tag-{i}') is not None
+        ]
+        if tags:
+            instance.tags.clear()
+            for tag in tags:
+                instance.tags.add(
+                    Tag.objects.get(
+                        title=tag
+                    )
+                )
+            instance.save()
+        super().update(instance, validated_data)
+        instance.save()
+        return instance
 
     class Meta:
         model = get_user_model()
@@ -223,7 +253,8 @@ class SettingsSerializer(serializers.ModelSerializer):
             "new_like_notification",
             "new_match_notification",
             "new_message_notification",
-            "blacklist"
+            "blacklist",
+            "tags"
         ]
 
 
@@ -232,4 +263,14 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = [
             "email",
+        ]
+
+
+class UserRecommendSystemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "id",
+            "username",
+            "about",
         ]

@@ -38,7 +38,7 @@ export default function ImageSlider({currentUser}) {
                     </button>
                     <div className="absolute z-30 flex flex-row gap-3 top-5 w-full justify-between items-center px-5">
                         {currentUser.media.map((image, index) => (
-                            <button key={image.id} className={`w-full cursor-default h-2 rounded-full ${currentSlide === index ? 'bg-gray-400' : 'bg-gray-700'}`}/>
+                            <button key={image.id} className={`w-full cursor-default h-2 rounded-full ${currentSlide === index ? 'bg-zinc-300' : 'bg-zinc-400/60'}`}/>
                         ))}
                     </div>
                     <div className="relative w-full h-full">

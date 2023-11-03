@@ -1,5 +1,4 @@
-import {AccountCircleSharp, ChatSharp, ExpandMore, GroupAddSharp, Notifications} from "@mui/icons-material";
-import ToggleTheme from "@/components/Buttons/ToggleTheme";
+import {AccountCircleSharp, ChatSharp, GroupAddSharp, Notifications, SettingsSharp} from "@mui/icons-material";
 
 export default function SkeletonNav() {
     return (
@@ -23,16 +22,10 @@ export default function SkeletonNav() {
             </div>
             <div className="flex items-center space-x-5">
                 <div className="flex flex-row items-center justify-center gap-5">
-                    <ToggleTheme />
-                    <div className="relative">
                         <div className="cursor-pointer text-pink-pastel dark:text-zinc-100">
                             <Notifications />
                         </div>
-                    </div>
-                    <div className="rounded-full w-[45px] h-[45px] bg-pink-pastel ring-2 ring-offset ring-pink-pastel"/>
-                    <div className="relative text-pink-pastel dark:text-zinc-100">
-                        <ExpandMore />
-                    </div>
+                    <SettingsSharp/>
                 </div>
             </div>
         </nav>

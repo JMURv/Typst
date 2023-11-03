@@ -8,9 +8,30 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.cache import cache
 
-from .models import Notification
-from .serializers import NotificationSerializer
+from .models import (
+    Notification,
+    Tag
+)
+from .serializers import (
+    NotificationSerializer,
+    TagSerializer
+)
 from geopy.geocoders import Nominatim
+
+
+class TagsView(APIView):
+    model = Tag
+    serializer_class = TagSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def get(self, request: Request, *args, **kwargs):
+        return Response(
+            status=status.HTTP_200_OK,
+            data=self.serializer_class(
+                self.model.objects.all(),
+                many=True
+            ).data
+        )
 
 
 class GeolocationView(APIView):

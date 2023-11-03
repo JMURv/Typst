@@ -17,9 +17,6 @@ export default function GlobalLoading({isLoading}){
         >
             <div className={`w-full h-full flex flex-col gap-3 mx-auto justify-center items-center`}>
                  <p className={`text-center text-9xl font-bold`}>TYP.ST</p>
-                <div className="text-zinc-200">
-                    <Jelly color={"#d4d4d8"} size={70} />
-                </div>
             </div>
         </Transition>
     )

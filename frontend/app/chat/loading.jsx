@@ -4,7 +4,7 @@ import ChatContainerLoadingSkeleton from "@/components/Loadings/Chat/ChatContain
 
 export default function Loading() {
     return (
-        <div className="w-full h-screen overflow-y-hidden">
+        <div className="w-full h-screen dark:bg-purple-100 overflow-y-hidden">
             <SkeletonNav/>
             <div className="mt-20 container mx-auto">
                 <div className="flex flex-row flex-wrap xl:flex-nowrap w-full gap-3 h-[75vh]">

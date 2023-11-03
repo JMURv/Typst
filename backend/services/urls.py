@@ -5,4 +5,5 @@ from . import views
 urlpatterns = [
     path('notifications/', views.NotificationsListReadDelete.as_view()),
     path('geolocation/', views.GeolocationView.as_view()),
+    path('tags/', views.TagsView.as_view()),
 ]
