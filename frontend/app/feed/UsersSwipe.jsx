@@ -11,7 +11,7 @@ import ImageSlider from "@/components/Slider/ImageSlider";
 import useTranslation from "next-translate/useTranslation";
 
 export default function UsersSwipe({usersData, swipe, loadMore}) {
-    const { t, lang } = useTranslation('user')
+    const { t } = useTranslation('user')
     const [isSwipedRight, setIsSwipedRight] = useState(false)
     const [isSwipedLeft, setIsSwipedLeft] = useState(false)
     const [currentProfileIndex, setCurrentProfileIndex] = useState(0)
@@ -80,7 +80,7 @@ export default function UsersSwipe({usersData, swipe, loadMore}) {
                             {user.zodiac_sign && (
                                 <div className={`flex flex-col items-center justify-center ms-auto`}>
                                     <img src={`/media/defaults/zodiac/${user.zodiac_sign.title}.svg`} width="30" height="30" alt={''}/>
-                                    <p className={`font-medium`}>{user.zodiac_sign.title}</p>
+                                    <p className={`font-medium`}>{t(user.zodiac_sign.title)}</p>
                                 </div>
                             )}
                         </div>

@@ -14,17 +14,16 @@ import useTranslation from "next-translate/useTranslation";
 export function UserGrid({user, reqUser, swipe, setIsOpen, setCurrentUser}) {
     const { t } = useTranslation('user')
     const router = useRouter()
-    const maxContentLength = 100
+    const maxContentLength = 500
     const isLikedByReqUser = reqUser.liked.includes(user.id)
 
     return(
-        <div className="w-[300px] h-[300px] bg-pink-pastel relative group overflow-hidden rounded-md transform transition-all duration-200 hover:scale-110 hover:z-20">
+        <div className="w-[370px] h-[370px] bg-pink-pastel relative group overflow-hidden rounded-md transform transition-all duration-300 hover:scale-105 hover:z-20">
             <div className="w-full h-full" onDoubleClick={() => {setIsOpen(true);setCurrentUser(user)}}>
                 {user.media.length > 0 && (
                     <img src={user.media[0].relative_path} className="object-cover w-full h-full" alt=""/>
                 )}
-                <div
-                    className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-60 transition-opacity duration-300"/>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300"/>
                 <div className="w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 flex flex-col gap-3 justify-between items-start p-4 text-white">
                     <div className="flex flex-row w-full justify-between">
                         <div className="flex flex-row gap-3">
@@ -59,11 +58,18 @@ export function UserGrid({user, reqUser, swipe, setIsOpen, setCurrentUser}) {
                                     <p className="font-medium text-sm">{user.weight}{t("kg")}</p>
                                 </div>
                             )}
+                            {user.zodiac_sign && (
+                                <div className={`flex flex-row items-center justify-center ms-auto`}>
+                                    <img src={`/media/defaults/zodiac/${user.zodiac_sign.title}.svg`} width="30" height="30" alt={''}/>
+                                    <p className={`font-medium`}>{t(user.zodiac_sign.title)}</p>
+                                </div>
+                            )}
                         </div>
-                    </div>
-                    <p className="overflow-ellipsis overflow-hidden font-medium text-sm">
+
+                        <p className="overflow-ellipsis overflow-hidden font-medium text-sm">
                         {user.about?.length || '' > maxContentLength ? `${user.about.slice(0, maxContentLength)}...` : user.about}
                     </p>
+                    </div>
                     <div className="w-full flex flex-row justify-between items-center gap-3">
                         <div
                             className="cursor-pointer p-2 text-green-400 hover:text-green-300 transition-color duration-200 text-center rounded-full"

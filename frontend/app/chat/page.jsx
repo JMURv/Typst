@@ -36,7 +36,7 @@ export default async function ChatPage(props) {
             return acc
         }, {})
         return (
-            <div className="w-full h-full dark:bg-purple-100 lg:overflow-y-hidden">
+            <div className="w-full h-screen dark:bg-purple-100 lg:overflow-y-hidden">
                 <Nav session={session} />
                 <div className="mt-20 container mx-auto">
                     <ChatApp session={session} roomsObject={roomsObject} currentRoom={currentRoom}/>

@@ -21,7 +21,6 @@ import resetPassword from "@/lib/resetPassword";
 
 
 export default function NavSettings({session, isSettings, setIsSettings, signOut}) {
-    const maxTags = 5
     const { t } = useTranslation('user')
     const router = useRouter()
 
@@ -35,25 +34,6 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
     const [prefCountry, setPrefCountry] = useState('')
     const [recoveryEmail, setRecoveryEmail] = useState('')
     const [blacklist, setBlacklist] = useState([])
-
-    const [allTags, setAllTags] = useState([])
-    const [selectedTags, setSelectedTags] = useState([])
-
-    useEffect(() => {
-        const fetchAllTags = async () => {
-            const tagsResponse = await fetch(`/api/v1/services/tags/`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${session.access}`
-                }
-            })
-            if (!tagsResponse.ok) new Error('Failed to get tags')
-            return await tagsResponse.json()
-        }
-        fetchAllTags().then(
-            r => setAllTags(r)
-        )
-    }, [])
 
     useEffect(() => {
         const fetchReqUser = async () => {
@@ -75,7 +55,6 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                 setCountry(data.country)
                 setPrefCountry(data.preferred_country)
                 setBlacklist(data.blacklist)
-                setSelectedTags(data.tags.map(obj => obj.title))
             } catch (error) {
                 console.error("An error occurred while fetching user data:", error)
             }
@@ -92,9 +71,6 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
         formData.append("country", country)
         formData.append("preferred_country", prefCountry)
         formData.append("city", city)
-        selectedTags.forEach((tag, index) => {
-            formData.append(`tag-${index}`, tag)
-        })
         return await fetch(`/api/v1/users/${session.user.user_id}/settings/`,{
             method: "POST",
             headers: {
@@ -102,22 +78,6 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
             },
             body: formData
         })
-    }
-
-    function handleSelectedTags(tag) {
-        if (selectedTags.includes(tag)) {
-            setSelectedTags(
-                tags => tags.filter(
-                    selectedTag => selectedTag !== tag
-                )
-            )
-        } else {
-            if (selectedTags.length < maxTags) {
-                setSelectedTags(
-                    (tags) => [...tags, tag]
-                )
-            }
-        }
     }
 
     async function deleteAccountHandler(){
@@ -216,13 +176,6 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                         <ArrowRightSharp/>
                                     </div>
                                 </div>
-                                <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={() => setCurrPage('tags')}>
-                                    <LocalOfferSharp />
-                                    <p className="font-medium">{t("tags")}</p>
-                                    <div className="ms-auto">
-                                        <ArrowRightSharp/>
-                                    </div>
-                                </div>
                                 <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={() => setCurrPage('blackList')}>
                                     <NotInterestedSharp />
                                     <p className="font-medium">{t("blacklist")}</p>
@@ -302,24 +255,6 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                 <Switch value={newLike} setValue={setNewLike} label={t("new like")}/>
                                 <Switch value={newMessage} setValue={setNewMessage} label={t("new message")}/>
                                 <Switch value={newMatch} setValue={setNewMatch} label={t("new match")}/>
-                            </div>
-                        )}
-                        {currPage === "tags" && (
-                            <div className={`p-3 flex flex-row flex-wrap gap-3`}>
-                                {allTags.map((tag) => (
-                                    <div
-                                        key={tag.title}
-                                        onClick={() => handleSelectedTags(tag.title)}
-                                        className={
-                                            `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
-                                            `${selectedTags.includes(tag.title) ? 'bg-pink-pastel' : 'bg-transparent'}`
-                                        }
-                                    >
-                                        <p className={`font-medium text-sm`}>
-                                            {tag.title.charAt(0).toUpperCase() + tag.title.slice(1)}
-                                        </p>
-                                    </div>
-                                ))}
                             </div>
                         )}
                         {currPage === "blackList" && (

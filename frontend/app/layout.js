@@ -53,7 +53,7 @@ export const metadata = {
 export default function RootLayout({children}) {
     return (
         <html suppressHydrationWarning lang="en">
-            <body className={`${poppinsFont.variable} h-screen`}>
+            <body className={`${poppinsFont.variable}`}>
                 <GeolocationServerComponent />
                 <Providers>
                     {children}

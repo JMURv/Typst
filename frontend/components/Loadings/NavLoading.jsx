@@ -2,7 +2,7 @@ import {AccountCircleSharp, ChatSharp, GroupAddSharp, Notifications, SettingsSha
 
 export default function SkeletonNav() {
     return (
-        <nav className="flex justify-between py-4 bg-transparent backdrop-blur-md w-full fixed top-0 left-0 right-0 z-10 px-10">
+        <nav className="flex justify-between container mx-auto py-4 bg-transparent backdrop-blur-md w-full fixed top-0 left-0 right-0 z-10 px-10">
             <div className="flex items-center justify-center">
                 <a className="cursor-pointer">
                     <h1 className="text-3xl font-bold text-pink-pastel mb-3 dark:text-stone-50">TYP.ST</h1>

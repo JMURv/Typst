@@ -5,6 +5,7 @@ docker/env/.env.prod
 docker/logs/celery-worker.log
 
 backend/media/
+backend/__pycache__/
 backend/*/__pycache__/*
 backend/*/*/__pycache__/*
 backend/*/*/*/__pycache__/*

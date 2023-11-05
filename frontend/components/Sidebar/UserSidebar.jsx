@@ -1,7 +1,7 @@
 'use client';
 import {AccountCircle, Check, CloseSharp, Man4Sharp, Woman2Sharp} from "@mui/icons-material";
 import IconInput from "@/components/Inputs/IconInput";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import PrimaryButton from "@/components/Buttons/PrimaryButton";
 import RangeInput from "@/components/Inputs/RangeInput";
 import RingsInput from "@/components/Inputs/RingsInput";
@@ -12,6 +12,7 @@ import useTranslation from "next-translate/useTranslation";
 
 export default function UserSidebar({session, userData, setUserData, isShowing, setIsShowing}) {
     const { t } = useTranslation('user')
+    const maxTags = 5
 
     const [username, setUsername] = useState(userData.username)
     const [age, setAge] = useState(userData.age)
@@ -23,6 +24,9 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
     const [sex, setSex] = useState(userData.sex)
     const [about, setAbout] = useState(userData.about || '')
     const [orientation, setOrientation] = useState(userData.orientation)
+
+    const [allTags, setAllTags] = useState([])
+    const [selectedTags, setSelectedTags] = useState(userData.tags.map(obj => obj.title))
 
     const sexChoices = [
         {IconComponent: Man4Sharp, value: "m"},
@@ -52,19 +56,54 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
 
     async function update(e) {
         e.preventDefault()
-        const data = new FormData(e.currentTarget)
+        const formData = new FormData(e.currentTarget)
+        selectedTags.forEach((tag, index) => {
+            formData.append(`tag-${index}`, tag)
+        })
         const response = await fetch(`/api/v1/users/${session.user.user_id}/`, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${session.access}`
             },
-            body: data
+            body: formData
         })
         if (response.ok) {
             const data = await response.json()
             setUserData(data)
         }
     }
+
+    function handleSelectedTags(tag) {
+        if (selectedTags.includes(tag)) {
+            setSelectedTags(
+                tags => tags.filter(
+                    selectedTag => selectedTag !== tag
+                )
+            )
+        } else {
+            if (selectedTags.length < maxTags) {
+                setSelectedTags(
+                    (tags) => [...tags, tag]
+                )
+            }
+        }
+    }
+
+    useEffect(() => {
+        const fetchAllTags = async () => {
+            const tagsResponse = await fetch(`/api/v1/services/tags/`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${session.access}`
+                }
+            })
+            if (!tagsResponse.ok) new Error('Failed to get tags')
+            return await tagsResponse.json()
+        }
+        fetchAllTags().then(
+            r => setAllTags(r)
+        )
+    }, [])
 
     return (
         <SidebarBase show={isShowing} classes={'sm:w-[500px]'}>
@@ -179,6 +218,30 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                         rangeItems={weightChoices}
                         name={"preferred_weight"}
                     />
+
+                    <div className={`my-3 h-1 w-full bg-pink-pastel`}/>
+
+                    <div className={`flex flex-col items-center justify-center`}>
+                        <p className={`font-medium text-sm`}>{t("tags")}</p>
+                        <div className={`p-3 flex flex-row flex-wrap gap-3`}>
+                            {allTags.map((tag) => (
+                                <div
+                                    key={tag.title}
+                                    onClick={() => handleSelectedTags(tag.title)}
+                                    className={
+                                        `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                        `${selectedTags.includes(tag.title) ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                    }
+                                >
+                                    <p className={`font-medium text-sm`}>
+                                        {tag.title.charAt(0).toUpperCase() + tag.title.slice(1)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+
                 </div>
             </form>
         </SidebarBase>

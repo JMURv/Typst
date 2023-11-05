@@ -59,14 +59,14 @@ export default function MainUser({
     return (
         <>
             <div
-                className="h-[50vh] sm:h-[70vh] lg:h-[65vh] 2xl:h-[90vh] w-full lg:w-1/2 2xl:w-1/2">
+                className="h-[50vh] sm:h-[70vh] lg:h-[90vh] 2xl:h-[90vh] w-full lg:w-1/2 2xl:w-1/2">
                 <UserMedia
                     userData={userData}
                 />
             </div>
             <div className="flex flex-col gap-3 w-full lg:w-1/2 h-full">
                 <div
-                    className="flex flex-row gap-3 items-center p-5 rounded-2xl bg-zinc-100 dark:bg-transparent">
+                    className="flex flex-row flex-wrap gap-3 items-center p-5 rounded-2xl bg-zinc-100 dark:bg-transparent">
                     <p className="font-medium text-3xl">{userData.username}, {userData.age}</p>
                     {isAuthor ? (
                         <UserUpdate
@@ -143,7 +143,7 @@ export default function MainUser({
                     </div>
                 </div>
                 <div
-                    className="p-5 rounded-2xl xl:w-4/6 font-medium text-lg bg-zinc-100 dark:bg-[#1A1B20]">
+                    className="p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-[#1A1B20]">
                     {userData.about}
                 </div>
                 <div

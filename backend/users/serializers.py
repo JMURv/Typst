@@ -164,8 +164,22 @@ class LightUserSerializer(serializers.ModelSerializer):
         validated_data.pop('new_like_notification', None)
         validated_data.pop('new_match_notification', None)
         validated_data.pop('new_message_notification', None)
-        super().update(instance, validated_data)
 
+        tags = [
+            request.data.get(f'tag-{i}')
+            for i in range(0, len(request.data))
+            if request.data.get(f'tag-{i}') is not None
+        ]
+        if tags:
+            instance.tags.clear()
+            for tag in tags:
+                instance.tags.add(
+                    Tag.objects.get(
+                        title=tag
+                    )
+                )
+
+        super().update(instance, validated_data)
         save_or_update_user_media(request, instance)
         instance.save()
         return instance
@@ -221,27 +235,6 @@ class LightUserSerializer(serializers.ModelSerializer):
 class SettingsSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, required=False)
     blacklist = BlackListedUserSerializer(many=True, required=False)
-
-    def update(self, instance, validated_data):
-        request = self.context.get('request')
-
-        tags = [
-            request.data.get(f'tag-{i}')
-            for i in range(0, len(request.data))
-            if request.data.get(f'tag-{i}') is not None
-        ]
-        if tags:
-            instance.tags.clear()
-            for tag in tags:
-                instance.tags.add(
-                    Tag.objects.get(
-                        title=tag
-                    )
-                )
-            instance.save()
-        super().update(instance, validated_data)
-        instance.save()
-        return instance
 
     class Meta:
         model = get_user_model()

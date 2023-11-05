@@ -62,8 +62,8 @@ export default function FeedPage({session, usersData, usersNextLink, requestUser
     return (
         <div className="w-full h-full">
             {isSwipe ? (
-                <div className="flex flex-col gap-3">
-                    <div onClick={() => setIsSwipe((value) => !value)} className="cursor-pointer">
+                <div className="flex flex-col h-full overflow-y-hidden gap-3">
+                    <div onClick={() => setIsSwipe((value) => !value)} className="cursor-pointer text-pink-pastel dark:text-zinc-100">
                         <ViewCompactSharp fontSize={"large"}/>
                     </div>
                     <UsersSwipe
@@ -74,7 +74,7 @@ export default function FeedPage({session, usersData, usersNextLink, requestUser
                 </div>
             ) : (
                 <div className="flex flex-col gap-3">
-                    <div onClick={() => setIsSwipe((value) => !value)} className="cursor-pointer">
+                    <div onClick={() => setIsSwipe((value) => !value)} className="cursor-pointer text-pink-pastel dark:text-zinc-100">
                         <SwipeSharp fontSize={"large"}/>
                     </div>
                     <UsersGrid

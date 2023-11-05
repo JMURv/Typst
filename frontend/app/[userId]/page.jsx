@@ -44,7 +44,7 @@ export default async function Page({params, searchParams}) {
     return (
         <div className="w-full overflow-y-hidden">
             <Nav session={session}/>
-            <div className="mt-20 px-3 lg:px-10">
+            <div className="mt-20 container mx-auto">
                 <div className="flex flex-row flex-wrap lg:flex-nowrap gap-5 items-start justify-center">
                     <MainUser
                         session={session}

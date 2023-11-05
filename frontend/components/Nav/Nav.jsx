@@ -169,9 +169,14 @@ export default function Nav({session}) {
                 userNotifications={userNotifications} setUserNotifications={setUserNotifications}
                 removeNotification={removeNotification}
             />
-            <NavSettings session={session} isSettings={isSettings} setIsSettings={setIsSettings} signOut={signOutHandler} />
+            <NavSettings
+                session={session}
+                isSettings={isSettings}
+                setIsSettings={setIsSettings}
+                signOut={signOutHandler}
+            />
 
-            <nav className="flex justify-between items-center py-4 bg-transparent backdrop-blur-md w-full fixed top-0 left-0 right-0 z-40 px-10">
+            <nav className="flex justify-between container mx-auto items-center py-4 bg-transparent backdrop-blur-md w-full fixed top-0 left-0 right-0 z-40">
 
                 <div className="flex items-center justify-center">
                     <a className="cursor-pointer">

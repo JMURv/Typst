@@ -7,6 +7,7 @@ WORKDIR ./app/recommendations
 
 COPY poetry.lock pyproject.toml ./
 
+RUN pip install cmake
 RUN pip install poetry
 RUN poetry config installer.max-workers 10
 RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi

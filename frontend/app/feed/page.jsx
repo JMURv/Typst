@@ -44,7 +44,7 @@ export default async function Page() {
     return (
         <div className="w-full">
             <Nav session={session}/>
-            <div className="mt-20 px-3 lg:px-10">
+            <div className="mt-20 container mx-auto">
                 <FeedPage
                     session={session}
                     usersData={usersData}
