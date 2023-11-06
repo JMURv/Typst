@@ -27,6 +27,7 @@ import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 import ZodiacSignsData from "@/lib/zodiacSigns";
 import tagsData from "@/lib/tagsData";
 import {Transition} from "@headlessui/react";
+import ScreenSlider from "@/components/Slider/ScreenSlider";
 
 export default function RegisterForm({setIsLoading, setPushNotifications}) {
     const { t } = useTranslation('user')
@@ -296,57 +297,59 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
     }
 
     return (
-        <div className="container flex flex-col justify-center items-center mx-auto max-w-[500px]">
-            {/*<div className={`fixed top-0 bottom-0 left-0 right-0 bg-deep-purple duration-300 transition-all`}>*/}
+        <div className="container flex flex-col justify-center items-center mx-auto">
 
-            <div className="relative flex flex-col justify-center items-center gap-3 max-w-[500px] min-h-[200px] w-full h-full">
-                <div className={`absolute top-0 w-full flex flex-col gap-5 duration-300 ${page === 1 ? 'translate-x-0 opacity-1' : page > 1 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <UnderlinedInput
-                        IconComponent={AccountCircle}
-                        iconSize="large"
-                        isError={usernameErrors}
-                        errorText={usernameErrorText}
-                        id="username"
-                        name="username"
-                        type="text"
-                        required
-                        placeholder={t("username")}
-                        value={username}
-                        onChange={(e) => validateUsername(e)}
+            <div className="w-full h-full">
+
+                <ScreenSlider screenId={1} currScreen={page} bgColor={'bg-purple-200'}>
+                    <div className="flex flex-col justify-center items-center mx-auto gap-5 max-w-[500px] w-full h-full">
+                        <UnderlinedInput
+                            IconComponent={AccountCircle}
+                            iconSize="large"
+                            isError={usernameErrors}
+                            errorText={usernameErrorText}
+                            id="username"
+                            name="username"
+                            type="text"
+                            required
+                            placeholder={t("username")}
+                            value={username}
+                            onChange={(e) => validateUsername(e)}
+                            />
+
+                        <UnderlinedInput
+                            IconComponent={EmailSharp}
+                            iconSize="large"
+                            isError={emailErrors}
+                            errorText={emailErrorsText}
+                            id="email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            placeholder="example@email.com"
+                            value={email}
+                            onChange={(e) => validateEmail(e)}
                         />
 
-                    <UnderlinedInput
-                        IconComponent={EmailSharp}
-                        iconSize="large"
-                        isError={emailErrors}
-                        errorText={emailErrorsText}
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        placeholder="example@email.com"
-                        value={email}
-                        onChange={(e) => validateEmail(e)}
-                    />
+                        <UnderlinedInput
+                            IconComponent={LockSharp}
+                            iconSize="large"
+                            id="password"
+                            name="password"
+                            type="password"
+                            autoComplete="current-password"
+                            required
+                            placeholder="********"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+                </ScreenSlider>
 
-                    <UnderlinedInput
-                        IconComponent={LockSharp}
-                        iconSize="large"
-                        id="password"
-                        name="password"
-                        type="password"
-                        autoComplete="current-password"
-                        required
-                        placeholder="********"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
 
-                </div>
-
-                <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 2 ? 'translate-x-0 opacity-1' : page > 2 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <div className={`flex flex-col gap-3`}>
+                <ScreenSlider screenId={2} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>{t("my age")}</p>
                         <div className={
                             `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
@@ -360,10 +363,10 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                         />
                         </div>
                     </div>
-                </div>
+                </ScreenSlider>
 
-                <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 3 ? 'translate-x-0 opacity-1' : page > 3 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <div className={`flex flex-col gap-3`}>
+                <ScreenSlider screenId={3} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>
                             {t("my height")}
                         </p>
@@ -379,10 +382,10 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                         />
                         </div>
                     </div>
-                </div>
+                </ScreenSlider>
 
-                <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 4 ? 'translate-x-0 opacity-1' : page > 4 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <div className={`flex flex-col gap-3`}>
+                <ScreenSlider screenId={4} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>
                             {t("my weight")}
                         </p>
@@ -398,107 +401,127 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                             />
                         </div>
                     </div>
-                </div>
+                </ScreenSlider>
 
-                <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 5 ? 'translate-x-0 opacity-1' : page > 5 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <p className={`font-medium text-4xl`}>
-                        {t("country")}
-                    </p>
-                    <div className={
+                <ScreenSlider screenId={5} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
+                        <p className={`font-medium text-4xl`}>
+                            {t("country")}
+                        </p>
+                        <div className={
                             `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
                         }>
-                    <HintsInput currValue={country} setValue={setCountry} placeholder={t("Russian Federation")} hintsData={countriesData} />
+                            <HintsInput
+                                currValue={country}
+                                setValue={setCountry}
+                                placeholder={t("Russian Federation")}
+                                hintsData={countriesData}
+                            />
+                        </div>
+
+                        <p className={`font-medium text-4xl`}>
+                            {t("city")}
+                        </p>
+
+                        <div className={
+                            `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
+                        }>
+                            <UnderlinedInput
+                                IconComponent={LocationCitySharp}
+                                iconSize={"large"}
+                                type="text"
+                                placeholder={t("Moscow")}
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                            />
+                        </div>
                     </div>
+                </ScreenSlider>
 
-                    <p className={`font-medium text-4xl`}>
-                        {t("city")}
-                    </p>
-                    <div className={
-                        `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
-                    }>
-                        <UnderlinedInput
-                            IconComponent={LocationCitySharp}
-                            iconSize={"large"}
-                            type="text"
-                            placeholder={t("Moscow")}
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
-                        />
+                <ScreenSlider screenId={6} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
+                        <p className={`font-medium text-4xl`}>{t("my sex")}</p>
+                        <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
+                            <RingsInput
+                                propValue={sex}
+                                setValue={handleSexValue}
+                                rangeItems={sexChoices}
+                                name={"sex"}
+                            />
+                        </div>
                     </div>
-                </div>
+                </ScreenSlider>
 
-                <div className={`absolute top-0 w-full flex flex-col items-center justify-center gap-3 duration-300 ${page === 6 ? 'translate-x-0 opacity-1' : page > 6 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <p className={`font-medium text-4xl`}>{t("my sex")}</p>
-                    <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
-                        <RingsInput
-                            propValue={sex}
-                            setValue={handleSexValue}
-                            rangeItems={sexChoices}
-                            name={"sex"}
-                        />
+                <ScreenSlider screenId={7} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
+                        <p className={`font-medium text-4xl`}>{t("my orientation")}</p>
+                        <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
+                            <RingsInput
+                                propValue={orientation}
+                                setValue={handleOrientationValue}
+                                rangeItems={sexChoices}
+                                name={"orientation"}
+                                onChange={pageIncrease}
+                            />
+                        </div>
                     </div>
-                </div>
+                </ScreenSlider>
 
-                <div className={`absolute top-0 w-full flex flex-col items-center justify-center gap-5 duration-300 ${page === 7 ? 'translate-x-0 opacity-1' : page > 7 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <p className={`font-medium text-4xl`}>{t("my orientation")}</p>
-                    <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
-                        <RingsInput
-                            propValue={orientation}
-                            setValue={handleOrientationValue}
-                            rangeItems={sexChoices}
-                            name={"orientation"}
-                            onChange={pageIncrease}
-                        />
+                <ScreenSlider screenId={8} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center max-w-[350px] mx-auto w-full h-full gap-3`}>
+                        <p className="text-4xl font-medium text-center">{t("zodiac")}</p>
+                        <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
+                            {ZodiacSignsData.map((zodiac) => (
+                                <div
+                                    key={zodiac.value}
+                                    onClick={() => zodiacSignSelect(zodiac.value)}
+                                    className={
+                                        `flex flex-row gap-3 ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                        `${zodiacSign === zodiac.value ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                    }
+                                >
+                                    <img
+                                        src={`/media/defaults/zodiac/${zodiac.value}.svg`}
+                                        width={20}
+                                        height={20}
+                                        alt=""
+                                    />
+                                     <p className={`font-medium text-sm`}>
+                                        {t(zodiac.value)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                </ScreenSlider>
 
-
-                <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 8 ? 'translate-x-0 opacity-1' : page > 8 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <p className="text-4xl font-medium text-center">{t("zodiac")}</p>
-                    <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
-                        {ZodiacSignsData.map((zodiac) => (
-                            <div
-                                key={zodiac.value}
-                                onClick={() => zodiacSignSelect(zodiac.value)}
-                                className={
-                                    `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
-                                    `${zodiacSign === zodiac.value ? 'bg-pink-pastel' : 'bg-transparent'}`
-                                }
-                            >
-                                 <p className={`font-medium text-sm`}>
-                                    {t(zodiac.value)}
-                                </p>
-                            </div>
-                        ))}
+                <ScreenSlider screenId={9} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center max-w-[550px] mx-auto w-full h-full gap-3`}>
+                        <p className="text-4xl font-medium text-center">{t("tags")}</p>
+                        <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
+                            {tagsData.map((tag) => (
+                                <div
+                                    key={tag.value}
+                                    onClick={() => handleSelectedTags(tag.value)}
+                                    className={
+                                        `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                        `${selectedTags.includes(tag.value) ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                    }
+                                >
+                                    <p className={`font-medium text-sm`}>
+                                        {t(tag.value)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                </ScreenSlider>
 
-                <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 9 ? 'translate-x-0 opacity-1' : page > 9 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <p className="text-4xl font-medium text-center">{t("tags")}</p>
-                    <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
-                        {tagsData.map((tag) => (
-                            <div
-                                key={tag.value}
-                                onClick={() => handleSelectedTags(tag.value)}
-                                className={
-                                    `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
-                                    `${selectedTags.includes(tag.value) ? 'bg-pink-pastel' : 'bg-transparent'}`
-                                }
-                            >
-                                <p className={`font-medium text-sm`}>
-                                    {t(tag.value)}
-                                </p>
-                            </div>
-                        ))}
+                <ScreenSlider screenId={10} currScreen={page} bgColor={"bg-purple-200"}>
+                    <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
+                        <StaticMediaGrid files={media} setFiles={setMedia} isAuthor={true} isServer={false} />
                     </div>
-                </div>
-
-                <div className={
-                    `absolute top-0 w-full flex flex-col justify-center items-center gap-3 duration-300 pointer-events-none
-                    ${page === maxPages ? 'translate-x-0 opacity-1 pointer-events-auto' : page > maxPages ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`
-                }>
-                    <StaticMediaGrid files={media} setFiles={setMedia} isAuthor={true} isServer={false} />
-                </div>
+                </ScreenSlider>
 
             </div>
             <div className="fixed bottom-0 flex flex-col gap-5">

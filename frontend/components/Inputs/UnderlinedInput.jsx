@@ -9,7 +9,7 @@ export default function UnderlinedInput({
                                   }) {
     return (
         <div className={
-            `relative flex flex-row items-center justify-center border-pink-pastel border-b-2 ps-3 rounded-t-md py-2 `+
+            `relative w-full flex flex-row items-center justify-center border-pink-pastel border-b-2 ps-3 rounded-t-md py-2 `+
             `${isError !== undefined && (!isError ? 'border-green-500 dark:border-green-500': 'border-red-400 dark:border-red-400')}`
         }>
             {IconComponent && (
