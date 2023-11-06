@@ -8,6 +8,7 @@ import useTranslation from "next-translate/useTranslation";
 import resetPassword from "@/lib/resetPassword";
 import PrimaryButton from "@/components/Buttons/PrimaryButton";
 import SecondaryButton from "@/components/Buttons/SecondaryButton";
+import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 
 
 export default function LoginForm({setIsLoading, setPushNotifications}) {
@@ -93,7 +94,7 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
     }
 
     return (
-        <div className="flex flex-col justify-between gap-5">
+        <div className="flex flex-col justify-between gap-5 min-h-[350px]">
             {isCode && (
                 <>
                     <p className="block text-sm font-medium leading-6 text-gray-900">{t("please, enter the code")}:</p>
@@ -134,22 +135,18 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
             )}
             {!isCode && !isForgotPassword && (
                 <>
-                    <div>
-                        <div className="mt-2">
-                            <IconInput
-                                IconComponent={EmailSharp}
-                                iconSize="medium"
-                                id="username"
-                                name="email"
-                                type="email"
-                                required
-                                placeholder="Example@email.com"
-                                autoComplete="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-                    </div>
+                <div className={`flex flex-col gap-5`}>
+                    <UnderlinedInput
+                        IconComponent={EmailSharp}
+                        iconSize={"large"}
+                        name={"email"}
+                        type={"email"}
+                        placeholder={"example@email.com"}
+                        required
+                        autoComplete={"email"}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
 
                     <div>
                         <div className="flex items-center justify-between">
@@ -160,9 +157,9 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
                             </div>
                         </div>
                         <div className="relative mt-2">
-                            <IconInput
+                            <UnderlinedInput
                                 IconComponent={LockSharp}
-                                iconSize="medium"
+                                iconSize="large"
                                 id="password"
                                 name="password"
                                 type="password"
@@ -174,11 +171,13 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
                             />
                         </div>
                     </div>
-
-                    <SecondaryButton IconComponent={LoginSharp} iconSize={"medium"} text={t("sign in")} onClickHandler={(e) => login(e)}/>
+                </div>
+                <div className={`mt-auto`}>
+                        <SecondaryButton IconComponent={LoginSharp} iconSize={"medium"} text={t("sign in")} onClickHandler={(e) => login(e)}/>
+                </div>
                 </>
             )}
-            <p className="mt-10 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
+            <p className="mb-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                 {t("not a member")}?
                 <a
                     onClick={() => router.push("/?page=register")}

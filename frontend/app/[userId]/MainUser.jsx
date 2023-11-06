@@ -157,7 +157,7 @@ export default function MainUser({
                                 }
                             >
                                 <p className={`font-medium text-sm`}>
-                                    {tag.title.charAt(0).toUpperCase() + tag.title.slice(1)}
+                                    {t(tag.title)}
                                 </p>
                             </div>
                         ))}

@@ -231,6 +231,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                 <HintsInput
                                     currValue={country}
                                     setValue={setCountry}
+                                    placeholder={t("Russian Federation")}
                                     hintsData={countriesData}
                                 />
                                 <input
@@ -246,6 +247,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                 <HintsInput
                                     currValue={prefCountry}
                                     setValue={setPrefCountry}
+                                    placeholder={t("Russian Federation")}
                                     hintsData={countriesData}
                                 />
                             </div>

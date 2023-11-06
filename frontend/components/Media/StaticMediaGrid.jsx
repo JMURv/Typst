@@ -120,7 +120,7 @@ export default function StaticMediaGrid({session, files, setFiles, userData, set
     } else if (filesLength >= 2 && filesLength < 4) {
         maxItems = 4
     } else if (filesLength >= 4) {
-        maxItems = 6
+        maxItems = 4
     }
 
     async function serverRemove(mediaId) {
@@ -191,7 +191,7 @@ export default function StaticMediaGrid({session, files, setFiles, userData, set
         } else {
             fileCount = files.length
         }
-        if (fileCount >= 6) return
+        if (fileCount >= 4) return
         acceptedFiles.forEach((file) => {
             setFiles((prevState) => [...prevState, file])
             if (isServer) {
@@ -204,7 +204,7 @@ export default function StaticMediaGrid({session, files, setFiles, userData, set
     }, [files, userData])
     const {getRootProps, getInputProps} = useDropzone({
         onDrop,
-        maxFiles: 6,
+        maxFiles: 4,
         noClick: true,
         noKeyboard: true,
         maxSize: maxSizeInMB * 1024 * 1024
@@ -212,7 +212,7 @@ export default function StaticMediaGrid({session, files, setFiles, userData, set
 
     if (!isServer){
         return (
-            <div {...getRootProps()} className="w-full min-h-[350px] grid grid-rows-2 grid-cols-2 gap-3">
+            <div {...getRootProps()} className="w-[350px] min-h-[350px] grid grid-rows-2 grid-cols-2 gap-3">
                 {[...Array(maxItems)].map((_, index) => {
                     const file = files[index]
                     return(

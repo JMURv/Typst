@@ -1,10 +1,15 @@
 'use client';
 import {useState, useEffect} from "react";
 import {
-    AccountCircle, ArrowBackIosNewSharp, ArrowForwardIosSharp, ArrowLeftSharp, ArrowRightSharp,
-    EmailSharp,
+    AccountCircle,
+    ArrowBackIosNewSharp,
+    ArrowForwardIosSharp,
+    ArrowLeftSharp,
+    ArrowRightSharp,
+    CalendarTodaySharp,
+    EmailSharp, HeightSharp, LocationCitySharp,
     LockSharp,
-    Man4Sharp,
+    Man4Sharp, ScaleSharp,
     Woman2Sharp
 } from '@mui/icons-material';
 import IconInput from "@/components/Inputs/IconInput";
@@ -18,48 +23,61 @@ import HintsInput from "@/components/Inputs/HintsInput";
 import useTranslation from "next-translate/useTranslation";
 import {signIn} from "next-auth/react";
 import SecondaryButton from "@/components/Buttons/SecondaryButton";
+import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
+import ZodiacSignsData from "@/lib/zodiacSigns";
+import tagsData from "@/lib/tagsData";
+import {Transition} from "@headlessui/react";
 
 export default function RegisterForm({setIsLoading, setPushNotifications}) {
     const { t } = useTranslation('user')
-    const maxPages = 6
+    const maxPages = 10
+    const maxTags = 5
     const router = useRouter()
     const [page, setPage] = useState(1)
     const [username, setUsername] = useState('')
-    const [usernameErrors, setUsernameErrors] = useState(false)
+    const [usernameErrors, setUsernameErrors] = useState(true)
     const [usernameErrorText, setUsernameErrorText] = useState('')
-    const [emailErrors, setEmailErrors] = useState(false)
+    const [emailErrors, setEmailErrors] = useState(true)
     const [emailErrorsText, setEmailErrorsText] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [age, setAge] = useState(18)
+    const [age, setAge] = useState(0)
     const [sex, setSex] = useState('')
     const [orientation, setOrientation] = useState('')
     const [media, setMedia] = useState([])
     const [country, setCountry] = useState('')
     const [city, setCity] = useState('')
+    const [zodiacSign, setZodiacSign] = useState('')
+    const [selectedTags, setSelectedTags] = useState('')
 
-    const [height, setHeight] = useState(160)
-    const [weight, setWeight] = useState(40)
+    const [height, setHeight] = useState(0)
+    const [weight, setWeight] = useState(0)
 
     const sexChoices = [
         {IconComponent: Man4Sharp, value: "m"},
         {IconComponent: Woman2Sharp, value: "w"},
     ]
 
-    function pageIncrease() {
+    function pageIncrease(dontCheck) {
         if (page === 1 && (usernameErrors || emailErrors)){
             return
         }
-        if (page === 2 && (!height || !weight)){
+        if (page === 2 && !age){
             return
         }
-        if (page === 3 && (!country || !city)){
+        if (page === 3 && !height){
             return
         }
-        if (page === 4 && !sex){
+        if (page === 4 && !weight){
             return
         }
-        if (page === 5 && !orientation){
+        if (page === 5 && (!country || !city)){
+            return
+        }
+        if (page === 6 && !sex && dontCheck){
+            return
+        }
+        if (page === 7 && !orientation && dontCheck){
             return
         }
         if (page === maxPages) {
@@ -90,6 +108,12 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
         formData.append('city', city)
         formData.append('height', height)
         formData.append('weight', weight)
+        formData.append('zodiac_sign', zodiacSign)
+
+        selectedTags.forEach((tag, index) => {
+            formData.append(`tag-${index}`, tag)
+        })
+
         media.forEach((file, index) => {
             formData.append(`media-${index}`, file)
         })
@@ -211,26 +235,89 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
         setEmailErrorsText("")
     }
 
+    function handleAgeChange(value) {
+        setAge(value)
+        if (value.length > 1 && value >= 18){
+            pageIncrease()
+        }
+    }
+
+    function handleHeightChange(value) {
+        setHeight(value)
+        if (value >= 120 && value <= 250){
+            pageIncrease()
+        }
+    }
+
+    function handleWeightChange(value) {
+        setWeight(value)
+        if (value >= 10 && value <= 250){
+            pageIncrease()
+        }
+    }
+
+    function handleSexValue(value) {
+        setSex(value)
+        pageIncrease(true)
+    }
+
+    function handleOrientationValue(value) {
+        setOrientation(value)
+        pageIncrease(true)
+    }
+
+    function zodiacSignSelect(zodiacValue) {
+        if (zodiacSign === zodiacValue){
+            setZodiacSign('')
+        } else {
+            setZodiacSign(zodiacValue)
+            pageIncrease()
+        }
+    }
+
+    function handleSelectedTags(tag) {
+        if (selectedTags.includes(tag)) {
+            setSelectedTags(
+                tags => tags.filter(
+                    selectedTag => selectedTag !== tag
+                )
+            )
+        } else {
+            const tagsLength = selectedTags.length
+            if (tagsLength < maxTags) {
+                if (tagsLength === maxTags - 1){
+                    pageIncrease()
+                }
+                setSelectedTags(
+                    (tags) => [...tags, tag]
+                )
+            }
+        }
+    }
+
     return (
-        <div className="relative flex flex-col justify-between min-h-[350px] gap-5">
-            <form onSubmit={(e) => create(e)} className="flex flex-col gap-3">
+        <div className="container flex flex-col justify-center items-center mx-auto max-w-[500px]">
+            {/*<div className={`fixed top-0 bottom-0 left-0 right-0 bg-deep-purple duration-300 transition-all`}>*/}
+
+            <div className="relative flex flex-col justify-center items-center gap-3 max-w-[500px] min-h-[200px] w-full h-full">
                 <div className={`absolute top-0 w-full flex flex-col gap-5 duration-300 ${page === 1 ? 'translate-x-0 opacity-1' : page > 1 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <IconInput
+                    <UnderlinedInput
                         IconComponent={AccountCircle}
-                        iconSize="medium"
+                        iconSize="large"
                         isError={usernameErrors}
                         errorText={usernameErrorText}
                         id="username"
                         name="username"
-                        type="username"
+                        type="text"
                         required
                         placeholder={t("username")}
                         value={username}
                         onChange={(e) => validateUsername(e)}
-                    />
-                    <IconInput
+                        />
+
+                    <UnderlinedInput
                         IconComponent={EmailSharp}
-                        iconSize="medium"
+                        iconSize="large"
                         isError={emailErrors}
                         errorText={emailErrorsText}
                         id="email"
@@ -238,13 +325,14 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                         type="email"
                         autoComplete="email"
                         required
-                        placeholder="Example@email.com"
+                        placeholder="example@email.com"
                         value={email}
                         onChange={(e) => validateEmail(e)}
                     />
-                    <IconInput
+
+                    <UnderlinedInput
                         IconComponent={LockSharp}
-                        iconSize="medium"
+                        iconSize="large"
                         id="password"
                         name="password"
                         type="password"
@@ -254,74 +342,172 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
+
                 </div>
 
                 <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 2 ? 'translate-x-0 opacity-1' : page > 2 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <RangeInput
-                        value={age}
-                        label={t("my age")}
-                        name="age"
-                        min={18} max={60} step={1}
-                        onChange={(e) => setAge(e.target.value)}
-                    />
-
-                    <RangeInput
-                        value={height}
-                        label={t("my height")}
-                        name="height"
-                        min={160} max={200} step={1}
-                        onChange={(e) => setHeight(e.target.value)}
-                    />
-
-                    <RangeInput
-                        value={weight}
-                        label={t("my weight")}
-                        name="weight"
-                        min={40} max={100} step={1}
-                        onChange={(e) => setWeight(e.target.value)}
-                    />
+                    <div className={`flex flex-col gap-3`}>
+                        <p className={`font-medium text-4xl`}>{t("my age")}</p>
+                        <div className={
+                            `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
+                        }>
+                        <UnderlinedInput
+                            IconComponent={CalendarTodaySharp}
+                            iconSize={"large"}
+                            type="text"
+                            placeholder={"18-60"}
+                            onChange={(e) => handleAgeChange(e.target.value)}
+                        />
+                        </div>
+                    </div>
                 </div>
 
                 <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 3 ? 'translate-x-0 opacity-1' : page > 3 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <p className="text-sm font-medium">{t("country")}</p>
-                    <HintsInput currValue={country} setValue={setCountry} hintsData={countriesData} />
-                    <p className="text-sm font-medium">{t("city")}</p>
-                    <input type="text" className="base-input" placeholder="Moscow" value={city} onChange={(e) => setCity(e.target.value)}/>
+                    <div className={`flex flex-col gap-3`}>
+                        <p className={`font-medium text-4xl`}>
+                            {t("my height")}
+                        </p>
+                        <div className={
+                            `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
+                        }>
+                            <UnderlinedInput
+                                IconComponent={HeightSharp}
+                                iconSize={"large"}
+                                type="text"
+                                placeholder={"150-200+"}
+                                onChange={(e) => handleHeightChange(e.target.value)}
+                        />
+                        </div>
+                    </div>
                 </div>
 
                 <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 4 ? 'translate-x-0 opacity-1' : page > 4 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <RingsInput
-                        propValue={sex}
-                        setValue={setSex}
-                        label={t("my sex")}
-                        rangeItems={sexChoices}
-                        name={"sex"}
-                        onChange={pageIncrease}
-                    />
+                    <div className={`flex flex-col gap-3`}>
+                        <p className={`font-medium text-4xl`}>
+                            {t("my weight")}
+                        </p>
+                        <div className={
+                            `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
+                        }>
+                            <UnderlinedInput
+                                IconComponent={ScaleSharp}
+                                iconSize={"large"}
+                                type="text"
+                                placeholder={"10-200+"}
+                                onChange={(e) => handleWeightChange(e.target.value)}
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 5 ? 'translate-x-0 opacity-1' : page > 5 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
-                    <RingsInput
-                        propValue={orientation}
-                        setValue={setOrientation}
-                        label={t("my orientation")}
-                        rangeItems={sexChoices}
-                        name={"orientation"}
-                        onChange={pageIncrease}
-                    />
+                    <p className={`font-medium text-4xl`}>
+                        {t("country")}
+                    </p>
+                    <div className={
+                            `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
+                        }>
+                    <HintsInput currValue={country} setValue={setCountry} placeholder={t("Russian Federation")} hintsData={countriesData} />
+                    </div>
+
+                    <p className={`font-medium text-4xl`}>
+                        {t("city")}
+                    </p>
+                    <div className={
+                        `bg-pink-pastel/10 justify-center items-center rounded-md p-3`
+                    }>
+                        <UnderlinedInput
+                            IconComponent={LocationCitySharp}
+                            iconSize={"large"}
+                            type="text"
+                            placeholder={t("Moscow")}
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                        />
+                    </div>
                 </div>
 
-                {page === maxPages &&(
-                    <div className="">
-                        <StaticMediaGrid files={media} setFiles={setMedia} isAuthor={true} isServer={false} />
+                <div className={`absolute top-0 w-full flex flex-col items-center justify-center gap-3 duration-300 ${page === 6 ? 'translate-x-0 opacity-1' : page > 6 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
+                    <p className={`font-medium text-4xl`}>{t("my sex")}</p>
+                    <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
+                        <RingsInput
+                            propValue={sex}
+                            setValue={handleSexValue}
+                            rangeItems={sexChoices}
+                            name={"sex"}
+                        />
                     </div>
-                )}
-            </form>
+                </div>
 
-            <div className="flex flex-col gap-5">
-                <div className="flex flex-row justify-between items-center gap-5">
+                <div className={`absolute top-0 w-full flex flex-col items-center justify-center gap-5 duration-300 ${page === 7 ? 'translate-x-0 opacity-1' : page > 7 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
+                    <p className={`font-medium text-4xl`}>{t("my orientation")}</p>
+                    <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
+                        <RingsInput
+                            propValue={orientation}
+                            setValue={handleOrientationValue}
+                            rangeItems={sexChoices}
+                            name={"orientation"}
+                            onChange={pageIncrease}
+                        />
+                    </div>
+                </div>
+
+
+                <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 8 ? 'translate-x-0 opacity-1' : page > 8 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
+                    <p className="text-4xl font-medium text-center">{t("zodiac")}</p>
+                    <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
+                        {ZodiacSignsData.map((zodiac) => (
+                            <div
+                                key={zodiac.value}
+                                onClick={() => zodiacSignSelect(zodiac.value)}
+                                className={
+                                    `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                    `${zodiacSign === zodiac.value ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                }
+                            >
+                                 <p className={`font-medium text-sm`}>
+                                    {t(zodiac.value)}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className={`absolute top-0 w-full flex flex-col gap-3 duration-300 ${page === 9 ? 'translate-x-0 opacity-1' : page > 9 ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`}>
+                    <p className="text-4xl font-medium text-center">{t("tags")}</p>
+                    <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
+                        {tagsData.map((tag) => (
+                            <div
+                                key={tag.value}
+                                onClick={() => handleSelectedTags(tag.value)}
+                                className={
+                                    `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                    `${selectedTags.includes(tag.value) ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                }
+                            >
+                                <p className={`font-medium text-sm`}>
+                                    {t(tag.value)}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className={
+                    `absolute top-0 w-full flex flex-col justify-center items-center gap-3 duration-300 pointer-events-none
+                    ${page === maxPages ? 'translate-x-0 opacity-1 pointer-events-auto' : page > maxPages ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'} transition-all`
+                }>
+                    <StaticMediaGrid files={media} setFiles={setMedia} isAuthor={true} isServer={false} />
+                </div>
+
+            </div>
+            <div className="fixed bottom-0 flex flex-col gap-5">
+                <div
+                    className="flex flex-row justify-between items-center gap-5">
                     <div onClick={pageDecrease} className={`w-full`}>
-                        <SecondaryButton IconComponent={ArrowBackIosNewSharp} iconSize={"medium"} disabled={page === 1} />
+                        <SecondaryButton
+                            IconComponent={ArrowBackIosNewSharp}
+                            iconSize={"medium"} disabled={page === 1}/>
                     </div>
                     <div onClick={pageIncrease} className={`w-full`}>
                         {page === maxPages ? (
@@ -330,12 +516,14 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                                 disabled={media.length === 0}
                                 onClickHandler={(e) => create(e)}
                             />
-                        ):(
-                            <SecondaryButton IconComponent={ArrowForwardIosSharp} iconSize={"medium"} />
+                        ) : (
+                            <SecondaryButton
+                                IconComponent={ArrowForwardIosSharp}
+                                iconSize={"medium"}/>
                         )}
                     </div>
                 </div>
-                <p className="font-medium text-center text-sm text-zinc-400">
+                <p className="mb-3 font-medium text-center text-sm text-zinc-400">
                     {t("have an account")}?
                     <a
                         onClick={() => router.push('/')}

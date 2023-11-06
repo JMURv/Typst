@@ -9,6 +9,8 @@ import SidebarBase from "@/components/Sidebar/SidebarBase";
 import DangerButton from "@/components/Buttons/DangerButton";
 import StaticMediaGrid, {UserPageStaticMediaGrid} from "@/components/Media/StaticMediaGrid";
 import useTranslation from "next-translate/useTranslation";
+import ZodiacSignsData from "@/lib/zodiacSigns";
+import tagsData from "@/lib/tagsData";
 
 export default function UserSidebar({session, userData, setUserData, isShowing, setIsShowing}) {
     const { t } = useTranslation('user')
@@ -25,7 +27,7 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
     const [about, setAbout] = useState(userData.about || '')
     const [orientation, setOrientation] = useState(userData.orientation)
 
-    const [allTags, setAllTags] = useState([])
+    const [zodiacSign, setZodiacSign] = useState(userData.zodiac_sign.title || "")
     const [selectedTags, setSelectedTags] = useState(userData.tags.map(obj => obj.title))
 
     const sexChoices = [
@@ -57,6 +59,8 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
     async function update(e) {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
+
+        formData.append("zodiac_sign", zodiacSign)
         selectedTags.forEach((tag, index) => {
             formData.append(`tag-${index}`, tag)
         })
@@ -89,21 +93,11 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
         }
     }
 
-    useEffect(() => {
-        const fetchAllTags = async () => {
-            const tagsResponse = await fetch(`/api/v1/services/tags/`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${session.access}`
-                }
-            })
-            if (!tagsResponse.ok) new Error('Failed to get tags')
-            return await tagsResponse.json()
+    function zodiacSignSelect(zodiacValue) {
+        if (zodiacSign !== zodiacValue) {
+            setZodiacSign(zodiacValue)
         }
-        fetchAllTags().then(
-            r => setAllTags(r)
-        )
-    }, [])
+    }
 
     return (
         <SidebarBase show={isShowing} classes={'sm:w-[500px]'}>
@@ -222,19 +216,45 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                     <div className={`my-3 h-1 w-full bg-pink-pastel`}/>
 
                     <div className={`flex flex-col items-center justify-center`}>
-                        <p className={`font-medium text-sm`}>{t("tags")}</p>
-                        <div className={`p-3 flex flex-row flex-wrap gap-3`}>
-                            {allTags.map((tag) => (
+                        <p className={`font-medium text-sm`}>{t("zodiac")}</p>
+                        <div className={`p-3 flex flex-row flex-wrap justify-center gap-3`}>
+                            {ZodiacSignsData.map((zodiac) => (
                                 <div
-                                    key={tag.title}
-                                    onClick={() => handleSelectedTags(tag.title)}
+                                    key={zodiac.value}
+                                    onClick={() => zodiacSignSelect(zodiac.value)}
+                                    className={
+                                        `flex flex-row gap-3 ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                        `${zodiacSign === zodiac.value ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                    }
+                                >
+                                    <img
+                                        src={`/media/defaults/zodiac/${zodiac.value}.svg`}
+                                        width={20}
+                                        height={20}
+                                        alt=""
+                                    />
+                                     <p className={`font-medium text-sm`}>
+                                        {t(zodiac.value)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className={`flex flex-col items-center justify-center`}>
+                        <p className={`font-medium text-sm`}>{t("tags")}</p>
+                        <div className={`p-3 flex flex-row flex-wrap justify-center gap-3`}>
+                            {tagsData.map((tag) => (
+                                <div
+                                    key={tag.value}
+                                    onClick={() => handleSelectedTags(tag.value)}
                                     className={
                                         `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
-                                        `${selectedTags.includes(tag.title) ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                        `${selectedTags.includes(tag.value) ? 'bg-pink-pastel' : 'bg-transparent'}`
                                     }
                                 >
                                     <p className={`font-medium text-sm`}>
-                                        {tag.title.charAt(0).toUpperCase() + tag.title.slice(1)}
+                                        {t(tag.value)}
                                     </p>
                                 </div>
                             ))}

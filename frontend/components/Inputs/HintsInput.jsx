@@ -1,28 +1,38 @@
 'use client';
-import {useState} from "react";
-import {ExpandMoreSharp} from "@mui/icons-material";
+import {useEffect, useState} from "react";
+import {
+    ExpandMoreSharp,
+    FlagSharp,
+} from "@mui/icons-material";
+import useTranslation from "next-translate/useTranslation";
+import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 
-export default function HintsInput({currValue, setValue, hintsData}) {
+export default function HintsInput({currValue, setValue, placeholder, hintsData}) {
+    const { t, lang } = useTranslation('user')
     const [inputValue, setInputValue] = useState(currValue || '')
     const [showHints, setShowHints] = useState(false)
 
     const handleItemSelect = (item) => {
-        setInputValue(item.value)
+        setInputValue(t(item.value))
         setValue(item.code)
         setShowHints(false)
     }
 
     const filteredHints = hintsData.filter((item) =>
-        item.value.toLowerCase().includes(inputValue.toLowerCase())
+        t(item.value).toLowerCase().includes(inputValue.toLowerCase())
     )
+
+    useEffect(() => {
+        setInputValue(currValue)
+    }, [currValue])
 
     return (
         <div className="relative z-40">
             <div className="relative">
-                <input
-                    type="text"
-                    className="base-input"
-                    placeholder="Russia"
+                <UnderlinedInput
+                    IconComponent={FlagSharp}
+                    iconSize={"large"}
+                    placeholder={placeholder}
                     value={inputValue}
                     onChange={(e) => {
                         const inputValue = e.target.value
@@ -43,11 +53,11 @@ export default function HintsInput({currValue, setValue, hintsData}) {
                     ) : (
                         filteredHints.map((item) => (
                             <div
-                                key={item.code}
+                                key={item.value}
                                 className="border-0 outline-none focus:outline-none relative cursor-default select-none p-3 text-gray-900 dark:text-zinc-200 hover:text-zinc-100 hover:bg-pink-pastel hover:dark:text-zinc-200 transition-color duration-200 font-medium"
                                 onClick={() => handleItemSelect(item)}
                             >
-                                {item.code} {item.value}
+                                 {t(item.value)}
                             </div>
                         ))
                     )}

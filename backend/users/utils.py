@@ -10,6 +10,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from rest_framework.request import Request
 
+from services.models import Tag
 from users.models import UserMedia, User
 
 AGE_MAPPING = {
@@ -169,3 +170,19 @@ def save_or_update_user_media(request: Request, instance: User) -> None:
             new_file = UserMedia(author=instance)
             new_file.file.save(media.name, ContentFile(data))
             new_file.save()
+
+
+def save_or_update_user_tags(request: Request, instance: User) -> None:
+    tags = [
+        request.data.get(f'tag-{i}')
+        for i in range(0, len(request.data))
+        if request.data.get(f'tag-{i}') is not None
+    ]
+    if tags:
+        instance.tags.clear()
+        for tag in tags:
+            instance.tags.add(
+                Tag.objects.get(
+                    title=tag
+                )
+            )

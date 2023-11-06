@@ -181,10 +181,12 @@ export default function ChatContainer({session, room, removeRoom, blacklistUser,
 
     const [mediaModal, setMediaModal] = useState(false)
     const onDrop = useCallback((acceptedFiles, rejectedFiles, event) => {
-        setMediaModal(true)
-        acceptedFiles.forEach((file) => {
-            setModalFiles((prevState) => [...prevState, file])
-        })
+        if (room) {
+            setMediaModal(true)
+            acceptedFiles.forEach((file) => {
+                setModalFiles((prevState) => [...prevState, file])
+            })
+        }
     }, [])
     const {getRootProps, getInputProps, isDragActive} = useDropzone({noClick: true, onDrop})
 
@@ -360,7 +362,7 @@ export default function ChatContainer({session, room, removeRoom, blacklistUser,
                                 <label htmlFor="file-input"
                                        className="flex justify-center items-center bg-pink-pastel hover:bg-pink-pastel/90 transition-color duration-200 h-full rounded-xl text-slate-200 p-2 cursor-pointer">
                                     <AddSharp fontSize={"medium"}/>
-                                    <input id="file-input" {...getInputProps()}/>
+                                    <input id="file-input" {...getInputProps()} disabled={!room}/>
                                 </label>
                                 <input type="text"
                                        className="w-full rounded-full border-0 p-2.5 ring-1 ring-inset ring-gray-300 bg-zinc-200 outline-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-pink-pastel text-gray-900 font-medium dark:bg-purple-100 dark:ring-pink-pastel dark:text-gray-400 placeholder:text-gray-400 placeholder:font-medium sm:text-sm sm:leading-6 transition-all duration-300"

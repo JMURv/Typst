@@ -2,11 +2,13 @@
 export default function RingsInput({propValue, setValue, label, rangeItems, ...inputProps}) {
     return (
         <div>
-            <label
+            {label && (
+                <label
                 htmlFor=""
                 className="block text-sm text-center font-medium leading-6 text-gray-900 dark:text-gray-200">
                 {label}
             </label>
+            )}
             <div className="flex flex-row flex-wrap gap-3 justify-between items-center px-5">
                 {rangeItems.map((rangeItem, index) => (
                     <div key={index}

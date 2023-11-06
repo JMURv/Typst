@@ -3,9 +3,10 @@ import base64
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from services.models import Tag
+from services.models import Tag, ZodiacSign
 from .models import UserMedia
-from .utils import save_or_update_user_media, calculate_compatibility
+from .utils import save_or_update_user_media, calculate_compatibility, \
+    save_or_update_user_tags
 from services.serializers import (
     ZodiacSignSerializer,
     TagSerializer
@@ -80,14 +81,30 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data.pop('liked_by', None)
         validated_data.pop('disliked', None)
         validated_data.pop('disliked_by', None)
+        zodiac_sign = request.data.pop('zodiac_sign', None)
 
         instance = user_model.objects.create_user(**validated_data)
         instance.new_like_notification = True
         instance.new_match_notification = True
         instance.new_message_notification = True
-        instance.save()
 
-        save_or_update_user_media(request, instance)
+        if zodiac_sign:
+            try:
+                instance.zodiac_sign = ZodiacSign.objects.get(
+                    title=zodiac_sign[0]
+                )
+            except ZodiacSign.DoesNotExist:
+                instance.zodiac_sign = ZodiacSign.objects.first()
+
+        save_or_update_user_tags(
+            request=request,
+            instance=instance
+        )
+        save_or_update_user_media(
+            request=request,
+            instance=instance
+        )
+        instance.save()
         return instance
 
     def get_compatibility_percentage(self, instance) -> int:
@@ -165,22 +182,15 @@ class LightUserSerializer(serializers.ModelSerializer):
         validated_data.pop('new_match_notification', None)
         validated_data.pop('new_message_notification', None)
 
-        tags = [
-            request.data.get(f'tag-{i}')
-            for i in range(0, len(request.data))
-            if request.data.get(f'tag-{i}') is not None
-        ]
-        if tags:
-            instance.tags.clear()
-            for tag in tags:
-                instance.tags.add(
-                    Tag.objects.get(
-                        title=tag
-                    )
-                )
-
         super().update(instance, validated_data)
-        save_or_update_user_media(request, instance)
+        save_or_update_user_tags(
+            request=request,
+            instance=instance
+        )
+        save_or_update_user_media(
+            request=request,
+            instance=instance
+        )
         instance.save()
         return instance
 
