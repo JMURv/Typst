@@ -79,7 +79,7 @@ export default function MainUser({
                             <TextUser session={session} userId={userId}/>
                         ) : (
                             <div className="ms-auto flex flex-row flex-wrap items-center gap-5">
-                                {userData.compatibility_percentage && (
+                                {userData.compatibility_percentage && userData.compatibility_percentage !== 0 && (
                                     <div className={
                                         `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
                                         `${userData.compatibility_percentage > 75 ? 'ring-green-500' : 'ring-orange-400'}`
@@ -123,7 +123,7 @@ export default function MainUser({
                                     height="30"
                                     alt={''}
                                 />
-                                <p>{t(userData.zodiac_sign.title)}</p>
+                                <p className={`font-medium text-zinc-100`}>{t(userData.zodiac_sign.title)}</p>
                             </div>
                         </div>
                     </div>

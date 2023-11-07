@@ -81,17 +81,17 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data.pop('liked_by', None)
         validated_data.pop('disliked', None)
         validated_data.pop('disliked_by', None)
-        zodiac_sign = request.data.pop('zodiac_sign', None)
 
         instance = user_model.objects.create_user(**validated_data)
         instance.new_like_notification = True
         instance.new_match_notification = True
         instance.new_message_notification = True
 
+        zodiac_sign = request.data.get('zodiac_sign', None)
         if zodiac_sign:
             try:
                 instance.zodiac_sign = ZodiacSign.objects.get(
-                    title=zodiac_sign[0]
+                    title=zodiac_sign
                 )
             except ZodiacSign.DoesNotExist:
                 instance.zodiac_sign = ZodiacSign.objects.first()
@@ -109,6 +109,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_compatibility_percentage(self, instance) -> int:
         request = self.context.get('request')
+        if not request:
+            return 0
+        if request.user.id == instance.id:
+            return 0
         return calculate_compatibility(
             request_user=request.user,
             inspected_user=instance
@@ -181,8 +185,17 @@ class LightUserSerializer(serializers.ModelSerializer):
         validated_data.pop('new_like_notification', None)
         validated_data.pop('new_match_notification', None)
         validated_data.pop('new_message_notification', None)
-
         super().update(instance, validated_data)
+
+        zodiac_sign = request.data.get('zodiac_sign', None)
+        if zodiac_sign:
+            try:
+                instance.zodiac_sign = ZodiacSign.objects.get(
+                    title=zodiac_sign
+                )
+            except ZodiacSign.DoesNotExist:
+                instance.zodiac_sign = ZodiacSign.objects.first()
+
         save_or_update_user_tags(
             request=request,
             instance=instance

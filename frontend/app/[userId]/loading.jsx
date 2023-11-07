@@ -12,7 +12,7 @@ export default function Loading() {
                     </div>
 
                     <div className="flex flex-col gap-3 w-full lg:w-1/2 h-full">
-                        <div className="flex flex-row gap-3 items-center py-5 rounded-2xl bg-zinc-100 dark:bg-transparent">
+                        <div className="flex flex-row gap-3 items-center p-5 rounded-2xl bg-zinc-100 dark:bg-transparent">
                             <div className="h-10 w-full bg-pink-pastel rounded-full"/>
                             <div className="h-10 ms-auto w-1/2 lg:w-1/3 bg-pink-pastel rounded-full"/>
                         </div>

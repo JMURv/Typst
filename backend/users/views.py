@@ -20,6 +20,8 @@ from rest_framework_simplejwt.token_blacklist.models import (
     OutstandingToken,
     BlacklistedToken
 )
+
+from api.views import UserLoginAPIView
 from typst.tasks import (
     send_login_email_message_task,
     send_password_reset_message_task,
@@ -75,7 +77,7 @@ class GetCurrentUserSettings(APIView):
 
 class CheckUsername(APIView):
     user_model = get_user_model()
-    permission_classes = (permissions.AllowAny, )
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         return Response(
@@ -165,13 +167,14 @@ class LoginCodeSend(APIView):
         )
         if user is not None:
             send_login_email_message_task.delay(user.id)
-            return Response(status.HTTP_200_OK)
-        return Response(status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginCodeSubmit(APIView):
     user_model = get_user_model()
-    permission_classes = (permissions.AllowAny, )
+    serializer_class = UserSerializer
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request: Request) -> Response:
         user = get_object_or_404(
@@ -207,7 +210,7 @@ class UsersPagination(PageNumberPagination):
 class UserListCreate(ListCreateAPIView):
     user_model = get_user_model()
     serializer_class = UserSerializer
-    permission_classes = (permissions.AllowAny, )
+    permission_classes = (permissions.AllowAny,)
     pagination_class = UsersPagination
 
     def get_queryset(self) -> QuerySet:
@@ -327,7 +330,7 @@ class UserRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
 
 class UserBlackList(APIView):
     user_model = get_user_model()
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request: Request, *args, **kwargs):
         blacklisted_user = get_object_or_404(
@@ -406,7 +409,7 @@ class MediaRetrieveCreateDestroy(APIView):
     user_media_model = UserMedia
     user_media_serializer = MediaFileSerializer
     user_media_bytes_serializer = MediaFileBytesSerializer
-    permission_classes = (permissions.AllowAny, )
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request: Request, *args, **kwargs):
         return Response(
@@ -457,7 +460,7 @@ class MediaRetrieveCreateDestroy(APIView):
 
 
 class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = get_user_model().objects.all()
     serializer_class = SettingsSerializer
 

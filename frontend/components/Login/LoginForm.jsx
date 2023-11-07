@@ -1,12 +1,16 @@
 'use client';
 import {useState} from "react";
 import {signIn} from "next-auth/react";
-import IconInput from "@/components/Inputs/IconInput";
-import {CheckSharp, EmailSharp, LockSharp, LoginSharp} from '@mui/icons-material';
+import {
+    CheckSharp,
+    CloseSharp, CodeSharp,
+    EmailSharp,
+    LockSharp,
+    LoginSharp
+} from '@mui/icons-material';
 import {useRouter} from "next/navigation";
 import useTranslation from "next-translate/useTranslation";
 import resetPassword from "@/lib/resetPassword";
-import PrimaryButton from "@/components/Buttons/PrimaryButton";
 import SecondaryButton from "@/components/Buttons/SecondaryButton";
 import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 
@@ -25,7 +29,13 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
     async function forgotPasswordHandler() {
         const response = await resetPassword(recoveryEmail)
         if (response.status === 200) {
-            console.log('Email has been sent successfully')
+            setForgotPassword(false)
+            setPushNotifications(
+                (prevNoty) => [...prevNoty, {
+                    id: new Date().toISOString(),
+                    message: t("email has been sent")
+                }]
+            )
         }
     }
 
@@ -41,18 +51,18 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
                 }),
             })
             if (response.ok) {
-                setIsCode(true)
+                setIsCode(false)
+
                 return await login()
             } else {
                 console.log("Some error happened")
             }
         } catch (e) {
-            console.log("Failed to get server")
+            console.log("Failed to get server", e)
         }
     }
 
-    async function login(e) {
-        e.preventDefault()
+    async function login() {
         setIsLoading(true)
         const result = await signIn('credentials', {
             email,
@@ -61,7 +71,10 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
         })
         if (result.error) {
             setPushNotifications(
-                (prevNoty) => [...prevNoty, {id: new Date().toISOString(), message: t("invalid credentials")}]
+                (prevNoty) => [...prevNoty, {
+                    id: new Date().toISOString(),
+                    message: t("invalid credentials")
+                }]
             )
         } else {
             router.refresh()
@@ -70,9 +83,7 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
         setIsLoading(false)
     }
 
-    async function emailing(e) {
-        e.preventDefault()
-        // TODO: Добавлять айпи сессии и сверять. Если айпи нет - отправлять письмо при логине
+    async function emailing() {
         try {
             const response = await fetch('/api/v1/users/email/', {
                 method: 'POST',
@@ -82,14 +93,29 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
                     password: password
                 }),
             })
-            if (response.ok) {
+            if (response.status === 200) {
                 setIsCode(true)
-                console.log("Email has been sent!")
+                setPushNotifications(
+                    (prevNoty) => [...prevNoty, {
+                        id: new Date().toISOString(),
+                        message: t("email has been sent")
+                    }]
+                )
             } else {
-                console.log("Some error happened")
+                setPushNotifications(
+                    (prevNoty) => [...prevNoty, {
+                        id: new Date().toISOString(),
+                        message: t("invalid credentials")
+                    }]
+                )
             }
         } catch (e) {
-            console.log("Failed to get server")
+            setPushNotifications(
+                (prevNoty) => [...prevNoty, {
+                    id: new Date().toISOString(),
+                    message: t("server error")
+                }]
+            )
         }
     }
 
@@ -97,84 +123,113 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
         <div className="flex flex-col justify-between gap-5 min-h-[350px]">
             {isCode && (
                 <>
-                    <p className="block text-sm font-medium leading-6 text-gray-900">{t("please, enter the code")}:</p>
-                    <input
-                        id="code"
-                        name="code"
-                        type="text"
-                        required
-                        className="base-input"
-                        onChange={(e) => setCode(e.target.value)}
-                        value={code}
-                    />
-                    <small/>
-                    <button type="submit"
-                            onClick={(e) => checkCode(e)}
-                            className="flex w-full justify-center rounded-md bg-pink-pastel px-3 py-1.5 mt-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        {t("sent")}
-                    </button>
+                    <div className={`flex flex-col gap-5`}>
+                        <UnderlinedInput
+                            IconComponent={CodeSharp}
+                            iconSize={"large"}
+                             id="code"
+                            name="code"
+                            type="text"
+                            required
+                            onChange={(e) => setCode(e.target.value)}
+                            value={code}
+                        />
+                    </div>
+                    <div className={`mt-auto flex flex-row gap-5`}>
+                        <SecondaryButton
+                            IconComponent={CloseSharp}
+                            iconSize={"medium"}
+                            text={t("back")}
+                            onClickHandler={() => setIsCode(false)}
+                        />
+                        <SecondaryButton
+                            IconComponent={CheckSharp}
+                            iconSize={"medium"}
+                            text={t("sent")}
+                            onClickHandler={(e) => checkCode(e)}
+                        />
+                    </div>
                 </>
             )}
             {isForgotPassword && (
-                <div className={`flex flex-col gap-3`}>
-                    <p className="block text-sm font-medium leading-6 text-gray-900 dark:text-zinc-200">{t("please, enter recovery email")}:</p>
-                     <IconInput
-                        IconComponent={EmailSharp}
-                        iconSize="medium"
-                        id="recoveryEmail"
-                        name="recoveryEmail"
-                        type="email"
-                        required
-                        placeholder="Example@email.com"
-                        autoComplete="email"
-                        value={recoveryEmail}
-                        onChange={(e) => setRecoveryEmail(e.target.value)}
-                    />
-                    <PrimaryButton IconComponent={CheckSharp} iconSize={"medium"} text={t("sent")} onClickHandler={forgotPasswordHandler} />
-                </div>
+                <>
+                    <div className={`flex flex-col gap-5`}>
+                        <UnderlinedInput
+                            IconComponent={EmailSharp}
+                            iconSize="large"
+                            id="recoveryEmail"
+                            name="recoveryEmail"
+                            type="email"
+                            required
+                            placeholder="example@email.com"
+                            autoComplete="email"
+                            value={recoveryEmail}
+                            onChange={(e) => setRecoveryEmail(e.target.value)}
+                        />
+                    </div>
+                    <div className={`mt-auto flex flex-row gap-5`}>
+                        <SecondaryButton
+                            IconComponent={CloseSharp}
+                            iconSize={"medium"}
+                            text={t("back")}
+                            onClickHandler={() => setForgotPassword(false)}
+                        />
+                        <SecondaryButton
+                            IconComponent={CheckSharp}
+                            iconSize={"medium"}
+                            text={t("sent")}
+                            onClickHandler={forgotPasswordHandler}
+                        />
+                    </div>
+                </>
             )}
             {!isCode && !isForgotPassword && (
                 <>
-                <div className={`flex flex-col gap-5`}>
-                    <UnderlinedInput
-                        IconComponent={EmailSharp}
-                        iconSize={"large"}
-                        name={"email"}
-                        type={"email"}
-                        placeholder={"example@email.com"}
-                        required
-                        autoComplete={"email"}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
+                    <div className={`flex flex-col gap-5`}>
+                        <UnderlinedInput
+                            IconComponent={EmailSharp}
+                            iconSize={"large"}
+                            name={"email"}
+                            type={"email"}
+                            placeholder={"example@email.com"}
+                            required
+                            autoComplete={"email"}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
 
-                    <div>
-                        <div className="flex items-center justify-between">
-                            <div className="text-sm">
-                                <p onClick={() => setForgotPassword(true)} className="font-semibold text-pink-pastel cursor-pointer">
-                                    {t("forgot password")}?
-                                </p>
+                        <div>
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm">
+                                    <p onClick={() => setForgotPassword(true)} className="font-semibold text-pink-pastel cursor-pointer">
+                                        {t("forgot password")}?
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="relative mt-2">
+                                <UnderlinedInput
+                                    IconComponent={LockSharp}
+                                    iconSize="large"
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    required
+                                    placeholder="********"
+                                    autoComplete="current-password"
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    value={password}
+                                />
                             </div>
                         </div>
-                        <div className="relative mt-2">
-                            <UnderlinedInput
-                                IconComponent={LockSharp}
-                                iconSize="large"
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                placeholder="********"
-                                autoComplete="current-password"
-                                onChange={(e) => setPassword(e.target.value)}
-                                value={password}
-                            />
-                        </div>
                     </div>
-                </div>
-                <div className={`mt-auto`}>
-                        <SecondaryButton IconComponent={LoginSharp} iconSize={"medium"} text={t("sign in")} onClickHandler={(e) => login(e)}/>
-                </div>
+                    <div className={`mt-auto`}>
+                        <SecondaryButton
+                            IconComponent={LoginSharp}
+                            iconSize={"medium"}
+                            text={t("sign in")}
+                            onClickHandler={(e) => emailing(e)}
+                        />
+                    </div>
                 </>
             )}
             <p className="mb-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">

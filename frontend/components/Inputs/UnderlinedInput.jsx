@@ -4,7 +4,6 @@ export default function UnderlinedInput({
                                       iconSize,
                                       isError,
                                       errorText,
-                                      label,
                                       ...inputProps
                                   }) {
     return (

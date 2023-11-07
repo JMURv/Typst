@@ -1,20 +1,16 @@
 'use client';
-import {useState, useEffect} from "react";
+import {useState, useEffect, useRef} from "react";
 import {
     AccountCircle,
     ArrowBackIosNewSharp,
     ArrowForwardIosSharp,
-    ArrowLeftSharp,
-    ArrowRightSharp,
     CalendarTodaySharp,
     EmailSharp, HeightSharp, LocationCitySharp,
     LockSharp,
     Man4Sharp, ScaleSharp,
     Woman2Sharp
 } from '@mui/icons-material';
-import IconInput from "@/components/Inputs/IconInput";
 import {useRouter} from "next/navigation";
-import RangeInput from "@/components/Inputs/RangeInput";
 import RingsInput from "@/components/Inputs/RingsInput";
 import getUserLocation from "@/lib/getUserLocation";
 import StaticMediaGrid from "@/components/Media/StaticMediaGrid";
@@ -26,7 +22,6 @@ import SecondaryButton from "@/components/Buttons/SecondaryButton";
 import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 import ZodiacSignsData from "@/lib/zodiacSigns";
 import tagsData from "@/lib/tagsData";
-import {Transition} from "@headlessui/react";
 import ScreenSlider from "@/components/Slider/ScreenSlider";
 
 export default function RegisterForm({setIsLoading, setPushNotifications}) {
@@ -97,7 +92,6 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
     async function create(event) {
         event.preventDefault()
         setIsLoading(true)
-        // TODO: Добавлять айпи сессии
         const formData = new FormData()
         formData.append('username', username)
         formData.append('email', email)
@@ -301,7 +295,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
 
             <div className="w-full h-full">
 
-                <ScreenSlider screenId={1} currScreen={page} bgColor={'bg-purple-200'}>
+                <ScreenSlider screenId={1} currScreen={page} bgColor={'bg-purple-100'}>
                     <div className="flex flex-col justify-center items-center mx-auto gap-5 max-w-[500px] w-full h-full">
                         <UnderlinedInput
                             IconComponent={AccountCircle}
@@ -365,7 +359,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={3} currScreen={page} bgColor={"bg-purple-200"}>
+                <ScreenSlider screenId={3} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>
                             {t("my height")}
@@ -403,7 +397,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={5} currScreen={page} bgColor={"bg-purple-200"}>
+                <ScreenSlider screenId={5} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>
                             {t("country")}
@@ -452,7 +446,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={7} currScreen={page} bgColor={"bg-purple-200"}>
+                <ScreenSlider screenId={7} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>{t("my orientation")}</p>
                         <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
@@ -495,7 +489,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={9} currScreen={page} bgColor={"bg-purple-200"}>
+                <ScreenSlider screenId={9} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center max-w-[550px] mx-auto w-full h-full gap-3`}>
                         <p className="text-4xl font-medium text-center">{t("tags")}</p>
                         <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>

@@ -80,7 +80,7 @@ export function UserGrid({user, reqUser, swipe, setIsOpen, setCurrentUser}) {
                                 <FavoriteBorderSharp fontSize={"large"} />
                             )}
                         </div>
-                        {user.compatibility_percentage && (
+                        {user.compatibility_percentage && userData.compatibility_percentage !== 0 &&  (
                             <div className={
                                 `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
                                 `${user.compatibility_percentage > 75 ? 'ring-green-500':'ring-orange-400'}`

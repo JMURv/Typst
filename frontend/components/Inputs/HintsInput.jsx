@@ -48,7 +48,7 @@ export default function HintsInput({currValue, setValue, placeholder, hintsData}
                 <div className="absolute mt-1 max-h-40 w-full overflow-auto rounded-md bg-zinc-100 ring-[1.5px] ring-inset ring-gray-300 dark:ring-pink-pastel bg-gray-100 dark:bg-purple-100 text-base focus:outline-none sm:text-sm">
                     {filteredHints.length === 0 ? (
                         <div className="py-2 pl-4 text-gray-600 font-medium dark:text-zinc-200">
-                            Nothing found
+                            <p>{t("nothing found")}</p>
                         </div>
                     ) : (
                         filteredHints.map((item) => (

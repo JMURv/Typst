@@ -5,9 +5,13 @@ import {useState} from "react";
 import PrimaryButton from "@/components/Buttons/PrimaryButton";
 import {CheckSharp, LockSharp} from "@mui/icons-material";
 import IconInput from "@/components/Inputs/IconInput";
+import SecondaryButton from "@/components/Buttons/SecondaryButton";
+import useTranslation from "next-translate/useTranslation";
+import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 
 
 export default function Page({searchParams}) {
+    const { t } = useTranslation('user')
     const router = useRouter()
     const uidb64 = searchParams.uidb64
     const token = searchParams.token
@@ -32,24 +36,25 @@ export default function Page({searchParams}) {
     }
 
     return (
-        <div className="flex min-h-full flex-col dark:bg-deep-purple justify-center px-6 py-12 lg:px-8 mt-20">
-            <div
-                className="sm:mx-auto sm:w-full sm:max-w-sm bg-zinc-100 border-solid border-zinc-200 dark:border-pink-pastel border-[2px] dark:bg-purple-200 rounded-xl p-5">
+        <div className="flex h-screen overflow-hidden flex-col dark:bg-deep-purple justify-center px-6 py-12 lg:px-8">
+            <div className="sm:mx-auto sm:w-full sm:max-w-sm bg-zinc-100 border-solid border-zinc-200 dark:border-pink-pastel border-[2px] dark:bg-purple-200 rounded-xl p-5">
                 <div className="">
-                    <p className="text-center text-pink-pastel text-4xl font-bold">New password</p>
+                    <p className="text-center text-pink-pastel text-4xl font-bold">
+                        {t("new password")}
+                    </p>
                 </div>
                 <div className="mt-10 h-full">
-                    <div className="relative flex flex-col justify-between min-h-[350px] gap-5">
-                        <IconInput
+                    <div className="relative flex flex-col justify-between gap-5">
+                        <UnderlinedInput
                             IconComponent={LockSharp}
-                            label={"New password"}
+                            iconSize={"large"}
                             type="password"
                             onChange={(e) => setNewPassword(e.target.value)}
                         />
-                        <PrimaryButton
+                        <SecondaryButton
                             IconComponent={CheckSharp}
                             iconSize={"medium"}
-                            text={"Change password"}
+                            text={t("change password")}
                             onClickHandler={changePassword}
                         />
                     </div>
