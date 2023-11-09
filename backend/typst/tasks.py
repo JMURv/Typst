@@ -1,6 +1,6 @@
 from celery import shared_task
 from .email import (
-    send_activate_email_message,
+    send_activate_email_code,
     send_login_email_message,
     compute_user_text_recommends,
     send_password_reset_message
@@ -13,8 +13,8 @@ def compute_user_text_recommends_task(user_id: int):
 
 
 @shared_task
-def send_activate_email_message_task(user_id: int):
-    return send_activate_email_message(user_id)
+def send_activate_email_code_task(target_email: str, key: str):
+    return send_activate_email_code(target_email, key)
 
 
 @shared_task

@@ -35,21 +35,15 @@ export default function LoginAndRegister() {
                 setPushNotifications={setPushNotifications}
             />
             {page === "register" ? (
-                <RegisterForm setIsLoading={setIsLoading} setPushNotifications={setPushNotifications}/>
+                <RegisterForm
+                    setIsLoading={setIsLoading}
+                    setPushNotifications={setPushNotifications}
+                />
             ):(
-                <div className={`container mx-auto max-w-[500px] bg-pink-pastel/10`}>
-                    <div className={`flex items-center justify-center bg-pink-pastel p-3 mb-5`}>
-                        <p className="text-center selection:bg-pink-pastel selection:text-deep-purple text-deep-purple text-7xl font-bold">
-                            TYP.ST
-                        </p>
-                    </div>
-                    <div className="h-full px-3">
-                        <LoginForm
-                            setIsLoading={setIsLoading}
-                            setPushNotifications={setPushNotifications}
-                        />
-                    </div>
-                </div>
+                <LoginForm
+                    setIsLoading={setIsLoading}
+                    setPushNotifications={setPushNotifications}
+                />
             )}
         </>
     )

@@ -9,6 +9,7 @@ from django.utils.encoding import force_bytes
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core.mail import send_mail
 from django.core.cache import cache
 
 from users.utils import exclude_curr_user_and_disliked
@@ -46,22 +47,20 @@ def compute_user_text_recommends(user_id: int):
     return
 
 
-def send_activate_email_message(user_id):
-    user = get_object_or_404(get_user_model(), id=user_id)
-    token = default_token_generator.make_token(user)
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
+def send_activate_email_code(target_email, key):
+    code = str(randint(1000, 9999))
+    cache.set(f'activation_code_{key}', code, timeout=300)
 
-    subject = f'Активируйте свой аккаунт, {user.username}!'
-    domain = Site.objects.get_current().domain
-    scheme = settings.CURRENT_SCHEME
-    confirm_email_url = settings.FRONTEND_EMAIL_CONFIRM_URL
-    activation_url = f'{confirm_email_url}?uidb64={uid}&token={token}'
-
+    subject = 'E-mail activation code'
     message = render_to_string('email/activate_email_send.html', {
-        'user': user,
-        'activation_url': f'{scheme}{domain}{activation_url}',
+        'code': code,
     })
-    return user.email_user(subject, message)
+    return send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[target_email]
+    )
 
 
 def send_login_email_message(user_id):

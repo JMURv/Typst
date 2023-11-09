@@ -54,6 +54,7 @@ services:
       - redis
     command: sh -c "poetry run python manage.py makemigrations &&
                     poetry run python manage.py migrate &&
+                    poetry run python manage.py conf_site &&
                     poetry run python manage.py create_tags &&
                     poetry run python manage.py create_zodiac &&
                     poetry run python manage.py create_users &&

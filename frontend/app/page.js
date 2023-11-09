@@ -8,7 +8,7 @@ export default async function Home() {
     const session = await getServerSession(options)
     if (!session) {
         return (
-            <div className="w-full h-screen overflow-hidden dark:bg-deep-purple flex flex-col justify-center items-center">
+            <div className="w-full h-screen overflow-hidden bg-deep-purple flex flex-col justify-center items-center">
                 <LoginAndRegister/>
             </div>
         )

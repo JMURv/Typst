@@ -133,5 +133,10 @@
   "cuisine": "Cuisine",
   "entertainment": "Entertainment",
   "religion": "Religion",
-  "humor": "Humor"
+  "humor": "Humor",
+  "email has been sent": "Email has been sent",
+  "server error":"Server error",
+  "success": "Success",
+  "code error":"Code is not valid",
+  "send email": "Send code via email"
 }

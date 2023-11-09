@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import status, permissions
 from rest_framework.generics import (
     ListAPIView,
@@ -7,7 +8,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.cache import cache
-
+from typst.tasks import (
+    send_activate_email_code_task
+)
 from .models import (
     Notification,
     Tag
@@ -17,6 +20,29 @@ from .serializers import (
     TagSerializer
 )
 from geopy.geocoders import Nominatim
+
+
+class ActivationCodeView(APIView):
+    user_model = get_user_model()
+    permission_classes = (permissions.AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        send_activate_email_code_task.delay(
+            request.GET.get("email"),
+            request.GET.get("key")
+        )
+        return Response(
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request, *args, **kwargs):
+        code = request.data.get("code")
+        stored_code = cache.get(
+            f'activation_code_{request.data.get("key")}'
+        )
+        if stored_code is not None and stored_code == code:
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TagsView(APIView):

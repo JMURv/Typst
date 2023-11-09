@@ -26,9 +26,10 @@ import ScreenSlider from "@/components/Slider/ScreenSlider";
 
 export default function RegisterForm({setIsLoading, setPushNotifications}) {
     const { t } = useTranslation('user')
-    const maxPages = 10
+    const maxPages = 11
     const maxTags = 5
     const router = useRouter()
+    const registerKey = useRef()
     const [page, setPage] = useState(1)
     const [username, setUsername] = useState('')
     const [usernameErrors, setUsernameErrors] = useState(true)
@@ -36,6 +37,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
     const [emailErrors, setEmailErrors] = useState(true)
     const [emailErrorsText, setEmailErrorsText] = useState('')
     const [email, setEmail] = useState('')
+    const [emailConfirmed, setEmailConfirmed] = useState(false)
     const [password, setPassword] = useState('')
     const [age, setAge] = useState(0)
     const [sex, setSex] = useState('')
@@ -49,31 +51,69 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
     const [height, setHeight] = useState(0)
     const [weight, setWeight] = useState(0)
 
+    const [isNextUnavaliable, setIsNextUnavaliable] = useState(true)
+    const [isEmailSent, setIsEmailSent] = useState(false)
+
+    const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)]
+    const [digits, setDigits] = useState(['', '', '', ''])
+
     const sexChoices = [
         {IconComponent: Man4Sharp, value: "m"},
         {IconComponent: Woman2Sharp, value: "w"},
     ]
 
+    useEffect(() => {
+        if (page === 1 && (usernameErrors || emailErrors)) {
+            setIsNextUnavaliable(true)
+            return
+        } else if (page === 2 && !emailConfirmed) {
+            setIsNextUnavaliable(true)
+            return
+        } else if (page === 3 && !age) {
+            setIsNextUnavaliable(true)
+            return
+        } else if (page === 4 && !height){
+            setIsNextUnavaliable(true)
+            return
+        } else if (page === 5 && !weight){
+            setIsNextUnavaliable(false)
+            return
+        } else if (page === 6 && (!country || !city)){
+            setIsNextUnavaliable(false)
+            return
+        } else if (page === 7 && !sex){
+            setIsNextUnavaliable(false)
+            return
+        } else if (page === 8 && !orientation){
+            setIsNextUnavaliable(false)
+            return
+        } else if (page === maxPages) {
+            setIsNextUnavaliable(false)
+            return
+        }
+        setIsNextUnavaliable(false)
+    }, [page, usernameErrors, emailConfirmed, emailErrors, age, height, weight, country, city, sex, orientation])
+
     function pageIncrease(dontCheck) {
         if (page === 1 && (usernameErrors || emailErrors)){
             return
         }
-        if (page === 2 && !age){
+        if (page === 3 && !age){
             return
         }
-        if (page === 3 && !height){
+        if (page === 4 && !height){
             return
         }
-        if (page === 4 && !weight){
+        if (page === 5 && !weight){
             return
         }
-        if (page === 5 && (!country || !city)){
+        if (page === 6 && (!country || !city)){
             return
         }
-        if (page === 6 && !sex && dontCheck){
+        if (page === 7 && !sex && dontCheck){
             return
         }
-        if (page === 7 && !orientation && dontCheck){
+        if (page === 8 && !orientation && dontCheck){
             return
         }
         if (page === maxPages) {
@@ -87,6 +127,35 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
             return
         }
         setPage((prevState) => prevState - 1)
+    }
+
+    async function getActivationCode() {
+        registerKey.current = new Date().toISOString()
+        try {
+            const response = await fetch(`/api/v1/services/activation/?key=${registerKey.current}&email=${email}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            })
+            if (response.status === 200) {
+                setIsEmailSent(true)
+                setPushNotifications(
+                    (prevNoty) => [...prevNoty, {
+                        id: new Date().toISOString(),
+                        message: `${t("email has been sent")}`
+                    }]
+                )
+            }
+        } catch (e) {
+            console.error(`Error with the server connection: ${e}`)
+            setPushNotifications(
+                (prevNoty) => [...prevNoty, {
+                    id: new Date().toISOString(),
+                    message: `${t("server error")}`
+                }]
+            )
+        }
     }
 
     async function create(event) {
@@ -207,7 +276,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
             return
         }
 
-        const emailRegex = /^[a-zA-Z0-9а-яА-Я._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+        const emailRegex = /^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{1,}$/
         if (!emailRegex.test(email)) {
             setEmailErrors(true)
             setEmailErrorsText(t("E-mail is not valid"))
@@ -290,12 +359,98 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
         }
     }
 
+    const handleCodeInputChange = (index, value) => {
+        const newDigits = [...digits];
+        newDigits[index] = value;
+        if (value.length === 1 && index < digits.length - 1) {
+            inputRefs[index + 1].current.focus();
+        }
+        setDigits(newDigits);
+    }
+
+    const handleCodeKeyDown = (index, event) => {
+        if (event.key === 'Backspace' && index > 0) {
+            if (digits[index] === '') {
+                inputRefs[index - 1].current.focus();
+            } else {
+                const newDigits = [...digits];
+                newDigits[index] = '';
+                setDigits(newDigits);
+            }
+        } else if (event.key === 'ArrowLeft' && index > 0) {
+            inputRefs[index - 1].current.focus();
+        } else if (event.key === 'ArrowRight' && index < digits.length - 1) {
+            inputRefs[index + 1].current.focus();
+        }
+    }
+
+    const handlePaste = (event) => {
+        event.preventDefault();
+        const clipboardData = event.clipboardData || window.clipboardData;
+        const pastedText = clipboardData.getData('text');
+        if (/^\d{4}$/.test(pastedText)) {
+            const newDigits = pastedText.split('');
+            newDigits.forEach((digit, i) => {
+                if (i < digits.length) {
+                    inputRefs[i].current.value = digit;
+                }
+            });
+            setDigits(newDigits);
+        }
+    }
+
+    useEffect(() => {
+        if (isEmailSent) {
+            setTimeout(() => {
+                setIsEmailSent(false)
+            }, 60000)
+        }
+    }, [isEmailSent])
+
+    useEffect(() => {
+        const code = digits.join('')
+        if (code.length === 4) {
+            const checkCode = async () => {
+                const response = await fetch(`api/v1/services/activation/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(
+                        {
+                            code: code,
+                            key: registerKey.current
+                        }
+                    )
+                })
+                if (response.status === 200){
+                    pageIncrease()
+                    setEmailConfirmed(true)
+                    setPushNotifications(
+                        (prevNoty) => [...prevNoty, {
+                            id: new Date().toISOString(),
+                            message: `${t("success")}`
+                        }]
+                    )
+                } else {
+                    setPushNotifications(
+                        (prevNoty) => [...prevNoty, {
+                            id: new Date().toISOString(),
+                            message: `${t("code error")}`
+                        }]
+                    )
+                }
+            }
+            checkCode()
+        }
+    }, [digits])
+
     return (
         <div className="container flex flex-col justify-center items-center mx-auto">
 
             <div className="w-full h-full">
 
-                <ScreenSlider screenId={1} currScreen={page} bgColor={'bg-purple-100'}>
+                <ScreenSlider screenId={1} currScreen={page} bgColor={'bg-purple-200'}>
                     <div className="flex flex-col justify-center items-center mx-auto gap-5 max-w-[500px] w-full h-full">
                         <UnderlinedInput
                             IconComponent={AccountCircle}
@@ -309,7 +464,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                             placeholder={t("username")}
                             value={username}
                             onChange={(e) => validateUsername(e)}
-                            />
+                        />
 
                         <UnderlinedInput
                             IconComponent={EmailSharp}
@@ -341,8 +496,35 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
+                <ScreenSlider screenId={2} currScreen={page} bgColor={'bg-purple-200'}>
+                    <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
+                        <div className={`flex flex-row gap-2 max-w-[400px] max-h-[100px] h-full w-full`}>
+                            {digits.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    ref={inputRefs[index]}
+                                    className="w-1/4 appearance-none ring-4 ring-inset ring-pink-pastel rounded-xl bg-deep-purple py-2 px-3 text-center text-zinc-100 text-6xl font-medium placeholder:text-gray-400 placeholder:font-medium leading-tight focus:outline-none focus:shadow-outline"
+                                    type="text"
+                                    value={digit}
+                                    maxLength={1}
+                                    onChange={(e) => handleCodeInputChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleCodeKeyDown(index, e)}
+                                    onPaste={(e) => handlePaste(e)}
+                                />
+                            ))}
+                        </div>
+                        <div className={`max-w-[200px] w-full`}>
+                            <SecondaryButton
+                                text={t("send email")}
+                                disabled={isEmailSent}
+                                onClickHandler={getActivationCode}
+                            />
+                        </div>
+                    </div>
+                </ScreenSlider>
 
-                <ScreenSlider screenId={2} currScreen={page} bgColor={"bg-purple-200"}>
+
+                <ScreenSlider screenId={3} currScreen={page} bgColor={"bg-purple-200"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>{t("my age")}</p>
                         <div className={
@@ -359,7 +541,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={3} currScreen={page} bgColor={"bg-purple-100"}>
+                <ScreenSlider screenId={4} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>
                             {t("my height")}
@@ -378,7 +560,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={4} currScreen={page} bgColor={"bg-purple-200"}>
+                <ScreenSlider screenId={5} currScreen={page} bgColor={"bg-purple-200"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>
                             {t("my weight")}
@@ -397,7 +579,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={5} currScreen={page} bgColor={"bg-purple-100"}>
+                <ScreenSlider screenId={6} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>
                             {t("country")}
@@ -432,7 +614,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={6} currScreen={page} bgColor={"bg-purple-200"}>
+                <ScreenSlider screenId={7} currScreen={page} bgColor={"bg-purple-200"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>{t("my sex")}</p>
                         <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
@@ -446,7 +628,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={7} currScreen={page} bgColor={"bg-purple-100"}>
+                <ScreenSlider screenId={8} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>{t("my orientation")}</p>
                         <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
@@ -461,7 +643,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={8} currScreen={page} bgColor={"bg-purple-200"}>
+                <ScreenSlider screenId={9} currScreen={page} bgColor={"bg-purple-200"}>
                     <div className={`flex flex-col justify-center items-center max-w-[350px] mx-auto w-full h-full gap-3`}>
                         <p className="text-4xl font-medium text-center">{t("zodiac")}</p>
                         <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
@@ -489,7 +671,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={9} currScreen={page} bgColor={"bg-purple-100"}>
+                <ScreenSlider screenId={10} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center max-w-[550px] mx-auto w-full h-full gap-3`}>
                         <p className="text-4xl font-medium text-center">{t("tags")}</p>
                         <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
@@ -511,7 +693,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     </div>
                 </ScreenSlider>
 
-                <ScreenSlider screenId={10} currScreen={page} bgColor={"bg-purple-200"}>
+                <ScreenSlider screenId={11} currScreen={page} bgColor={"bg-purple-200"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <StaticMediaGrid files={media} setFiles={setMedia} isAuthor={true} isServer={false} />
                     </div>
@@ -524,7 +706,9 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     <div onClick={pageDecrease} className={`w-full`}>
                         <SecondaryButton
                             IconComponent={ArrowBackIosNewSharp}
-                            iconSize={"medium"} disabled={page === 1}/>
+                            iconSize={"medium"}
+                            disabled={page === 1}
+                        />
                     </div>
                     <div onClick={pageIncrease} className={`w-full`}>
                         {page === maxPages ? (
@@ -536,7 +720,9 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                         ) : (
                             <SecondaryButton
                                 IconComponent={ArrowForwardIosSharp}
-                                iconSize={"medium"}/>
+                                iconSize={"medium"}
+                                disabled={isNextUnavaliable}
+                            />
                         )}
                     </div>
                 </div>

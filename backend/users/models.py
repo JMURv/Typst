@@ -163,6 +163,9 @@ class User(AbstractUser):
     new_match_notification = models.BooleanField(default=True)
     new_message_notification = models.BooleanField(default=True)
 
+    # is_active = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=True)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 

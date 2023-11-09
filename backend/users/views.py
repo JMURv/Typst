@@ -21,11 +21,10 @@ from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken
 )
 
-from api.views import UserLoginAPIView
 from typst.tasks import (
     send_login_email_message_task,
     send_password_reset_message_task,
-    compute_user_text_recommends_task
+    compute_user_text_recommends_task,
 )
 
 from django.core.cache import cache

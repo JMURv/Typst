@@ -133,5 +133,10 @@
   "cuisine": "Кулинария",
   "entertainment": "Развлечения",
   "religion": "Религия",
-  "humor": "Юмор"
+  "humor": "Юмор",
+  "email has been sent": "Email отправлен",
+  "server error":"Ошибка на сервере",
+  "success": "Успех!",
+  "code error":"Неверный код",
+  "send email": "Отправить код"
 }

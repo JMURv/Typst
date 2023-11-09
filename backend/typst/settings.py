@@ -17,6 +17,7 @@ DOCKER = env('DOCKER') == "True"
 ALLOWED_HOSTS = env('ALLOWED_HOSTS').split()
 
 SITE_ID = 1
+SITE_DOMAIN = env('DOMAIN')
 
 INSTALLED_APPS = [
     'daphne',

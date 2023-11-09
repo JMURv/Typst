@@ -83,6 +83,7 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data.pop('disliked_by', None)
 
         instance = user_model.objects.create_user(**validated_data)
+        instance.is_verified = False
         instance.new_like_notification = True
         instance.new_match_notification = True
         instance.new_message_notification = True
@@ -148,7 +149,9 @@ class UserSerializer(serializers.ModelSerializer):
             "new_message_notification",
             "compatibility_percentage",
             "zodiac_sign",
-            "tags"
+            "tags",
+            # "is_active",
+            "is_verified",
         ]
         extra_kwargs = {
             'about': {'required': False},

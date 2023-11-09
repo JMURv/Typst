@@ -12,7 +12,9 @@ export default function UnderlinedInput({
             `${isError !== undefined && (!isError ? 'border-green-500 dark:border-green-500': 'border-red-400 dark:border-red-400')}`
         }>
             {IconComponent && (
-                <IconComponent fontSize={iconSize}/>
+                <div className={`text-zinc-100`}>
+                    <IconComponent fontSize={iconSize}/>
+                </div>
             )}
             <input
                 className={`mr-3 p-3 pb-0 pt-0 text-xl appearance-none bg-transparent border-none w-full text-zinc-100 font-medium placeholder:text-gray-400 placeholder:font-medium leading-tight focus:outline-none`}

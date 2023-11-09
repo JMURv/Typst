@@ -20,6 +20,9 @@ static:
 reset:
 	poetry run python manage.py flush
 
+configure:
+	poetry run python manage.py conf_site
+
 create_users:
 	poetry run python manage.py create_users
 
