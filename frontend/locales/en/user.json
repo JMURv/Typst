@@ -138,5 +138,7 @@
   "server error":"Server error",
   "success": "Success",
   "code error":"Code is not valid",
-  "send email": "Send code via email"
+  "send email": "Send code via email",
+  "reCAPTCHA failed": "reCAPTCHA failed",
+  "email code": "E-mail activation"
 }

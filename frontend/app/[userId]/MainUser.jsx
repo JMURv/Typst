@@ -142,10 +142,12 @@ export default function MainUser({
                         )}
                     </div>
                 </div>
-                <div
-                    className="p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-[#1A1B20]">
-                    {userData.about}
-                </div>
+                {userData.about != undefined && (
+                    <div className="p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-[#1A1B20]">
+                        <p className={`font-medium`}>{userData.about}</p>
+                    </div>
+                )}
+
                 <div
                     className="p-5 rounded-2xl xl:w-4/6 font-medium text-lg">
                     <div className={`flex flex-row flex-wrap gap-3`}>

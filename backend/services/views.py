@@ -21,18 +21,25 @@ from .serializers import (
 )
 from geopy.geocoders import Nominatim
 
+from .utils import check_recaptcha
+
 
 class ActivationCodeView(APIView):
     user_model = get_user_model()
     permission_classes = (permissions.AllowAny, )
 
     def get(self, request, *args, **kwargs):
-        send_activate_email_code_task.delay(
-            request.GET.get("email"),
-            request.GET.get("key")
-        )
+        is_captcha_valid = check_recaptcha(request.GET.get('captcha'))
+        if is_captcha_valid:
+            send_activate_email_code_task.delay(
+                request.GET.get("email"),
+                request.GET.get("key")
+            )
+            return Response(
+                status=status.HTTP_200_OK
+            )
         return Response(
-            status=status.HTTP_200_OK
+            status=status.HTTP_400_BAD_REQUEST
         )
 
     def post(self, request, *args, **kwargs):

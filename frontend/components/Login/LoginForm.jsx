@@ -1,5 +1,5 @@
 'use client';
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {signIn} from "next-auth/react";
 import {
     ArrowBackIosNewSharp, ArrowForwardIosSharp,
@@ -14,18 +14,21 @@ import useTranslation from "next-translate/useTranslation";
 import resetPassword from "@/lib/resetPassword";
 import SecondaryButton from "@/components/Buttons/SecondaryButton";
 import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
+import CodeInput from "@/components/Inputs/CodeInput";
+import {useReCaptcha} from "next-recaptcha-v3";
 
 
 export default function LoginForm({setIsLoading, setPushNotifications}) {
     const { t } = useTranslation('user')
+    const { executeRecaptcha } = useReCaptcha()
     const router = useRouter()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [code, setCode] = useState('')
     const [recoveryEmail, setRecoveryEmail] = useState('')
 
     const [isForgotPassword, setForgotPassword] = useState(false)
     const [isCode, setIsCode] = useState(false)
+    const [digits, setDigits] = useState(['', '', '', ''])
 
     async function forgotPasswordHandler() {
         const response = await resetPassword(recoveryEmail)
@@ -40,28 +43,37 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
         }
     }
 
-    async function checkCode(e) {
-        e.preventDefault()
-        try {
-            const response = await fetch('/api/v1/users/code/', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    email: email,
-                    code: code
-                }),
-            })
-            if (response.ok) {
-                setIsCode(false)
-
-                return await login()
-            } else {
-                console.log("Some error happened")
+    useEffect(() => {
+        const code = digits.join('')
+        if (code.length === 4) {
+            const checkCode = async () => {
+                try {
+                    const response = await fetch('/api/v1/login-code/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            email: email,
+                            code: code
+                        }),
+                    })
+                    if (response.ok) {
+                        setIsCode(false)
+                        return await login()
+                    } else {
+                        setPushNotifications(
+                            (prevNoty) => [...prevNoty, {
+                                id: new Date().toISOString(),
+                                message: `${t("code error")}`
+                            }]
+                        )
+                    }
+                } catch (e) {
+                    console.log("Failed to get server", e)
+                }
             }
-        } catch (e) {
-            console.log("Failed to get server", e)
+            checkCode()
         }
-    }
+    }, [digits])
 
     async function login() {
         setIsLoading(true)
@@ -85,14 +97,10 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
     }
 
     async function emailing() {
+        const recaptchaToken = await executeRecaptcha('login_code')
         try {
-            const response = await fetch('/api/v1/users/email/', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                }),
+            const response = await fetch(`/api/v1/login-code?email=${email}&password=${password}&captcha=${recaptchaToken}`, {
+                method: 'GET',
             })
             if (response.status === 200) {
                 setIsCode(true)
@@ -169,17 +177,16 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
                         )}
 
                         {isCode && (
-                            <div className={`flex flex-col gap-5 w-full`}>
-                                <UnderlinedInput
-                                    IconComponent={CodeSharp}
-                                    iconSize={"large"}
-                                    id="code"
-                                    name="code"
-                                    type="text"
-                                    required
-                                    onChange={(e) => setCode(e.target.value)}
-                                    value={code}
-                                />
+                            <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
+                                <p className={`font-medium text-4xl mb-3`}>
+                                    {t("email code")}
+                                </p>
+                                <div className={`flex flex-row gap-2 max-w-[400px] max-h-[100px] h-full w-full`}>
+                                    <CodeInput
+                                        digits={digits}
+                                        setDigits={setDigits}
+                                    />
+                                </div>
                             </div>
                         )}
 
@@ -214,20 +221,12 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
                         />
                     )}
                     {isCode && (
-                        <>
-                            <SecondaryButton
-                                IconComponent={CloseSharp}
-                                iconSize={"medium"}
-                                text={t("back")}
-                                onClickHandler={() => setIsCode(false)}
-                            />
-                            <SecondaryButton
-                                IconComponent={CheckSharp}
-                                iconSize={"medium"}
-                                text={t("sent")}
-                                onClickHandler={(e) => checkCode(e)}
-                            />
-                        </>
+                        <SecondaryButton
+                            IconComponent={CloseSharp}
+                            iconSize={"medium"}
+                            text={t("back")}
+                            onClickHandler={() => setIsCode(false)}
+                        />
                     )}
                     {isForgotPassword && (
                         <>

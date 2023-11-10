@@ -3,18 +3,18 @@ import {
     AccountCircle,
     ArrowLeftSharp, ArrowRightSharp,
     Check,
-    CloseSharp, DeleteSharp, FavoriteSharp,
+    CloseSharp, FavoriteSharp,
     Man4Sharp, MoreSharp,
     Woman2Sharp
 } from "@mui/icons-material";
 import IconInput from "@/components/Inputs/IconInput";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import PrimaryButton from "@/components/Buttons/PrimaryButton";
 import RangeInput from "@/components/Inputs/RangeInput";
 import RingsInput from "@/components/Inputs/RingsInput";
 import SidebarBase from "@/components/Sidebar/SidebarBase";
 import DangerButton from "@/components/Buttons/DangerButton";
-import StaticMediaGrid, {UserPageStaticMediaGrid} from "@/components/Media/StaticMediaGrid";
+import {UserPageStaticMediaGrid} from "@/components/Media/StaticMediaGrid";
 import useTranslation from "next-translate/useTranslation";
 import ZodiacSignsData from "@/lib/zodiacSigns";
 import tagsData from "@/lib/tagsData";
@@ -262,6 +262,7 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                             propValue={prefAge}
                             setValue={setPrefAge}
                             label={t("preferred age")}
+                            textSize={`text-sm`}
                             rangeItems={ageChoices}
                             name={"preferred_age"}
                         />
@@ -270,6 +271,7 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                             propValue={prefHeight}
                             setValue={setPrefHeight}
                             label={t("preferred height")}
+                            textSize={`text-sm`}
                             rangeItems={heightChoices}
                             name={"preferred_height"}
                         />
@@ -278,6 +280,7 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                             propValue={prefWeight}
                             setValue={setPrefWeight}
                             label={t("preferred weight")}
+                            textSize={`text-sm`}
                             rangeItems={weightChoices}
                             name={"preferred_weight"}
                         />
@@ -285,18 +288,18 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                 )}
 
                 {currPage === "tags" && (
-                    <div className={`flex flex-col items-center justify-center mt-5 px-2 sm:px-10`}>
-                        <div className={`p-3 flex flex-row flex-wrap justify-center gap-3`}>
+                    <div className={`flex flex-col items-center justify-center mt-5`}>
+                        <div className={`flex flex-col flex-wrap justify-start w-full`}>
                             {tagsData.map((tag) => (
                                 <div
                                     key={tag.value}
                                     onClick={() => handleSelectedTags(tag.value)}
                                     className={
-                                        `ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                        `flex flex-row gap-3 p-5 items-center cursor-pointer transition-color duration-300 hover:bg-pink-pastel ` +
                                         `${selectedTags.includes(tag.value) ? 'bg-pink-pastel' : 'bg-transparent'}`
                                     }
                                 >
-                                    <p className={`font-medium text-sm`}>
+                                    <p className={`font-medium`}>
                                         {t(tag.value)}
                                     </p>
                                 </div>
@@ -306,24 +309,24 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                 )}
 
                 {currPage === "zodiac" && (
-                    <div className={`flex flex-col items-center justify-center mt-5 px-2 sm:px-10`}>
-                        <div className={`p-3 flex flex-row flex-wrap justify-center gap-3`}>
+                    <div className={`flex flex-col items-center justify-center mt-5`}>
+                        <div className={`flex flex-col flex-wrap justify-start w-full`}>
                             {ZodiacSignsData.map((zodiac) => (
                                 <div
                                     key={zodiac.value}
                                     onClick={() => zodiacSignSelect(zodiac.value)}
                                     className={
-                                        `flex flex-row gap-3 ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
+                                        `flex flex-row gap-3 p-5 items-center cursor-pointer transition-color duration-300 hover:bg-pink-pastel ` +
                                         `${zodiacSign === zodiac.value ? 'bg-pink-pastel' : 'bg-transparent'}`
                                     }
                                 >
                                     <img
                                         src={`/media/defaults/zodiac/${zodiac.value}.svg`}
-                                        width={20}
-                                        height={20}
+                                        width={30}
+                                        height={30}
                                         alt=""
                                     />
-                                     <p className={`font-medium text-sm`}>
+                                     <p className={`font-medium`}>
                                         {t(zodiac.value)}
                                     </p>
                                 </div>

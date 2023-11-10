@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.files.base import ContentFile
@@ -21,8 +21,8 @@ from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken
 )
 
+from services.utils import check_recaptcha
 from typst.tasks import (
-    send_login_email_message_task,
     send_password_reset_message_task,
     compute_user_text_recommends_task,
 )
@@ -155,46 +155,6 @@ class ForgotPassword(APIView):
         )
 
 
-class LoginCodeSend(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request: Request, *args, **kwargs) -> Response:
-        user = authenticate(
-            request,
-            email=request.data.get('email', None),
-            password=request.data.get('password', None)
-        )
-        if user is not None:
-            send_login_email_message_task.delay(user.id)
-            return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-class LoginCodeSubmit(APIView):
-    user_model = get_user_model()
-    serializer_class = UserSerializer
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request: Request) -> Response:
-        user = get_object_or_404(
-            klass=self.user_model,
-            email=request.data.get('email', None)
-        )
-
-        stored_code = cache.get(f'login_code_{user.id}')
-        if request.data.get('code', None) == stored_code:
-            return Response(
-                status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={
-                    'error': 'Invalid code'
-                },
-            )
-
-
 class UsersPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = 'page_size'
@@ -214,18 +174,19 @@ class UserListCreate(ListCreateAPIView):
 
     def get_queryset(self) -> QuerySet:
         qs = self.user_model.objects.all()
-        excluded_qs = exclude_curr_user_and_disliked(
+        if self.request.user.orientation != "bi":
+            qs = qs.filter(
+                sex=self.request.user.orientation
+            )
+        ordered_qs = calculate_preferences_and_order(
             user=self.request.user,
             qs=qs
         )
-        filtered_qs = excluded_qs.filter(
-            sex=self.request.user.orientation
-        )
-        ordered_qs = calculate_preferences_and_order(
+        excluded_qs = exclude_curr_user_and_disliked(
             user=self.request.user,
-            qs=filtered_qs
+            qs=ordered_qs
         )
-        return ordered_qs
+        return excluded_qs
 
     def get(self, request: Request, *args, **kwargs) -> Response:
         if not request.user.is_authenticated:
@@ -237,6 +198,16 @@ class UserListCreate(ListCreateAPIView):
     def post(self, request: Request, *args, **kwargs) -> Response:
         password = request.data.get('password')
         email = request.data.get('email')
+        is_captcha_valid = check_recaptcha(request.data.get('captcha'))
+
+        if not is_captcha_valid:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'error': 'reCAPTCHA failed'
+                }
+            )
+
         if not password or not email:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,

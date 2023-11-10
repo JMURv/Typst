@@ -1,7 +1,9 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.token_blacklist.models import (
@@ -10,6 +12,13 @@ from rest_framework_simplejwt.token_blacklist.models import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+
+from services.utils import check_recaptcha
+from users.serializers import UserSerializer
+
+from typst.tasks import (
+    send_login_email_message_task,
+)
 
 
 class UserLoginAPIView(TokenObtainPairView):
@@ -33,6 +42,45 @@ class UserLoginAPIView(TokenObtainPairView):
                 'email': user.email,
             }
         return response
+
+
+class LoginCodeHandle(APIView):
+    user_model = get_user_model()
+    serializer_class = UserSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        is_captcha_valid = check_recaptcha(
+            request.GET.get('captcha')
+        )
+        user = authenticate(
+            request,
+            email=request.GET.get('email', None),
+            password=request.GET.get('password', None)
+        )
+        if user is not None and is_captcha_valid:
+            send_login_email_message_task.delay(user.id)
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request: Request) -> Response:
+        user = get_object_or_404(
+            klass=self.user_model,
+            email=request.data.get('email', None)
+        )
+
+        stored_code = cache.get(f'login_code_{user.id}')
+        if request.data.get('code', None) == stored_code:
+            return Response(
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'error': 'Invalid code'
+                },
+            )
 
 
 class DeleteAllTokens(APIView):

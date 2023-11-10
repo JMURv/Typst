@@ -138,5 +138,7 @@
   "server error":"Ошибка на сервере",
   "success": "Успех!",
   "code error":"Неверный код",
-  "send email": "Отправить код"
+  "send email": "Отправить код",
+  "reCAPTCHA failed": "Капча провалена",
+  "email code": "Активация e-mail"
 }

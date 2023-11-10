@@ -1,5 +1,10 @@
 from django.urls import path, include
-from .views import LogoutView, UserLoginAPIView, DeleteAllTokens
+from .views import (
+    LogoutView,
+    UserLoginAPIView,
+    DeleteAllTokens,
+    LoginCodeHandle
+)
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -8,6 +13,7 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('login/', UserLoginAPIView.as_view(), name='login'),
+    path('login-code/', LoginCodeHandle.as_view()),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),

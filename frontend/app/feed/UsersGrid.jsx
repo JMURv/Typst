@@ -80,7 +80,7 @@ export function UserGrid({user, reqUser, swipe, setIsOpen, setCurrentUser}) {
                                 <FavoriteBorderSharp fontSize={"large"} />
                             )}
                         </div>
-                        {user.compatibility_percentage && userData.compatibility_percentage !== 0 &&  (
+                        {user.compatibility_percentage && user.compatibility_percentage > 0 &&  (
                             <div className={
                                 `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
                                 `${user.compatibility_percentage > 75 ? 'ring-green-500':'ring-orange-400'}`
@@ -126,24 +126,20 @@ export default function UsersGrid({reqUser, usersData, swipe, loadMore}) {
         <>
             <ModalBase isOpen={isOpen} setIsOpen={setIsOpen}>
                 <div className="flex flex-col gap-2">
-                    <div className="h-96 relative">
+                    <div className="h-96">
                         <ImageSlider
                             currentUser={currentUser}
                         />
+                    </div>
+                    <div className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-100 dark:bg-purple-300">
                         {currentUser.country && currentUser.city && (
-                            <div className="absolute bottom-5 left-4 flex flex-row gap-3">
+                            <div className="flex flex-row gap-3 items-center">
                                 <PlaceSharp/>
-                                <p className="font-medium">{currentUser.country}, {currentUser.city}</p>
+                                <p className="font-medium text-sm">{currentUser.country}, {currentUser.city}</p>
                             </div>
                         )}
-                    </div>
-                    <div className="flex flex-col gap-1 p-4 rounded-2xl bg-zinc-100 dark:bg-purple-300">
-                        <p className="text-2xl font-medium">{currentUser.username}, {currentUser.age} {t("years")}</p>
-                        <div className="flex flex-row gap-3 flex-wrap">
-                            <p className="font-medium text-sm">{t("sex")}: {currentUser.sex}</p>
-                            <p className="font-medium text-sm">{t("orientation")}: {currentUser.orientation}</p>
-                        </div>
-                        <div className="flex flex-row gap-5 flex-wrap">
+                        <p className="text-2xl font-medium">{currentUser.username}, {currentUser.age}</p>
+                        <div className="flex flex-row gap-5 items-center flex-wrap">
                             {currentUser.height && (
                                 <div className="flex flex-row gap-3 items-center">
                                     <HeightSharp fontSize={"medium"}/>
@@ -154,6 +150,17 @@ export default function UsersGrid({reqUser, usersData, swipe, loadMore}) {
                                 <div className="flex flex-row gap-3 items-center">
                                     <ScaleSharp fontSize={"medium"}/>
                                     <p className="font-medium text-sm">{currentUser.weight}{t("kg")}</p>
+                                </div>
+                            )}
+                            {currentUser.zodiac_sign && (
+                                <div className={`flex flex-row items-center justify-center ms-auto`}>
+                                    <img
+                                        src={`/media/defaults/zodiac/${currentUser.zodiac_sign.title}.svg`}
+                                        width="30"
+                                        height="30"
+                                        alt={''}
+                                    />
+                                    <p className={`font-medium text-sm`}>{t(currentUser.zodiac_sign.title)}</p>
                                 </div>
                             )}
                         </div>
@@ -170,8 +177,15 @@ export default function UsersGrid({reqUser, usersData, swipe, loadMore}) {
                             }}>
                             <FavoriteSharp fontSize={"large"}/>
                         </div>
-                        <div
-                            className="cursor-pointer p-2 text-red-400 transition-color duration-200 text-center rounded-full"
+                        {currentUser.compatibility_percentage && currentUser.compatibility_percentage > 0 &&  (
+                            <div className={
+                                `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
+                                `${currentUser.compatibility_percentage > 75 ? 'ring-green-500':'ring-orange-400'}`
+                            }>
+                                <p className={`font-medium`}>{currentUser.compatibility_percentage}</p>
+                            </div>
+                        )}
+                        <div className="cursor-pointer p-2 text-red-400 transition-color duration-200 text-center rounded-full"
                             onClick={() => {
                                 setIsOpen(false)
                                 swipe("dislike", currentUser.id)

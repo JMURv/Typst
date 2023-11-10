@@ -1,5 +1,6 @@
 'use client';
 import {useState, useEffect, useRef} from "react";
+import { useReCaptcha } from "next-recaptcha-v3";
 import {
     AccountCircle,
     ArrowBackIosNewSharp,
@@ -23,6 +24,8 @@ import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 import ZodiacSignsData from "@/lib/zodiacSigns";
 import tagsData from "@/lib/tagsData";
 import ScreenSlider from "@/components/Slider/ScreenSlider";
+import CodeInput from "@/components/Inputs/CodeInput";
+
 
 export default function RegisterForm({setIsLoading, setPushNotifications}) {
     const { t } = useTranslation('user')
@@ -54,11 +57,18 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
     const [isNextUnavaliable, setIsNextUnavaliable] = useState(true)
     const [isEmailSent, setIsEmailSent] = useState(false)
 
-    const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)]
     const [digits, setDigits] = useState(['', '', '', ''])
+
+    const { executeRecaptcha } = useReCaptcha()
 
     const sexChoices = [
         {IconComponent: Man4Sharp, value: "m"},
+        {IconComponent: Woman2Sharp, value: "w"},
+    ]
+
+    const orientationChoices = [
+        {IconComponent: Man4Sharp, value: "m"},
+        {text: "BI", value: "bi"},
         {IconComponent: Woman2Sharp, value: "w"},
     ]
 
@@ -76,19 +86,19 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
             setIsNextUnavaliable(true)
             return
         } else if (page === 5 && !weight){
-            setIsNextUnavaliable(false)
+            setIsNextUnavaliable(true)
             return
         } else if (page === 6 && (!country || !city)){
-            setIsNextUnavaliable(false)
+            setIsNextUnavaliable(true)
             return
-        } else if (page === 7 && !sex){
-            setIsNextUnavaliable(false)
+        } else if (page === 7 && sex.length === 0){
+            setIsNextUnavaliable(true)
             return
         } else if (page === 8 && !orientation){
-            setIsNextUnavaliable(false)
+            setIsNextUnavaliable(true)
             return
         } else if (page === maxPages) {
-            setIsNextUnavaliable(false)
+            setIsNextUnavaliable(true)
             return
         }
         setIsNextUnavaliable(false)
@@ -130,9 +140,11 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
     }
 
     async function getActivationCode() {
+        setIsLoading(true)
+        const recaptchaToken = await executeRecaptcha('email_activate')
         registerKey.current = new Date().toISOString()
         try {
-            const response = await fetch(`/api/v1/services/activation/?key=${registerKey.current}&email=${email}`, {
+            const response = await fetch(`/api/v1/services/activation/?key=${registerKey.current}&email=${email}&captcha=${recaptchaToken}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json"
@@ -146,8 +158,17 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                         message: `${t("email has been sent")}`
                     }]
                 )
+            } else {
+                setPushNotifications(
+                    (prevNoty) => [...prevNoty, {
+                        id: new Date().toISOString(),
+                        message: `${t("reCAPTCHA failed")}`
+                    }]
+                )
+            setIsLoading(false)
             }
         } catch (e) {
+            setIsLoading(false)
             console.error(`Error with the server connection: ${e}`)
             setPushNotifications(
                 (prevNoty) => [...prevNoty, {
@@ -161,6 +182,8 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
     async function create(event) {
         event.preventDefault()
         setIsLoading(true)
+
+        const recaptchaToken = await executeRecaptcha('register')
         const formData = new FormData()
         formData.append('username', username)
         formData.append('email', email)
@@ -173,6 +196,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
         formData.append('height', height)
         formData.append('weight', weight)
         formData.append('zodiac_sign', zodiacSign)
+        formData.append('captcha', recaptchaToken)
 
         selectedTags.forEach((tag, index) => {
             formData.append(`tag-${index}`, tag)
@@ -359,51 +383,11 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
         }
     }
 
-    const handleCodeInputChange = (index, value) => {
-        const newDigits = [...digits];
-        newDigits[index] = value;
-        if (value.length === 1 && index < digits.length - 1) {
-            inputRefs[index + 1].current.focus();
-        }
-        setDigits(newDigits);
-    }
-
-    const handleCodeKeyDown = (index, event) => {
-        if (event.key === 'Backspace' && index > 0) {
-            if (digits[index] === '') {
-                inputRefs[index - 1].current.focus();
-            } else {
-                const newDigits = [...digits];
-                newDigits[index] = '';
-                setDigits(newDigits);
-            }
-        } else if (event.key === 'ArrowLeft' && index > 0) {
-            inputRefs[index - 1].current.focus();
-        } else if (event.key === 'ArrowRight' && index < digits.length - 1) {
-            inputRefs[index + 1].current.focus();
-        }
-    }
-
-    const handlePaste = (event) => {
-        event.preventDefault();
-        const clipboardData = event.clipboardData || window.clipboardData;
-        const pastedText = clipboardData.getData('text');
-        if (/^\d{4}$/.test(pastedText)) {
-            const newDigits = pastedText.split('');
-            newDigits.forEach((digit, i) => {
-                if (i < digits.length) {
-                    inputRefs[i].current.value = digit;
-                }
-            });
-            setDigits(newDigits);
-        }
-    }
-
     useEffect(() => {
         if (isEmailSent) {
             setTimeout(() => {
                 setIsEmailSent(false)
-            }, 60000)
+            }, 15000)
         }
     }, [isEmailSent])
 
@@ -498,22 +482,13 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
 
                 <ScreenSlider screenId={2} currScreen={page} bgColor={'bg-purple-200'}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
+                        <p className={`font-medium text-4xl mb-3`}>
+                            {t("email code")}
+                        </p>
                         <div className={`flex flex-row gap-2 max-w-[400px] max-h-[100px] h-full w-full`}>
-                            {digits.map((digit, index) => (
-                                <input
-                                    key={index}
-                                    ref={inputRefs[index]}
-                                    className="w-1/4 appearance-none ring-4 ring-inset ring-pink-pastel rounded-xl bg-deep-purple py-2 px-3 text-center text-zinc-100 text-6xl font-medium placeholder:text-gray-400 placeholder:font-medium leading-tight focus:outline-none focus:shadow-outline"
-                                    type="text"
-                                    value={digit}
-                                    maxLength={1}
-                                    onChange={(e) => handleCodeInputChange(index, e.target.value)}
-                                    onKeyDown={(e) => handleCodeKeyDown(index, e)}
-                                    onPaste={(e) => handlePaste(e)}
-                                />
-                            ))}
+                            <CodeInput digits={digits} setDigits={setDigits} />
                         </div>
-                        <div className={`max-w-[200px] w-full`}>
+                        <div className={`max-w-[200px] mt-3 w-full`}>
                             <SecondaryButton
                                 text={t("send email")}
                                 disabled={isEmailSent}
@@ -631,11 +606,11 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                 <ScreenSlider screenId={8} currScreen={page} bgColor={"bg-purple-100"}>
                     <div className={`flex flex-col justify-center items-center mx-auto w-full h-full gap-3`}>
                         <p className={`font-medium text-4xl`}>{t("my orientation")}</p>
-                        <div className={`max-w-[250px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
+                        <div className={`max-w-[350px] w-full bg-pink-pastel/10 p-3 rounded-md`}>
                             <RingsInput
                                 propValue={orientation}
                                 setValue={handleOrientationValue}
-                                rangeItems={sexChoices}
+                                rangeItems={orientationChoices}
                                 name={"orientation"}
                                 onChange={pageIncrease}
                             />
@@ -701,8 +676,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
 
             </div>
             <div className="fixed bottom-0 flex flex-col gap-5">
-                <div
-                    className="flex flex-row justify-between items-center gap-5">
+                <div className="flex flex-row justify-between items-center gap-5">
                     <div onClick={pageDecrease} className={`w-full`}>
                         <SecondaryButton
                             IconComponent={ArrowBackIosNewSharp}
