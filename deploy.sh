@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "Stop containers"
 echo pwd
+echo 'I AM HERE'
 cd typst
 docker-compose down
 
