@@ -15,7 +15,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Extract metadata for backend
-        id: Backend meta
+        id: BackendMeta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_BACKEND_REPO_NAME }}
@@ -31,7 +31,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Extract metadata for frontend
-        id: Frontend meta
+        id: FrontendMeta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_FRONTEND_REPO_NAME }}
@@ -47,7 +47,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Extract metadata for recommends
-        id: Recommends meta
+        id: RecommendsMeta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REC_REPO_NAME }}
