@@ -53,8 +53,10 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                 setNewMatch(data.new_match_notification)
                 setCity(data.city)
                 setCountry(data.country)
-                setPrefCountry(data.preferred_country)
                 setBlacklist(data.blacklist)
+                if (data.preferred_country) {
+                    setPrefCountry(data.preferred_country)
+                }
             } catch (error) {
                 console.error("An error occurred while fetching user data:", error)
             }

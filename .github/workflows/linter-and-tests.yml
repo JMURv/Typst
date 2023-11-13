@@ -1,0 +1,22 @@
+name: linter-and-tests
+on: [ push ]
+jobs:
+  lint-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+      - name: python install
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: cd backend
+        run: cd ./backend
+      - name: install poetry
+        run: pip install poetry
+      - name: poetry dependencies
+        run: poetry install
+      - name: linter status
+        run: make lint
+      - name: tests run
+        run: make test

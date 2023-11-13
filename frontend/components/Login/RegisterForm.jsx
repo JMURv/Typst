@@ -151,6 +151,7 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                 },
             })
             if (response.status === 200) {
+                setIsLoading(false)
                 setIsEmailSent(true)
                 setPushNotifications(
                     (prevNoty) => [...prevNoty, {
@@ -159,13 +160,13 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                     }]
                 )
             } else {
+                setIsLoading(false)
                 setPushNotifications(
                     (prevNoty) => [...prevNoty, {
                         id: new Date().toISOString(),
                         message: `${t("reCAPTCHA failed")}`
                     }]
                 )
-            setIsLoading(false)
             }
         } catch (e) {
             setIsLoading(false)

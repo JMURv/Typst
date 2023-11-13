@@ -144,6 +144,11 @@ class User(AbstractUser):
         null=True
     )
 
+    latest_location = models.JSONField(
+        blank=True,
+        null=True
+    )
+
     recommends = models.ManyToManyField(
         "self",
         related_name='recommended_by',
@@ -163,7 +168,6 @@ class User(AbstractUser):
     new_match_notification = models.BooleanField(default=True)
     new_message_notification = models.BooleanField(default=True)
 
-    # is_active = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=True)
 
     USERNAME_FIELD = 'email'

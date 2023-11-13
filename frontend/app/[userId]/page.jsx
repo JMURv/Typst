@@ -39,7 +39,6 @@ export default async function Page({params, searchParams}) {
         getUserPageById(userId, session.access),
         getRequestUser(session.access),
     ])
-
     const isAuthor = parseInt(userId) === parseInt(session.user.user_id)
     return (
         <div className="w-full overflow-y-hidden">

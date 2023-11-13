@@ -12,6 +12,7 @@ from rest_framework.request import Request
 
 from services.models import Tag
 from users.models import UserMedia, User
+from geopy.distance import geodesic
 
 AGE_MAPPING = {
     "sm": [18, 25],
@@ -33,6 +34,23 @@ WEIGHT_MAPPING = {
     "lg": [65, 75],
     "xl": [75, 100],
 }
+
+
+def calculate_geo_proximity(request_user: User, inspected_user: User) -> float:
+    request_user_geo = request_user.latest_location
+    inspected_user_geo = inspected_user.latest_location
+    if request_user_geo and inspected_user_geo:
+        request_user_geo = (
+            request_user_geo.get("latitude"),
+            request_user_geo.get("longitude")
+        )
+        inspected_user_geo = (
+            inspected_user_geo.get("latitude"),
+            inspected_user_geo.get("longitude")
+        )
+        distance = geodesic(request_user_geo, inspected_user_geo).km
+        return distance
+    return None
 
 
 def calculate_compatibility(request_user: User, inspected_user: User) -> int:

@@ -16,14 +16,14 @@ export function GeolocationComponent({session}) {
         const lastSentTime = parseInt(getLastSentTime(), 10) || 0
         const elapsedTime = currentTime - lastSentTime
 
-        if (elapsedTime >= 1800000) {
+        if (elapsedTime >= 300000) {
             const getUserGeolocation = () => {
                 return new Promise((resolve, reject) => {
                     if (!navigator.geolocation) {
                         reject(new Error('Geolocation is not supported by your browser'))
                     }
                     const options = {
-                        maximumAge: 1800000,
+                        maximumAge: 300000,
                     }
                     navigator.geolocation.getCurrentPosition(resolve, reject, options)
                 })
@@ -59,5 +59,5 @@ export function GeolocationComponent({session}) {
                 console.error('Error getting geolocation:', error.message)
             })
         }
-    }, [])
+    }, [session])
 }

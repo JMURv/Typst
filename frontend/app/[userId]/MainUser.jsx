@@ -10,7 +10,7 @@ import {
     PlaceSharp,
     ScaleSharp,
     ManSharp,
-    WomanSharp
+    WomanSharp, FlagSharp, LocationCitySharp
 } from "@mui/icons-material";
 import useTranslation from "next-translate/useTranslation";
 import {useState} from "react";
@@ -106,15 +106,37 @@ export default function MainUser({
                         )
                     )}
                 </div>
-                <div
-                    className="relative flex flex-col gap-3 p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-deep-purple">
-                    <div className="flex flex-row gap-3">
-                        {userData.country && userData.city && (
-                            <>
-                                <PlaceSharp/>
-                                <p>{userData.country}, {userData.city}</p>
-                            </>
+                <div className="relative flex flex-col gap-3 p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-deep-purple">
+                    <div className="flex flex-col gap-3">
+
+                        {userData.geo_prox !== null && (
+                            userData.geo_prox > 0 ? (
+                                <div className={`flex flex-row items-center gap-3`}>
+                                    <PlaceSharp />
+                                    <p>{userData.geo_prox}{t('km from u')}</p>
+                                </div>
+                            ) : (
+                                <div className={`flex flex-row items-center gap-3`}>
+                                    <PlaceSharp />
+                                    <p>{t('near to u')}</p>
+                                </div>
+                            )
                         )}
+
+                        <div className={`flex flex-row gap-3 items-center`}>
+                            <LocationCitySharp/>
+                            {userData.country && (
+                                <p>
+                                    {userData.country}
+                                </p>
+                            )}
+                            {userData.city && (
+                                <p>
+                                    {userData.city}
+                                </p>
+                            )}
+                        </div>
+
                         <div className={`absolute flex flex-row items-center gap-3 right-5 top-5 `}>
                             <div className={`flex flex-row gap-3 bg-pink-pastel dark:bg-purple-300 rounded-full p-3`}>
                                 <img

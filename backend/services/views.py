@@ -71,28 +71,13 @@ class GeolocationView(APIView):
     permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request: Request, *args, **kwargs) -> Response:
-        latitude = request.data.get('latitude')
-        longitude = request.data.get('longitude')
-        geolocator = Nominatim(user_agent="typst")
-        location = geolocator.reverse(
-            (latitude, longitude),
-            exactly_one=True
-        )
-        if location:
-            address = location.raw.get('address', {})
-            country = address.get('country', '')
-            city = address.get('city', '')
-
-            cache.set(
-                f'geolocation:{request.user.id}',
-                {'country': country, 'city': city},
-                timeout=1800
-            )
-            return Response(
-                status=status.HTTP_200_OK
-            )
+        request.user.latest_location = {
+            'latitude': request.data.get('latitude'),
+            'longitude': request.data.get('longitude')
+        }
+        request.user.save()
         return Response(
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_200_OK
         )
 
 

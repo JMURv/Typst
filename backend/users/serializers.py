@@ -6,7 +6,7 @@ from rest_framework import serializers
 from services.models import Tag, ZodiacSign
 from .models import UserMedia
 from .utils import save_or_update_user_media, calculate_compatibility, \
-    save_or_update_user_tags
+    save_or_update_user_tags, calculate_geo_proximity
 from services.serializers import (
     ZodiacSignSerializer,
     TagSerializer
@@ -71,6 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
     zodiac_sign = ZodiacSignSerializer(required=False)
     tags = TagSerializer(many=True, required=False)
     compatibility_percentage = serializers.SerializerMethodField()
+    geo_prox = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         user_model = get_user_model()
@@ -107,6 +108,17 @@ class UserSerializer(serializers.ModelSerializer):
         )
         instance.save()
         return instance
+
+    def get_geo_prox(self, instance):
+        request = self.context.get('request')
+        if not request:
+            return None
+        if request.user.id == instance.id:
+            return None
+        return calculate_geo_proximity(
+            request_user=request.user,
+            inspected_user=instance
+        )
 
     def get_compatibility_percentage(self, instance) -> int:
         request = self.context.get('request')
@@ -150,8 +162,8 @@ class UserSerializer(serializers.ModelSerializer):
             "compatibility_percentage",
             "zodiac_sign",
             "tags",
-            # "is_active",
             "is_verified",
+            "geo_prox",
         ]
         extra_kwargs = {
             'about': {'required': False},
@@ -175,6 +187,7 @@ class LightUserSerializer(serializers.ModelSerializer):
     zodiac_sign = ZodiacSignSerializer(required=False)
     tags = TagSerializer(many=True, required=False)
     compatibility_percentage = serializers.SerializerMethodField()
+    geo_prox = serializers.SerializerMethodField()
 
     def update(self, instance, validated_data):
         request = self.context.get('request')
@@ -209,6 +222,17 @@ class LightUserSerializer(serializers.ModelSerializer):
         )
         instance.save()
         return instance
+
+    def get_geo_prox(self, instance):
+        request = self.context.get('request')
+        if not request:
+            return None
+        if request.user.id == instance.id:
+            return None
+        return calculate_geo_proximity(
+            request_user=request.user,
+            inspected_user=instance
+        )
 
     def get_compatibility_percentage(self, instance) -> int:
         request = self.context.get('request')
@@ -252,6 +276,7 @@ class LightUserSerializer(serializers.ModelSerializer):
             "new_message_notification",
             "tags",
             "compatibility_percentage",
+            "geo_prox",
         ]
         extra_kwargs = {
             'about': {'required': False},

@@ -63,7 +63,7 @@ export default function UsersSwipe({usersData, swipe, loadMore}) {
                                         <p className="font-medium">{user.country}, {user.city}</p>
                                     </>
                                 )}
-                                {user.compatibility_percentage && userData.compatibility_percentage !== 0 && (
+                                {user.compatibility_percentage && user.compatibility_percentage !== 0 && (
                                     <div className={
                                         `ms-auto p-3 rounded-full flex items-center justify-center w-12 h-12 rounded-full ring-4 ring-inset ` +
                                         `${user.compatibility_percentage > 75 ? 'ring-green-500' : 'ring-orange-400'}`
