@@ -1,5 +1,8 @@
 name: deploy
-on: [ push ]
+on:
+  push:
+    branches:
+      - main
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
@@ -27,8 +30,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.BackendMeta.outputs.tags }}
+          labels: ${{ steps.BackendMeta.outputs.labels }}
 
       - name: Extract metadata for frontend
         id: FrontendMeta
@@ -43,8 +46,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.FrontendMeta.outputs.tags }}
+          labels: ${{ steps.FrontendMeta.outputs.labels }}
 
       - name: Extract metadata for recommends
         id: RecommendsMeta
@@ -59,8 +62,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.RecommendsMeta.outputs.tags }}
+          labels: ${{ steps.RecommendsMeta.outputs.labels }}
 
   server_update:
     needs: push_to_registry
