@@ -15,4 +15,4 @@ RUN python -m nltk.downloader stopwords && python -m nltk.downloader punkt
 
 COPY . ./
 
-EXPOSE 9000
+EXPOSE 8010
