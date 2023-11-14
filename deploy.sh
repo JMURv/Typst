@@ -11,7 +11,6 @@ echo "Pull changes"
 git pull origin main
 
 echo "Start typst containers"
-docker-compose build --no-cache
 docker-compose up
 
 echo "Finish deploying!"
