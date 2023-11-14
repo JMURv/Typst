@@ -45,3 +45,5 @@ ___
 - Phone compatible
 - Base SEO
 - Backend tested
+- Automated deploy
+- CI/CD
