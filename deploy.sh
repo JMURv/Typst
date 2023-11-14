@@ -8,9 +8,9 @@ docker image rm typst-frontend
 docker image rm typst-recommends
 
 echo "Pull changes"
-git pull
+git pull origin main
 
 echo "Start typst containers"
-docker-compose up
+docker-compose up --build
 
 echo "Finish deploying!"
