@@ -46,4 +46,5 @@ ___
 - Base SEO
 - Backend tested
 - Automated deploy
-- CI/CD
+- GitHub Actions used
+- GitHub Hooks used
