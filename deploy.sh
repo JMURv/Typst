@@ -9,10 +9,10 @@ docker rmi typst_backend:latest
 docker rmi typst_frontend:latest
 docker rmi typst_recommends:latest
 
-docker volume rm "$(docker volume ls -q --filter dangling=true)"
 docker volume rm typst_node_modules_typst
 
 echo "Pull changes"
+git checkout origin/main
 git pull origin main
 
 echo "Start typst containers"
