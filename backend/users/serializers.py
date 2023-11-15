@@ -3,7 +3,7 @@ import base64
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from services.models import Tag, ZodiacSign
+from services.models import ZodiacSign
 from .models import UserMedia
 from .utils import save_or_update_user_media, calculate_compatibility, \
     save_or_update_user_tags, calculate_geo_proximity

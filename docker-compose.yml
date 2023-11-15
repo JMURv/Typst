@@ -33,7 +33,7 @@ services:
 
   backend:
     container_name: backend_typst
-    image: "typst-backend:latest"
+    image: "typst_backend:latest"
     build:
       context: .
       dockerfile: Dockerfile
@@ -61,7 +61,7 @@ services:
 
   ws_backend:
     container_name: ws_backend_typst
-    image: "typst-backend:latest"
+    image: "typst_backend:latest"
     env_file:
       - ./docker/env/.env.prod
     volumes:
@@ -81,7 +81,7 @@ services:
   celery:
     container_name: celery_typst
     working_dir: /app/backend
-    image: "typst-backend:latest"
+    image: "typst_backend:latest"
     env_file:
       - docker/env/.env.prod
     command: celery -A typst worker --loglevel=info --logfile=../docker/logs/celery-worker.log
@@ -106,6 +106,7 @@ services:
 
   frontend:
     container_name: frontend_typst
+    image: "typst_frontend:latest"
     build:
       context: ./frontend
       dockerfile: Dockerfile

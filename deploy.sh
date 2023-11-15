@@ -5,12 +5,12 @@ docker-compose down
 echo "Deleting containers, images and volumes"
 docker rm "$(docker ps -q -f status=exited)"
 
-docker image rm typst-backend
-docker image rm typst-frontend
-docker image rm typst-recommends
+docker rmi typst_backend:latest
+docker rmi typst_frontend:latest
+docker rmi typst_recommends:latest
 
 docker volume rm "$(docker volume ls -q --filter dangling=true)"
-docker volume rm node_modules_typst
+docker volume rm typst_node_modules_typst
 
 echo "Pull changes"
 git pull origin main

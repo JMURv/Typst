@@ -19,8 +19,6 @@ from .serializers import (
     NotificationSerializer,
     TagSerializer
 )
-from geopy.geocoders import Nominatim
-
 from .utils import check_recaptcha
 
 

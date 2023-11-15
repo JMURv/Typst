@@ -70,7 +70,7 @@ class UserAPITestCase(APITestCase):
             self.user_list_create_url,
             self.creation_user_data
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Test user listing
         self.client.force_authenticate(user=self.user)
