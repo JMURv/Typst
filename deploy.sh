@@ -12,6 +12,8 @@ docker rmi typst_recommends:latest
 docker volume rm typst_node_modules_typst
 
 echo "Pull changes"
+git add .
+git commit -am "pull changes"
 git checkout origin/main
 git pull origin main
 

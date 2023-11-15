@@ -2,6 +2,8 @@
 
 docker/env/.env.dev
 docker/env/.env.prod
+docker/certbot/conf/
+docker/certbot/www/
 docker/logs/celery-worker.log
 
 backend/__pycache__/
