@@ -93,6 +93,7 @@ services:
 
   recommends:
     container_name: recommends_typst
+    image: "typst_recommends:latest"
     build:
       context: ./recommendations
       dockerfile: Dockerfile

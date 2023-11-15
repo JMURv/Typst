@@ -4,6 +4,7 @@ import string
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth.hashers import make_password
+from django.conf import settings
 from django.core.files import File
 
 from services.models import ZodiacSign
@@ -65,8 +66,10 @@ class Command(BaseCommand):
             "preferred_age": "sm",
             "preferred_height": "lg",
             "preferred_weight": "md",
-            'email': "test_email0@mail.ru",
-            'about': "Lorem ipsum dollar!",
+            'email': settings.EMAIL_ADMIN,
+            "zodiac_sign": ZodiacSign.objects.get(
+                pk=random.choice(range(1, 11))
+            ),
             "country": "RU",
             "city": "Moscow",
             "is_staff": True,
@@ -76,8 +79,18 @@ class Command(BaseCommand):
             username=admin_user_data.get('username')
         ).exists()
         if not is_admin:
-            User.objects.create_superuser(**admin_user_data)
-        if User.objects.count() > 5:
+            admin_user = User.objects.create_superuser(**admin_user_data)
+            image_paths = MAN_IMAGES_PATHS
+            for image in range(0, MAX_IMAGES):
+                with open(random.choice(image_paths), "rb") as user_image:
+                    new_user_media = UserMedia(
+                        author=admin_user,
+                        file=File(
+                            user_image
+                        )
+                    )
+                    new_user_media.save()
+        else:
             return self.stdout.write(
                 self.style.SUCCESS('Users already exist')
             )
@@ -115,6 +128,7 @@ class Command(BaseCommand):
         ]
         for user in users_list:
             new_user = User.objects.create(**user)
+            new_user.liked.add(admin_user)
             image_paths = MAN_IMAGES_PATHS if new_user.sex == "m"\
                 else WOMAN_IMAGES_PATHS
             for image in range(0, MAX_IMAGES):

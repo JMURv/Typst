@@ -49,8 +49,8 @@ export function ChatHeader({session, blacklistUser, chatUser, room, removeRoom})
             <div className="text-pink-pastel">
                 <div className="flex flex-row gap-3">
                     {chatUser ? (
-                        <a onClick={() => router.push(`/${chatUser.id}`)} className="cursor-pointer">
-                            <img src={chatUser.media[0]?.relative_path || null} width={40} height={40} className="rounded-full bg-pink-pastel" alt=""/>
+                        <a onClick={() => router.push(`/${chatUser.id}`)} className="cursor-pointer w-[50px] h-[50px]">
+                            <img src={chatUser.media[0]?.relative_path || null} width={50} height={50} className="rounded-full w-[50px] h-[50px] object-cover bg-pink-pastel" alt=""/>
                         </a>
                     ) : (
                         <div className="w-[40px] h-[40px] rounded-full bg-pink-pastel"/>
@@ -187,24 +187,34 @@ export default function ChatContainer({session, room, removeRoom, blacklistUser,
                 setModalFiles((prevState) => [...prevState, file])
             })
         }
-    }, [])
+    }, [room])
     const {getRootProps, getInputProps, isDragActive} = useDropzone({noClick: true, onDrop})
+
+    async function handleCodeKeyDown(e) {
+        if (e.key === 'Enter') {
+            await create()
+        }
+    }
+
+    useEffect(() => {
+        const ChatContainerDiv = ChatContainerRef.current
+        ChatContainerDiv.scrollTop = ChatContainerDiv.scrollHeight;
+    }, [room])
 
     useEffect(() => {
         const handleScroll = () => {
             const ChatContainerDiv = ChatContainerRef.current
             if (!ChatContainerDiv) return
 
-            const isUpperEndReached = ChatContainerDiv.scrollTop === 0;
+            const isUpperEndReached = ChatContainerDiv.scrollTop < 300;
             const hasOverflow = ChatContainerDiv.scrollHeight > ChatContainerDiv.clientHeight
 
             if (isUpperEndReached && hasOverflow && nextFetch.current && !isFetching) {
-                const previousScrollPosition = ChatContainerDiv.scrollHeight - ChatContainerDiv.scrollTop;
-                fetchMoreMessages(previousScrollPosition)
+                fetchMoreMessages()
             }
         }
 
-        async function fetchMoreMessages(previousScrollPosition) {
+        async function fetchMoreMessages() {
             if (isFetching || !nextFetch.current) return;
             setIsFetching(true)
             try {
@@ -245,9 +255,6 @@ export default function ChatContainer({session, room, removeRoom, blacklistUser,
                     })
                     nextFetch.current = data.next
                     setIsFetching(false)
-
-                    const ChatContainerDiv = ChatContainerRef.current
-                    ChatContainerDiv.scrollTop = ChatContainerDiv.scrollHeight - previousScrollPosition
                 } else {
                     console.error("Failed to load more messages")
                 }
@@ -368,6 +375,7 @@ export default function ChatContainer({session, room, removeRoom, blacklistUser,
                                        className="w-full rounded-full border-0 p-2.5 ring-1 ring-inset ring-gray-300 bg-zinc-200 outline-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-pink-pastel text-gray-900 font-medium dark:bg-purple-100 dark:ring-pink-pastel dark:text-gray-400 placeholder:text-gray-400 placeholder:font-medium sm:text-sm sm:leading-6 transition-all duration-300"
                                        value={messageText}
                                        onChange={(e) => setMessageText(e.target.value)}
+                                       onKeyDown={(e) => handleCodeKeyDown(e)}
                                        placeholder={room ? `${t("type your message here")}...`:`${t("choose a chat room")}!`}
                                        disabled={!room}
                                 />

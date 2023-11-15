@@ -4,12 +4,6 @@ Full-powered dating application.
 
 Working example: https://typst.ru
 
-```
-Signin credentials:
-
-Email: test_email5@mail.ru
-Password: 794613825Zx
-```
 ___
 ### Stack:
 

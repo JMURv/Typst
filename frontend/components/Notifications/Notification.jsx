@@ -30,7 +30,7 @@ export default function Notification({notification, onClose}) {
         >
             <div className={`flex flex-row gap-3 items-center cursor-pointer`}>
                 {notification.actor ? (
-                    <img loading={"lazy"} className="rounded-full bg-pink-pastel" width={40} height={40}
+                    <img loading={"lazy"} className="rounded-full bg-pink-pastel object-cover" width={40} height={40}
                          src={`${notification.actor.media[0].relative_path}`} alt=""/>
                 ) : (
                     <div className="w-[40px] h-[40px] rounded-full bg-pink-pastel"/>

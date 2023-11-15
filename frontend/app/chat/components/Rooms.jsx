@@ -77,7 +77,7 @@ export function Room({room, session, change}) {
         <div className="w-full flex flex-row p-3 bg-zinc-100 dark:bg-purple-200 hover:bg-zinc-200 dark:hover:bg-purple-300 cursor-pointer justify-between transition-color duration-200" onClick={() => change(room.id)}>
             <div className="flex flex-row gap-3 justify-start">
                 {chatUser ? (
-                    <img loading={"lazy"} src={chatUser.media[0]?.relative_path || ''} width={50} height={50} className="rounded-full bg-pink-pastel" alt=""/>
+                    <img loading={"lazy"} src={chatUser.media[0]?.relative_path || ''} width={50} height={50} className="rounded-full bg-pink-pastel object-cover w-[50px] h-[50px]" alt=""/>
                 ):(
                     <div className="w-[50px] h-[50px] rounded-full bg-pink-pastel"/>
                 )}
