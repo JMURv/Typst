@@ -4,13 +4,8 @@ import {Fancybox as NativeFancybox} from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 
 
-export default function MediaGridLoaded({files, setFiles, removeCallBack, isAuthor, gap}) {
+export default function MediaGridLoaded({files, gap}) {
     const FancyboxRef = useRef(null)
-
-    async function remove(mediaId) {
-        setFiles((prevFiles) => prevFiles.filter((file) => file.id !== mediaId))
-        await removeCallBack(mediaId)
-    }
 
     useEffect(() => {
         const container = FancyboxRef.current
@@ -31,12 +26,6 @@ export default function MediaGridLoaded({files, setFiles, removeCallBack, isAuth
             <div ref={FancyboxRef} className={`grid h-full w-full gap-${gap} media-grid-${files.length}`}>
                 {files.map((file) => (
                     <div key={file.id} className={`media-wrapper hover:z-20 ${gap ? 'rounded-xl':''}`}>
-                        {isAuthor && (
-                            <div onClick={() => remove(file.id)}
-                                 className="transition-all duration-300 text-zinc-200 absolute right-1 top-1 cursor-pointer hover:text-red-500">
-                                <DeleteSharp fontSize={"small"}/>
-                            </div>
-                        )}
                         {file.type.includes("image") ? (
                             <a data-fancybox="gallery" className="w-full h-full object-cover" href={file.relative_path}>
                                 <img loading={"lazy"} src={file.relative_path} width={1450} height={1450} className="w-full h-full object-cover" alt=""/>

@@ -1,10 +1,52 @@
-import {useEffect, useState, useRef} from "react";
+import {useEffect, useState, useRef, forwardRef} from "react";
 import MediaGridLoaded from "@/components/Media/MediaGridLoaded";
 import {CheckSharp, DeleteSharp, DoneAllSharp, EditSharp, ReplySharp} from "@mui/icons-material";
 import MessageDropdown from "@/components/Dropdown/MessageDropdown";
 import useTranslation from "next-translate/useTranslation";
+import {CSSTransition, TransitionGroup} from "react-transition-group";
 
-export default function Message({session, messageData, handleSeen, handleReply, handleEdit, remove}) {
+export const MessagesList = forwardRef(({ session, room, messages, handleReply, handleEdit, chatSocketRef }, ref) => {
+    async function handleSeen(messageId){
+        const chatSocket = chatSocketRef.current
+        chatSocket.send(JSON.stringify({
+            'type': 'seen',
+            'message': messageId,
+            'room': room,
+        }))
+    }
+    async function remove({messageData}) {
+        const chatSocket = chatSocketRef.current
+        chatSocket.send(JSON.stringify({
+            'type': 'remove',
+            'message': messageData.id,
+            'room': room,
+        }))
+    }
+
+    return (
+        <div ref={ref} className="bg-zinc-200 dark:bg-purple-100 h-full overflow-y-auto px-3 py-3">
+            <TransitionGroup>
+                {messages.length > 0 && (
+                    messages.map((message) => (
+                        <CSSTransition key={message.id} timeout={300}
+                                       classNames="message">
+                            <Message
+                                messageData={message}
+                                session={session}
+                                handleSeen={handleSeen}
+                                handleReply={handleReply}
+                                handleEdit={handleEdit}
+                                remove={remove}
+                            />
+                        </CSSTransition>
+                    ))
+                )}
+            </TransitionGroup>
+        </div>
+    )
+})
+
+export function Message({session, messageData, handleSeen, handleReply, handleEdit, remove}) {
     const { t } = useTranslation('chat')
 
     const messageRef = useRef(null)
@@ -83,9 +125,6 @@ export default function Message({session, messageData, handleSeen, handleReply, 
                     <div className={`${messageData.content ? 'bg-pink-pastel rounded-b-xl pb-6' : ''}`}>
                         <MediaGridLoaded
                             files={mediaFiles}
-                            setFiles={setMediaFiles}
-                            removeCallBack={true}
-                            isAuthor={isUser}
                         />
                         <p className={`font-medium text-base tracking-wide text-zinc-100 pt-2 px-3`}>{messageData.content}</p>
                     </div>

@@ -10,6 +10,7 @@ import {ArrowBack, ArrowBackSharp} from "@mui/icons-material";
 export default function ChatApp({session, roomsObject, currentRoom}) {
     const router = useRouter()
     const chatSocketRef = useRef(null)
+    const ChatContainerRef = useRef(null)
     const currentRoomRef = useRef(currentRoom || null)
     const nextFetch = useRef(roomsObject[currentRoom]?.next ?? null)
     const [allRoomsData, setAllRoomsData] = useState(roomsObject)
@@ -127,6 +128,17 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
                         [roomId]: updatedRoom,
                     }
                 })
+                if (roomId === currentRoomRef.current) {
+                    const ChatContainerDiv = ChatContainerRef.current
+                    const isEndTrasholdReached = ChatContainerDiv.scrollHeight - ChatContainerDiv.scrollTop <= ChatContainerDiv.clientHeight + 300
+                    setTimeout(() => {
+                        if (isEndTrasholdReached) {
+                            const targetElement = document.getElementById(`message${data.id}`)
+                            targetElement.scrollIntoView({behavior: 'smooth'});
+                    }
+                    }, 50)
+
+                }
             }
         };
         chatSocketRef.current.onclose = () => {
@@ -148,6 +160,7 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
                     />
                 </div>
                 <ChatContainer
+                    ChatContainerRef={ChatContainerRef}
                     session={session}
                     chatSocketRef={chatSocketRef}
                     removeRoom={removeRoom}
@@ -165,14 +178,15 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
                         }} className={`cursor-pointer`}>
                             <ArrowBackSharp fontSize={"large"} />
                         </div>
-                        <ChatContainer
-                            session={session}
-                            chatSocketRef={chatSocketRef}
-                            removeRoom={removeRoom}
-                            blacklistUser={handleBlockUser}
-                            room={currentRoomRef.current} setAllRoomsData={setAllRoomsData} allRoomsData={allRoomsData}
-                            nextFetch={nextFetch}
-                        />
+                        {/*<ChatContainer*/}
+                        {/*    // ChatContainerRef={ChatContainerRef}*/}
+                        {/*    session={session}*/}
+                        {/*    chatSocketRef={chatSocketRef}*/}
+                        {/*    removeRoom={removeRoom}*/}
+                        {/*    blacklistUser={handleBlockUser}*/}
+                        {/*    room={currentRoomRef.current} setAllRoomsData={setAllRoomsData} allRoomsData={allRoomsData}*/}
+                        {/*    nextFetch={nextFetch}*/}
+                        {/*/>*/}
                     </div>
                 ) : (
                     <div className="w-full bg-zinc-100 rounded-xl shadow-sm border-[1.5px] border-zinc-200 border-solid dark:border-pink-pastel dark:bg-purple-200">
