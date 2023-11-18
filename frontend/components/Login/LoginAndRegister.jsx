@@ -17,14 +17,14 @@ export default function LoginAndRegister() {
     const [isLoading, setIsLoading] = useState(false)
     const [pushNotifications, setPushNotifications] = useState([])
 
-    useEffect(() => {
+    // useEffect(() => {
         if (isSessionExp === 'exp') {
             setPushNotifications((prevNoty) => [
                 ...prevNoty,
                 {id: new Date().toISOString(), message: t('session has been expired')},
             ])
         }
-    }, [])
+    // }, [])
 
     return (
         <>

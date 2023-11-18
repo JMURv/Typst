@@ -5,6 +5,11 @@
   "files selected": "files selected",
   "cancel": "Cancel",
   "type your message here": "Type your message here",
-  "choose a chat room":"Choose a chat room",
-  "edited": "edited"
+  "choose a chat room": "Choose a chat room",
+  "edited": "edited",
+  "reply": "Reply",
+  "delete": "Delete",
+  "edit": "Edit",
+  "unblock": "Unblock",
+  "block":"Block"
 }

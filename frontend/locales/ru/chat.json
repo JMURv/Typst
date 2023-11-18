@@ -6,5 +6,10 @@
   "cancel": "Отменить",
   "type your message here": "Введите сообщение",
   "choose a chat room": "Выберите чат",
-  "edited": "изменено"
+  "edited": "изменено",
+  "reply": "Ответить",
+  "delete": "Удалить",
+  "edit": "Изменить",
+  "unblock": "Разблокировать",
+  "block":"Заблокировать"
 }

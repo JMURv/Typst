@@ -2,19 +2,21 @@ import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {BlockSharp, DeleteSharp, SettingsSharp} from "@mui/icons-material";
 import ManualDropdown from "@/components/Dropdown/ManualDropdown";
+import useTranslation from "next-translate/useTranslation";
 
 export default function ChatHeader({session, blacklistUser, chatUser, room, removeRoom}) {
+    const { t } = useTranslation('chat')
     const router = useRouter()
     const [isOpen, setIsOpen] = useState(false)
     const menuItems = []
 
     if (chatUser) {
         if (chatUser.blacklisted_by.includes(session.user.user_id)) {
-            menuItems.push({chatUser: chatUser, IconComponent: BlockSharp, label: "Unblock", clickHandler: handleBlock})
+            menuItems.push({chatUser: chatUser, IconComponent: BlockSharp, label: t("unblock"), clickHandler: handleBlock})
         } else {
-            menuItems.push({chatUser: chatUser, IconComponent: BlockSharp, label: "Block", clickHandler: handleBlock})
+            menuItems.push({chatUser: chatUser, IconComponent: BlockSharp, label: t("block"), clickHandler: handleBlock})
         }
-        menuItems.push({roomId: room, IconComponent: DeleteSharp, label: "Delete", clickHandler: handleRemoveRoom})
+        menuItems.push({roomId: room, IconComponent: DeleteSharp, label: t("delete"), clickHandler: handleRemoveRoom})
     }
 
 

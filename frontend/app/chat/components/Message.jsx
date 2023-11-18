@@ -59,14 +59,14 @@ export function Message({session, messageData, handleSeen, handleReply, handleEd
     const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 })
 
     let dropdownItems = [
-        {messageData: messageData, IconComponent: ReplySharp, label: "Reply", clickHandler: handleReply},
-        {messageData: messageData, IconComponent: DeleteSharp, label: "Delete", clickHandler: remove},
+        {messageData: messageData, IconComponent: ReplySharp, label: t("reply"), clickHandler: handleReply},
+        {messageData: messageData, IconComponent: DeleteSharp, label: t("delete"), clickHandler: remove},
     ]
     if (session.user.user_id === messageData.user.id) {
         dropdownItems = [
-            {messageData: messageData, IconComponent: ReplySharp, label: "Reply", clickHandler: handleReply},
-            {messageData: messageData, IconComponent: EditSharp, label: "Edit", clickHandler: handleEdit},
-            {messageData: messageData, IconComponent: DeleteSharp, label: "Delete", clickHandler: remove},
+            {messageData: messageData, IconComponent: ReplySharp, label: t("reply"), clickHandler: handleReply},
+            {messageData: messageData, IconComponent: EditSharp, label: t("edit"), clickHandler: handleEdit},
+            {messageData: messageData, IconComponent: DeleteSharp, label: t("delete"), clickHandler: remove},
         ]
     }
 
@@ -122,7 +122,7 @@ export function Message({session, messageData, handleSeen, handleReply, handleEd
                     </div>
                 )}
                 {isMedia ? (
-                    <div className={`${messageData.content ? 'bg-pink-pastel rounded-b-xl pb-6' : ''}`}>
+                    <div className={`${messageData.content ? 'bg-pink-pastel rounded-b-xl pb-6' : 'rounded-b-xl'}`}>
                         <MediaGridLoaded
                             files={mediaFiles}
                         />

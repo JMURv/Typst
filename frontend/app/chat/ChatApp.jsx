@@ -5,6 +5,7 @@ import {useEffect, useRef, useState} from "react";
 import {useRouter} from "next/navigation";
 import handleBlacklist from "@/lib/handleBlacklist";
 import {ArrowBack, ArrowBackSharp} from "@mui/icons-material";
+import GlobalLoading from "@/components/Loadings/GlobalLoading";
 
 
 export default function ChatApp({session, roomsObject, currentRoom}) {
@@ -14,6 +15,7 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
     const currentRoomRef = useRef(currentRoom || null)
     const nextFetch = useRef(roomsObject[currentRoom]?.next ?? null)
     const [allRoomsData, setAllRoomsData] = useState(roomsObject)
+    const [isLoading, setIsLoading] = useState(true)
 
     async function handleBlockUser(userId) {
         await handleBlacklist(session.access, userId)
@@ -57,6 +59,7 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
         )
 
         chatSocketRef.current.onopen = () => {
+            setIsLoading(false)
             console.log('WebSocket connection established')
         }
 
@@ -151,6 +154,9 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
 
     return (
         <>
+            {isLoading && (
+                <GlobalLoading isLoading={isLoading} />
+            )}
             <div className="hidden lg:flex flex-row flex-nowrap w-full gap-3 h-[75vh]">
                 <div className="w-full lg:w-1/4 bg-zinc-100 rounded-xl shadow-sm border-[1.5px] border-zinc-200 border-solid dark:border-pink-pastel dark:bg-purple-200">
                     <Rooms

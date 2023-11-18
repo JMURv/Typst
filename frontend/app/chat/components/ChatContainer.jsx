@@ -203,35 +203,35 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
                 <div className="flex flex-col z-40 backdrop-blur-sm rounded-xl absolute inset-y-0 inset-x-0 gap-3 p-5 justify-content-center text-center border-[4px] border-pink-pastel border-dashed transition-all duration-200"/>
             )}
             <ModalBase isOpen={mediaModal} setIsOpen={setMediaModal} label={`${modalFiles.length} ${t("files selected")}`}>
-            <div className="mt-2 flex flex-col gap-3">
-                <MediaGridUpload files={modalFiles} setFiles={setModalFiles}/>
-                <textarea
-                    cols={1}
-                    rows={1}
-                    className="textarea"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder={`${t("type caption here")}...`}
-                />
-            </div>
-            <div className="mt-4 flex flex-row gap-3 justify-between">
-                <button type="button" className="px-4 py-2 text-sm font-medium text-pink-pastel focus:outline-none"
-                    onClick={() => {setMediaModal(false); setModalFiles([])}}>
-                    {t("cancel")}
-                </button>
-                <div className="flex flex-row gap-5">
-                    <label htmlFor="file-input"
-                           className="flex justify-center items-center bg-pink-pastel hover:bg-pink-pastel/90 transition-color duration-200 h-full rounded-xl text-slate-200 p-2 cursor-pointer">
-                        <AddSharp fontSize={"medium"}/>
-                    </label>
-                    <div
-                        className="flex justify-center items-center bg-pink-pastel hover:bg-pink-pastel/90 transition-color duration-200 h-full rounded-xl text-slate-200 p-2 cursor-pointer"
-                        onClick={() => {create(); setMediaModal(false)}}>
-                        <SendSharp/>
+                <div className="mt-2 flex flex-col gap-3">
+                    <MediaGridUpload files={modalFiles} setFiles={setModalFiles}/>
+                    <textarea
+                        cols={1}
+                        rows={1}
+                        className="textarea"
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        placeholder={`${t("type caption here")}...`}
+                    />
+                </div>
+                <div className="mt-4 flex flex-row gap-3 justify-between">
+                    <button type="button" className="px-4 py-2 text-sm font-medium text-pink-pastel focus:outline-none"
+                        onClick={() => {setMediaModal(false); setModalFiles([])}}>
+                        {t("cancel")}
+                    </button>
+                    <div className="flex flex-row gap-5">
+                        <label htmlFor="file-input"
+                               className="flex justify-center items-center bg-pink-pastel hover:bg-pink-pastel/90 transition-color duration-200 h-full rounded-xl text-slate-200 p-2 cursor-pointer">
+                            <AddSharp fontSize={"medium"}/>
+                        </label>
+                        <div
+                            className="flex justify-center items-center bg-pink-pastel hover:bg-pink-pastel/90 transition-color duration-200 h-full rounded-xl text-slate-200 p-2 cursor-pointer"
+                            onClick={() => {create(); setMediaModal(false)}}>
+                            <SendSharp/>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </ModalBase>
+            </ModalBase>
             <ChatHeader
                 session={session}
                 blacklistUser={blacklistUser}
@@ -249,11 +249,33 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
                 handleEdit={handleEdit}
             />
             <div className="flex flex-col">
-                <MessageReply
-                    isReply={isReply} setIsReply={setIsReply}
-                    replyMessage={replyMessage}
-                    setReplyMessage={setReplyMessage}
-                />
+                <MessageReply isReply={isReply}>
+                    <div className="flex flex-row items-center border-l-2 border-l-pink-pastel border-l-solid p-2 px-3 flex flex-row gap-1">
+                        {replyMessage && (
+                            <>
+                                {replyMessage.media_files.length > 0 && (
+                                    <img
+                                        src={replyMessage.media_files[0].relative_path}
+                                        className="rounded-full"
+                                        width={55}
+                                        height={55}
+                                        alt=""
+                                    />
+                                )}
+                                <div className="w-full font-medium text-sm">
+                                    <p className="truncate">{replyMessage.user.username}</p>
+                                    <p className="truncate">{replyMessage.content}</p>
+                                </div>
+                            </>
+                        )}
+                        <div onClick={() => {
+                            setIsReply(false)
+                            setReplyMessage('')
+                        }} className="ms-auto text-pink-pastel">
+                            <CloseSharp/>
+                        </div>
+                    </div>
+                </MessageReply>
                 <div className="flex flex-row p-3 gap-3 bg-zinc-100 dark:bg-purple-200 rounded-b-xl items-center">
                     {isEdit ? (
                         <>
