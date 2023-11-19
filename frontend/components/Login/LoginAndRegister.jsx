@@ -13,18 +13,15 @@ export default function LoginAndRegister() {
     const searchParams = useSearchParams()
     const page = searchParams.get("page")
     const isSessionExp = searchParams.get("isSessionExp")
-
     const [isLoading, setIsLoading] = useState(false)
-    const [pushNotifications, setPushNotifications] = useState([])
 
-    // useEffect(() => {
-        if (isSessionExp === 'exp') {
-            setPushNotifications((prevNoty) => [
-                ...prevNoty,
-                {id: new Date().toISOString(), message: t('session has been expired')},
-            ])
-        }
-    // }, [])
+    let defaultNotificationsState = [
+        {id: new Date().toISOString(), message: t('session has been expired')}
+    ]
+    if (isSessionExp){
+        defaultNotificationsState.push()
+    }
+    const [pushNotifications, setPushNotifications] = useState(defaultNotificationsState)
 
     return (
         <>

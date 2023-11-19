@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {
     AddSharp, BlockSharp,
     CloseSharp, DeleteSharp,
@@ -6,15 +6,16 @@ import {
     SettingsSharp,
 } from "@mui/icons-material";
 import {MessagesList} from "@/app/chat/components/Message";
-import MessageReply from "@/app/chat/components/MessageReply";
 import {useDropzone} from "react-dropzone";
 import ModalBase from "@/components/Modals/ModalBase";
 import MediaGridUpload from "@/components/Media/MediaGridUpload";
 import useTranslation from "next-translate/useTranslation";
 import ChatHeader from "@/app/chat/components/ChatHeader";
 
-const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistUser, allRoomsData, setAllRoomsData, chatSocketRef, nextFetch }) => {
+const ChatContainer = ({ session, room, removeRoom, blacklistUser, allRoomsData, setAllRoomsData, chatSocketRef }) => {
     const { t } = useTranslation('chat')
+    const ChatContainerRef = useRef(null)
+    const nextFetch = useRef(allRoomsData[room]?.next ?? null)
     const chatUser = allRoomsData[room]?.members.find(member => member.id !== session.user.user_id) ?? null
     const messages = allRoomsData[room]?.messages ?? []
     const [isFetching, setIsFetching] = useState(false)
@@ -104,14 +105,22 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
 
     const [mediaModal, setMediaModal] = useState(false)
     const onDrop = useCallback((acceptedFiles, rejectedFiles, event) => {
-        if (room) {
-            setMediaModal(true)
-            acceptedFiles.forEach((file) => {
-                setModalFiles((prevState) => [...prevState, file])
-            })
-        }
+        setMediaModal(true)
+        acceptedFiles.forEach((file) => {
+            setModalFiles((prevState) => [...prevState, file])
+        })
     }, [room])
-    const {getRootProps, getInputProps, isDragActive} = useDropzone({noClick: true, onDrop})
+
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({
+        noClick: true, onDrop
+    })
+
+    async function closeModalWindow(){
+        setMediaModal(false)
+        setTimeout(() => {
+            setModalFiles([])
+        }, 300)
+    }
 
     async function handleCodeKeyDown(e) {
         if (e.key === 'Enter') {
@@ -119,11 +128,26 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
         }
     }
 
-    useEffect(() => {
+    if (ChatContainerRef.current){
         const ChatContainerDiv = ChatContainerRef.current
-        ChatContainerDiv.scrollTop = ChatContainerDiv.scrollHeight;
-    }, [room])
+        ChatContainerDiv.scrollTop = ChatContainerDiv.scrollHeight
+    }
 
+    useEffect(() => {
+        if (messages.length > 0) {
+            const ChatContainerDiv = ChatContainerRef.current
+            const isEndTrasholdReached = ChatContainerDiv.scrollHeight - ChatContainerDiv.scrollTop <= ChatContainerDiv.clientHeight + 300
+            setTimeout(() => {
+                if (isEndTrasholdReached) {
+                    const newMessage = messages[messages.length - 1]
+                    const targetElement = document.getElementById(`message${newMessage.id}`)
+                    targetElement.scrollIntoView({behavior: 'smooth'});
+                }
+            }, 50)
+        }
+    }, [messages.length])
+
+    let cooldown = false
     useEffect(() => {
         const handleScroll = () => {
             const ChatContainerDiv = ChatContainerRef.current
@@ -132,7 +156,7 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
             const isUpperEndReached = ChatContainerDiv.scrollTop < 300;
             const hasOverflow = ChatContainerDiv.scrollHeight > ChatContainerDiv.clientHeight
 
-            if (isUpperEndReached && hasOverflow && nextFetch.current && !isFetching) {
+            if (isUpperEndReached && hasOverflow && nextFetch.current && !isFetching && !cooldown) {
                 fetchMoreMessages()
             }
         }
@@ -140,6 +164,10 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
         async function fetchMoreMessages() {
             if (isFetching || !nextFetch.current) return;
             setIsFetching(true)
+            cooldown = true
+            setTimeout(() => {
+                cooldown = false
+            }, 3000)
             try {
                 const response = await fetch(nextFetch.current, {
                     method: "GET",
@@ -202,7 +230,7 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
             {isDragActive && (
                 <div className="flex flex-col z-40 backdrop-blur-sm rounded-xl absolute inset-y-0 inset-x-0 gap-3 p-5 justify-content-center text-center border-[4px] border-pink-pastel border-dashed transition-all duration-200"/>
             )}
-            <ModalBase isOpen={mediaModal} setIsOpen={setMediaModal} label={`${modalFiles.length} ${t("files selected")}`}>
+            <ModalBase isOpen={mediaModal} setIsOpen={closeModalWindow} label={`${modalFiles.length} ${t("files selected")}`}>
                 <div className="mt-2 flex flex-col gap-3">
                     <MediaGridUpload files={modalFiles} setFiles={setModalFiles}/>
                     <textarea
@@ -215,8 +243,11 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
                     />
                 </div>
                 <div className="mt-4 flex flex-row gap-3 justify-between">
-                    <button type="button" className="px-4 py-2 text-sm font-medium text-pink-pastel focus:outline-none"
-                        onClick={() => {setMediaModal(false); setModalFiles([])}}>
+                    <button
+                        type="button"
+                        className="px-4 py-2 text-sm font-medium text-pink-pastel focus:outline-none"
+                        onClick={closeModalWindow}
+                    >
                         {t("cancel")}
                     </button>
                     <div className="flex flex-row gap-5">
@@ -249,14 +280,14 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
                 handleEdit={handleEdit}
             />
             <div className="flex flex-col">
-                <MessageReply isReply={isReply}>
+                <div className={`bg-zinc-100 dark:bg-purple-200 ${isReply ? 'h-[70px]':'h-[0px]'}`}>
                     <div className="flex flex-row items-center border-l-2 border-l-pink-pastel border-l-solid p-2 px-3 flex flex-row gap-1">
                         {replyMessage && (
                             <>
                                 {replyMessage.media_files.length > 0 && (
                                     <img
                                         src={replyMessage.media_files[0].relative_path}
-                                        className="rounded-full"
+                                        className="rounded-xl"
                                         width={55}
                                         height={55}
                                         alt=""
@@ -275,7 +306,7 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
                             <CloseSharp/>
                         </div>
                     </div>
-                </MessageReply>
+                </div>
                 <div className="flex flex-row p-3 gap-3 bg-zinc-100 dark:bg-purple-200 rounded-b-xl items-center">
                     {isEdit ? (
                         <>
@@ -300,10 +331,10 @@ const ChatContainer = ({ session, room, ChatContainerRef, removeRoom, blacklistU
                         </>
                     ) : (
                         <>
-                            <label htmlFor="file-input"
+                            <label htmlFor={`file-input-${room}`}
                                    className="flex justify-center items-center bg-pink-pastel hover:bg-pink-pastel/90 transition-color duration-200 h-full rounded-xl text-slate-200 p-2 cursor-pointer">
                                 <AddSharp fontSize={"medium"}/>
-                                <input id="file-input" {...getInputProps()} disabled={!room}/>
+                                <input id={`file-input-${room}`} {...getInputProps()} disabled={!room}/>
                             </label>
                             <input type="text"
                                    className="w-full rounded-full border-0 p-2.5 ring-1 ring-inset ring-gray-300 bg-zinc-200 outline-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-pink-pastel text-gray-900 font-medium dark:bg-purple-100 dark:ring-pink-pastel dark:text-gray-400 placeholder:text-gray-400 placeholder:font-medium sm:text-sm sm:leading-6 transition-all duration-300"

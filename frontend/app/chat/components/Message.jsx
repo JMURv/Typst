@@ -28,8 +28,11 @@ export const MessagesList = forwardRef(({ session, room, messages, handleReply, 
             <TransitionGroup>
                 {messages.length > 0 && (
                     messages.map((message) => (
-                        <CSSTransition key={message.id} timeout={300}
-                                       classNames="message">
+                        <CSSTransition
+                            key={message.id}
+                            timeout={300}
+                            classNames="message"
+                        >
                             <Message
                                 messageData={message}
                                 session={session}
@@ -109,9 +112,9 @@ export function Message({session, messageData, handleSeen, handleReply, handleEd
                         {messageData.reply.media_files.length > 0 && (
                             <img
                                 src={messageData.reply.media_files[0].relative_path}
-                                className="rounded-full"
-                                width={25}
-                                height={25}
+                                className="ms-2 rounded-xl object-cover"
+                                width={50}
+                                height={50}
                                 alt=""
                             />
                         )}
@@ -122,14 +125,16 @@ export function Message({session, messageData, handleSeen, handleReply, handleEd
                     </div>
                 )}
                 {isMedia ? (
-                    <div className={`${messageData.content ? 'bg-pink-pastel rounded-b-xl pb-6' : 'rounded-b-xl'}`}>
+                    <div className={`${messageData.content ? 'bg-pink-pastel rounded-b-xl pb-6' : 'bg-pink-pastel rounded-b-xl pb-6'}`}>
                         <MediaGridLoaded
                             files={mediaFiles}
                         />
-                        <p className={`font-medium text-base tracking-wide text-zinc-100 pt-2 px-3`}>{messageData.content}</p>
+                        <p className={`font-medium text-base tracking-wide text-zinc-100 pt-2 px-3 truncate`}>{messageData.content}</p>
                     </div>
                 ) : (
-                    <p className={`font-medium text-base tracking-wide text-zinc-100`}>{messageData.content}</p>
+                    <div className={`w-full overflow-auto`}>
+                        <p className={`font-medium text-base tracking-wide whitespace-normal text-zinc-100`}>{messageData.content}</p>
+                    </div>
                 )}
             </div>
             <div className={`absolute w-full px-2 bottom-1 right-1 ms-auto flex flex-row items-center justify-end ${isMedia ? 'bottom-7':''}`}>

@@ -83,11 +83,6 @@ export default function Nav({session}) {
         const webSocket = new WebSocket(
             `${wsStart}${window.location.host}/ws/notifications/${session.user.user_id}/`
         )
-
-        webSocket.onopen = () => {
-            console.log('Connected')
-        }
-
         webSocket.onmessage = async function (event) {
             const data = JSON.parse(event.data)
             if (data.type === "send_notification"){
@@ -95,10 +90,6 @@ export default function Nav({session}) {
                 setPushNotifications((prevNotifications) => [...prevNotifications, data.notification])
                 setIsAllRead(false)
             }
-        }
-
-        webSocket.onclose = () => {
-            console.log('Disconnected')
         }
         return () => {
             webSocket.close()

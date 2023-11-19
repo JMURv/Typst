@@ -5,7 +5,7 @@ import {CloseSharp} from "@mui/icons-material";
 export default function ModalBase({isOpen, setIsOpen, label, children}) {
     return (
         <Transition appear show={isOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-40" onClose={() => setIsOpen(false)}>
+            <Dialog as="div" className="relative" onClose={() => setIsOpen(false)}>
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"

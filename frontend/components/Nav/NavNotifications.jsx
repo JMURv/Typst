@@ -1,4 +1,4 @@
-import {Fragment, useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState} from "react";
 import {CloseSharp, SyncSharp} from "@mui/icons-material";
 import {useRouter} from "next/navigation";
 import SidebarBase from "@/components/Sidebar/SidebarBase";
@@ -97,7 +97,9 @@ export default function NavNotifications({session, isNotifications, setIsNotific
             >
                 <div className="p-5 flex flex-row items-center gap-5">
                     <DangerButton onClickHandler={() => setIsNotifications((value) => !value)}>
-                        <CloseSharp/>
+                        <div suppressHydrationWarning={true}>
+                            <CloseSharp></CloseSharp>
+                        </div>
                     </DangerButton>
                     <div className="ms-auto" onClick={() => removeNotification("all")}>
                         <p className="cursor-pointer text-base font-medium">{t("delete all")}</p>
@@ -106,7 +108,7 @@ export default function NavNotifications({session, isNotifications, setIsNotific
                 <div className="flex flex-col gap-3">
                     <div className="flex flex-col w-full h-full justify-center items-center">
                         {userNotifications.length > 0 ? (
-                            <TransitionGroup component={Fragment}>
+                            <TransitionGroup className={`w-full h-full`}>
                                 {userNotifications.map((notification) => (
                                     <CSSTransition key={notification.id} timeout={500} classNames="notifications">
                                         <NotificationCard
@@ -135,7 +137,7 @@ function NotificationCard({remove, notification}) {
     return (
         <div className="flex flex-row w-full h-25 p-5 bg-pink-pastel/20 hover:bg-pink-pastel/40 transition-color duration-200">
             <div className="flex flex-row gap-3 items-center cursor-pointer" onClick={() => router.push(`/${notification.actor.id}`)}>
-                <img loading={"lazy"} className="rounded-full" width={40} height={40} src={`${notification.actor.media[0].relative_path}`} alt=""/>
+                <img loading={"lazy"} className="rounded-full object-cover w-[50px] h-[50px]" width={50} height={50} src={`${notification.actor.media[0].relative_path}`} alt=""/>
                 <p className="w-[75%] font-medium text-sm ">{notification.message}</p>
             </div>
             <div className="ms-auto" onClick={() => remove(notification.id)}>

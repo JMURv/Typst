@@ -1,6 +1,7 @@
 import {DeleteSharp, FileCopySharp} from "@mui/icons-material";
 
 export default function MediaGridUpload({files, setFiles}) {
+
     const remove = (index) => {
         const newFiles = [...files]
         newFiles.splice(index, 1)

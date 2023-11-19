@@ -2,4 +2,3 @@
 .dockerignore
 Dockerfile
 .gitignore
-db.sqlite3

@@ -4,16 +4,14 @@ import ChatContainer from "@/app/chat/components/ChatContainer";
 import {useEffect, useRef, useState} from "react";
 import {useRouter} from "next/navigation";
 import handleBlacklist from "@/lib/handleBlacklist";
-import {ArrowBack, ArrowBackSharp} from "@mui/icons-material";
 import GlobalLoading from "@/components/Loadings/GlobalLoading";
+import {ArrowBackIosNew} from "@mui/icons-material";
+import EmptyCurrRoom from "@/app/chat/components/EmptyCurrRoom";
 
 
 export default function ChatApp({session, roomsObject, currentRoom}) {
     const router = useRouter()
     const chatSocketRef = useRef(null)
-    const ChatContainerRef = useRef(null)
-    const currentRoomRef = useRef(currentRoom || null)
-    const nextFetch = useRef(roomsObject[currentRoom]?.next ?? null)
     const [allRoomsData, setAllRoomsData] = useState(roomsObject)
     const [isLoading, setIsLoading] = useState(true)
 
@@ -47,10 +45,6 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
             console.log(`Error while deleting the room: ${e}`)
         }
     }
-
-    useEffect(() => {
-        nextFetch.current = allRoomsData[currentRoomRef.current]?.next ?? null
-    }, [allRoomsData, currentRoom])
 
     useEffect(() => {
         const wsStart = window.location.protocol === "https:" ? "wss://" : "ws://"
@@ -131,17 +125,6 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
                         [roomId]: updatedRoom,
                     }
                 })
-                if (roomId === currentRoomRef.current) {
-                    const ChatContainerDiv = ChatContainerRef.current
-                    const isEndTrasholdReached = ChatContainerDiv.scrollHeight - ChatContainerDiv.scrollTop <= ChatContainerDiv.clientHeight + 300
-                    setTimeout(() => {
-                        if (isEndTrasholdReached) {
-                            const targetElement = document.getElementById(`message${data.id}`)
-                            targetElement.scrollIntoView({behavior: 'smooth'});
-                    }
-                    }, 50)
-
-                }
             }
         };
         chatSocketRef.current.onclose = () => {
@@ -157,52 +140,42 @@ export default function ChatApp({session, roomsObject, currentRoom}) {
             {isLoading && (
                 <GlobalLoading isLoading={isLoading} />
             )}
-            <div className="hidden lg:flex flex-row flex-nowrap w-full gap-3 h-[75vh]">
-                <div className="w-full lg:w-1/4 bg-zinc-100 rounded-xl shadow-sm border-[1.5px] border-zinc-200 border-solid dark:border-pink-pastel dark:bg-purple-200">
+            <div className={`flex flex-row flex-nowrap w-full gap-3 h-[75vh]`}>
+                <div className={`w-full lg:w-1/4 ${currentRoom && 'hidden lg:flex lg:flex-col'} bg-zinc-100 rounded-xl shadow-sm border-[1.5px] border-zinc-200 border-solid dark:border-pink-pastel dark:bg-purple-200 overflow-auto no-scrollbar`}>
                     <Rooms
                         session={session}
-                        rooms={allRoomsData} setRooms={setAllRoomsData} remove={removeRoom}
-                        currentRoomRef={currentRoomRef}
+                        rooms={allRoomsData}
+                        setRooms={setAllRoomsData}
+                        remove={removeRoom}
                     />
                 </div>
-                <ChatContainer
-                    ChatContainerRef={ChatContainerRef}
-                    session={session}
-                    chatSocketRef={chatSocketRef}
-                    removeRoom={removeRoom}
-                    blacklistUser={handleBlockUser}
-                    room={currentRoomRef.current} setAllRoomsData={setAllRoomsData} allRoomsData={allRoomsData}
-                    nextFetch={nextFetch}
-                />
-            </div>
-            <div className={`flex lg:hidden w-full gap-3 h-[75vh]`}>
-                {currentRoomRef.current ? (
-                    <div className={`flex flex-col gap-3 w-full`}>
-                        <div onClick={() => {
-                            router.push('chat')
-                            currentRoomRef.current = ''
-                        }} className={`cursor-pointer`}>
-                            <ArrowBackSharp fontSize={"large"} />
-                        </div>
-                        {/*<ChatContainer*/}
-                        {/*    // ChatContainerRef={ChatContainerRef}*/}
-                        {/*    session={session}*/}
-                        {/*    chatSocketRef={chatSocketRef}*/}
-                        {/*    removeRoom={removeRoom}*/}
-                        {/*    blacklistUser={handleBlockUser}*/}
-                        {/*    room={currentRoomRef.current} setAllRoomsData={setAllRoomsData} allRoomsData={allRoomsData}*/}
-                        {/*    nextFetch={nextFetch}*/}
-                        {/*/>*/}
+                <div className={`w-full h-full ${currentRoom ? 'flex flex-col w-full':'hidden lg:flex lg:flex-col'}`}>
+                    <div className={`flex lg:hidden w-full mb-3 cursor-pointer`} onClick={() => router.push('/chat')}>
+                        <ArrowBackIosNew />
                     </div>
-                ) : (
-                    <div className="w-full bg-zinc-100 rounded-xl shadow-sm border-[1.5px] border-zinc-200 border-solid dark:border-pink-pastel dark:bg-purple-200">
-                        <Rooms
-                            session={session}
-                            rooms={allRoomsData} setRooms={setAllRoomsData} remove={removeRoom}
-                            currentRoomRef={currentRoomRef}
-                        />
+                    <div className={`w-full h-full`}>
+                        {allRoomsData && Object.values(allRoomsData).length > 0 && currentRoom ? (
+                            Object.values(allRoomsData).map((room) => (
+                                <div
+                                    key={room.id}
+                                    className={`${parseInt(currentRoom) === room.id ? 'flex w-full h-full' : 'hidden'}`}
+                                >
+                                    <ChatContainer
+                                        session={session}
+                                        chatSocketRef={chatSocketRef}
+                                        removeRoom={removeRoom}
+                                        blacklistUser={handleBlockUser}
+                                        room={room.id}
+                                        setAllRoomsData={setAllRoomsData}
+                                        allRoomsData={allRoomsData}
+                                    />
+                                </div>
+                            ))
+                        ) : (
+                            <EmptyCurrRoom session={session}/>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </>
     )

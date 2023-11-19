@@ -49,7 +49,7 @@ def calculate_geo_proximity(request_user: User, inspected_user: User) -> float:
             inspected_user_geo.get("longitude")
         )
         distance = geodesic(request_user_geo, inspected_user_geo).km
-        return distance
+        return int(distance)
     return None
 
 

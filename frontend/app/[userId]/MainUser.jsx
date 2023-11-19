@@ -30,8 +30,8 @@ export default function MainUser({
     const isLikedByUser = userData.liked.includes(requestUser.id)
     const isLikedByReqUser = requestUser.liked.includes(userData.id)
     const isDislikedByReqUser = requestUser.disliked.includes(userData.id)
-    let canMessage = false
-    if (isLikedByReqUser && isLikedByUser) canMessage = true
+    let isMatch = false
+    if (isLikedByReqUser && isLikedByUser) isMatch = true
 
     async function handleSwipe(action) {
         const userId = userData.id
@@ -75,18 +75,22 @@ export default function MainUser({
                             setUserData={setUserData}
                         />
                     ) : (
-                        canMessage ? (
+                        isMatch ? (
                             <TextUser session={session} userId={userId}/>
                         ) : (
                             <div className="ms-auto flex flex-row flex-wrap items-center gap-5">
-                                {userData.compatibility_percentage && userData.compatibility_percentage !== 0 && (
-                                    <div className={
-                                        `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
-                                        `${userData.compatibility_percentage > 75 ? 'ring-green-500' : 'ring-orange-400'}`
-                                    }>
-                                        <p className={`font-medium`}>{userData.compatibility_percentage}</p>
-                                    </div>
+
+                                {userData.compatibility_percentage && (
+                                    userData.compatibility_percentage > 10 && (
+                                        <div className={
+                                            `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
+                                            `${userData.compatibility_percentage > 75 ? 'ring-green-500' : 'ring-orange-400'}`
+                                        }>
+                                            <p className={`font-medium`}>{userData.compatibility_percentage}</p>
+                                        </div>
+                                    )
                                 )}
+
                                 <div
                                     className={`cursor-pointer p-2 ring-2 ring-inset ring-green-400 ${isLikedByReqUser ? 'bg-green-400 text-green-600 hover:bg-transparent hover:text-green-400' : 'text-green-400 hover:bg-green-400 hover:text-green-600'} transition-color duration-200 text-center rounded-full`}
                                     onClick={() => handleSwipe("like")}>

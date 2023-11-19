@@ -8,10 +8,6 @@ export default function Notification({notification, onClose}) {
         const startTimer = setTimeout(() => {
             setVisible(true)
         }, 0)
-        return () => clearTimeout(startTimer)
-    }, [])
-
-    useEffect(() => {
         const endTimer = setTimeout(() => {
             setVisible(false)
         }, 4000)
@@ -19,6 +15,7 @@ export default function Notification({notification, onClose}) {
             onClose(notification.id)
         }, 4300)
         return () => {
+            clearTimeout(startTimer)
             clearTimeout(endTimer)
             clearTimeout(deletionTimer)
         }

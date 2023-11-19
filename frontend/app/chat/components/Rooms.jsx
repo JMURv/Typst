@@ -2,7 +2,7 @@ import {SearchSharp} from "@mui/icons-material";
 import {useRouter} from "next/navigation";
 import useTranslation from "next-translate/useTranslation";
 
-export default function Rooms({session, currentRoomRef, rooms, setRooms, remove}) {
+export default function Rooms({session, rooms, setRooms, remove}) {
     const { t } = useTranslation('chat')
     const router = useRouter()
 
@@ -26,7 +26,6 @@ export default function Rooms({session, currentRoomRef, rooms, setRooms, remove}
     }
 
     async function changeRoom(roomId) {
-        currentRoomRef.current = roomId
         router.push(`/chat/?r=${roomId}`)
     }
 
@@ -74,22 +73,22 @@ export default function Rooms({session, currentRoomRef, rooms, setRooms, remove}
 export function Room({room, session, change}) {
     const chatUser = room.members.find(member => member.id !== session.user.user_id) ?? null
     return (
-        <div className="w-full flex flex-row p-3 bg-zinc-100 dark:bg-purple-200 hover:bg-zinc-200 dark:hover:bg-purple-300 cursor-pointer justify-between transition-color duration-200" onClick={() => change(room.id)}>
-            <div className="flex flex-row gap-3 justify-start">
+        <div className="relative flex flex-row p-3 bg-zinc-100 dark:bg-purple-200 hover:bg-zinc-200 dark:hover:bg-purple-300 cursor-pointer transition-color duration-200" onClick={() => change(room.id)}>
+            <div className="w-full flex flex-row gap-3">
                 {chatUser ? (
                     <img loading={"lazy"} src={chatUser.media[0]?.relative_path || ''} width={50} height={50} className="rounded-full bg-pink-pastel object-cover w-[50px] h-[50px]" alt=""/>
                 ):(
                     <div className="w-[50px] h-[50px] rounded-full bg-pink-pastel"/>
                 )}
 
-                <div className="chat-info">
+                <div className="max-w-[200px]">
                     <h6 className="font-medium text-base">
                         {chatUser && chatUser.username}
                     </h6>
-                    <p className="font-medium text-sm">{room.last_message.content}</p>
+                    <p className="font-medium text-sm truncate">{room.last_message.content}</p>
                 </div>
             </div>
-            <div className="flex flex-col text-right">
+            <div className="absolute top-3 right-2 text-right">
                 <div className="chat-time">
                     <p className="font-medium text-sm">{room.last_message.timestamp}</p>
                 </div>

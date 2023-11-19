@@ -13,7 +13,7 @@ class RoomSerializer(serializers.ModelSerializer):
     def get_messages(self, instance):
         messages = Message.objects.filter(
             room=instance
-        ).order_by('-timestamp')[:19:-1]
+        ).order_by('-timestamp')[:50:-1]
         messages_serializer = MessageSerializer(messages, many=True).data
 
         try:
