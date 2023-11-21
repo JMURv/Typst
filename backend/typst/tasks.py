@@ -3,8 +3,14 @@ from .email import (
     send_activate_email_code,
     send_login_email_message,
     compute_user_text_recommends,
-    send_password_reset_message
+    send_password_reset_message,
+    send_verification_submission_email
 )
+
+
+@shared_task
+def send_verification_submission_email_task(user_id, photo_name, photo_data):
+    return send_verification_submission_email(user_id, photo_name, photo_data)
 
 
 @shared_task

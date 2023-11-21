@@ -1,3 +1,5 @@
+import base64
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
@@ -21,10 +23,11 @@ from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken
 )
 
+from services.models import Notification
 from services.utils import check_recaptcha
 from typst.tasks import (
     send_password_reset_message_task,
-    compute_user_text_recommends_task,
+    compute_user_text_recommends_task, send_verification_submission_email_task,
 )
 
 from django.core.cache import cache
@@ -40,7 +43,7 @@ from .serializers import (
 from .models import UserMedia
 from .utils import (
     calculate_preferences_and_order,
-    exclude_curr_user_and_disliked
+    exclude_curr_user_and_disliked, send_ws_notification
 )
 
 
@@ -445,3 +448,47 @@ class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         return super().update(request, *args, **kwargs)
+
+
+class VerifyUser(APIView):
+    def post(self, request, *args, **kwargs):
+        is_photo = request.data.get('file', None)
+        if is_photo:
+            data, name = is_photo.read(), is_photo.name
+            photo_data_base64 = base64.b64encode(data).decode()
+            send_verification_submission_email_task.delay(
+                user_id=request.user.id,
+                photo_name=name,
+                photo_data=photo_data_base64,
+            )
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+def approve_verification(request, user_id):
+    if request.user.is_staff:
+        user_profile = get_object_or_404(get_user_model(), id=user_id)
+        user_profile.is_verified = True
+        user_profile.save()
+
+        new_notification = Notification.objects.create(
+            recipient=user_profile,
+            message="Your profile has been verified",
+            action="verified_submission"
+        )
+        send_ws_notification(user_id, new_notification)
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+def decline_verification(request, user_id):
+    if request.user.is_staff:
+        user_profile = get_object_or_404(get_user_model(), id=user_id)
+        new_notification = Notification.objects.create(
+            recipient=user_profile,
+            message="Your profile has not been verified",
+            action="declined_submission"
+        )
+        send_ws_notification(user_id, new_notification)
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_403_FORBIDDEN)

@@ -1,3 +1,4 @@
+import base64
 from random import randint
 import requests
 
@@ -9,7 +10,7 @@ from django.utils.encoding import force_bytes
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.cache import cache
 
 from users.utils import exclude_curr_user_and_disliked
@@ -45,6 +46,33 @@ def compute_user_text_recommends(user_id: int):
     ).json()
     curr_user.recommends.set(text_response | image_response)
     return
+
+
+def send_verification_submission_email(user_id, photo_name, photo_data):
+    user = get_object_or_404(get_user_model(), id=user_id)
+    subject = 'Verification submission'
+    email_attachment = base64.b64decode(photo_data)
+
+    domain = Site.objects.get_current().domain
+    scheme = settings.CURRENT_SCHEME
+    base_url = f'{scheme}{domain}'
+    accept_url = f'admin/verification/accept/{user.id}/'
+    decline_url = f'admin/verification/decline/{user.id}/'
+
+    html_message = render_to_string('email/send_verification_submission_email.html', {
+        'accept_url': base_url + accept_url,
+        'decline_url': base_url + decline_url
+    })
+    plain_message = html_message.strip_tags()
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=plain_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[settings.EMAIL_ADMIN]
+    )
+    email.attach_alternative(html_message, "text/html")
+    email.attach(photo_name, email_attachment)
+    email.send()
 
 
 def send_activate_email_code(target_email, key):

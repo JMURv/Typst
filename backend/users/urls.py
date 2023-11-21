@@ -8,6 +8,7 @@ urlpatterns = [
     path('check-username/', views.CheckUsername.as_view(), name="check-username"),
     path('check-email/', views.CheckEmail.as_view(), name="check-email"),
     path('forgot-password/', views.ForgotPassword.as_view(), name="forgot_password"),
+    path('<int:pk>/verify/', views.VerifyUser.as_view()),
     path('<int:pk>/blacklist/', views.UserBlackList.as_view(), name='user-blacklist'),
     path('<int:pk>/like/', views.UserLike.as_view(), name='user-like'),
     path('<int:pk>/dislike/', views.UserDislike.as_view(), name='user-dislike'),

@@ -10,7 +10,9 @@ class Notification(models.Model):
     actor = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
-        related_name="sent_notifications"
+        related_name="sent_notifications",
+        null=True,
+        blank=True,
     )
     message = models.CharField(max_length=255)
     action = models.CharField(max_length=255)

@@ -4,9 +4,9 @@ import {
     ArrowLeftSharp,
     ArrowRightSharp,
     CheckSharp,
-    CloseSharp, DeleteSharp, LocalOfferSharp,
+    CloseSharp, DeleteSharp, DownloadSharp, EmailSharp, LocalOfferSharp, LocationCitySharp,
     LockSharp, LogoutSharp, NotificationsSharp, NotInterestedSharp,
-    RoomSharp, SupportSharp, SyncSharp
+    RoomSharp, SupportSharp, SyncSharp, Telegram
 } from "@mui/icons-material";
 import PrimaryButton from "@/components/Buttons/PrimaryButton";
 import {useEffect, useState} from "react";
@@ -18,9 +18,12 @@ import useTranslation from "next-translate/useTranslation";
 import {useRouter} from "next/navigation";
 import handleBlacklist from "@/lib/handleBlacklist";
 import resetPassword from "@/lib/resetPassword";
+import SecondaryButton from "@/components/Buttons/SecondaryButton";
+import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 
 
 export default function NavSettings({session, isSettings, setIsSettings, signOut}) {
+    const fileSizeLimit = 10 * 1024 * 1024 // 10MB
     const { t } = useTranslation('user')
     const router = useRouter()
 
@@ -34,6 +37,9 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
     const [prefCountry, setPrefCountry] = useState('')
     const [recoveryEmail, setRecoveryEmail] = useState('')
     const [blacklist, setBlacklist] = useState([])
+
+    const [file, setFile] = useState(null)
+    const [imageUrl, setImageUrl] = useState(null)
 
     useEffect(() => {
         const fetchReqUser = async () => {
@@ -131,8 +137,46 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
             setCurrPage('main')
         }
     }
+
+    const sentVerificationRequest = async () => {
+        const formData = new FormData()
+        formData.append('file', file)
+        const response = await fetch(`api/v1/users/${session.user.user_id}/verify/`, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "Authorization": `Bearer ${session.access}`
+            }
+        })
+        if (response.status === 200) {
+            return
+        }
+    }
+
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0]
+        if (!selectedFile.type.startsWith('image/')) {
+            console.error('Selected file is not an image.')
+            return
+        }
+
+        if (selectedFile.size > fileSizeLimit) {
+            console.error(`File size exceeds the ${fileSizeLimit}MB limit.`)
+            return
+        }
+
+        if (selectedFile) {
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setFile(selectedFile)
+                setImageUrl(reader.result)
+            }
+            reader.readAsDataURL(selectedFile)
+        }
+    }
+
     return (
-        <SidebarBase show={isSettings} classes={'sm:w-[350px]'}>
+        <SidebarBase show={isSettings} classes={'sm:w-[450px]'}>
             <div className="p-5 flex flex-row items-center gap-5">
                 <DangerButton onClickHandler={() => handleSettingsNavigation()}>
                     {currPage === "main" ? (
@@ -157,6 +201,13 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                     <>
                         {currPage === "main" && (
                             <>
+                                <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={() => setCurrPage('verify')}>
+                                    <CheckSharp />
+                                    <p className="font-medium">{t("verify")}</p>
+                                    <div className="ms-auto">
+                                        <ArrowRightSharp/>
+                                    </div>
+                                </div>
                                 <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={() => setCurrPage('security')}>
                                     <LockSharp />
                                     <p className="font-medium">{t("security")}</p>
@@ -199,30 +250,73 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                         <ArrowRightSharp/>
                                     </div>
                                 </div>
+
+                                <div className="mt-auto hidden sm:flex flex-col">
+                                    <div
+                                        className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200">
+                                        <ToggleTheme/>
+                                    </div>
+                                    <div
+                                        className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200"
+                                        onClick={signOut}>
+                                        <LogoutSharp/>
+                                        <p className="font-medium">{t("logout")}</p>
+                                    </div>
+                                </div>
                             </>
+                        )}
+                        {currPage === "verify" && (
+                            <div className={`flex flex-col w-full p-5`}>
+                                <label htmlFor={`verifyUser`} className={`w-full h-full`}>
+                                    <div className={`bg-pink-pastel/10 hover:bg-pink-pastel/30 transition-colors duration-200 border-t-4 border-l-4 border-r-4 border-dashed rounded-t-lg border-pink-pastel min-w-full aspect-square cursor-pointer`}>
+                                        {imageUrl && <img src={imageUrl} alt="Uploaded" className="w-full h-full object-cover rounded-t-lg" />}
+                                    </div>
+                                </label>
+                                <div
+                                    onClick={sentVerificationRequest}
+                                    className={`flex flex-row w-full h-full p-3 items-center bg-pink-pastel rounded-b-lg cursor-pointer`}
+                                >
+                                    <DownloadSharp/>
+                                    <p className={`font-medium`}>
+                                        Submit request
+                                    </p>
+                                </div>
+                                <p className={`mt-3 font-medium text-sm text-pastel-100`}>
+                                    Only one image accepted
+                                </p>
+                                 <p className={`mt-3 font-medium text-sm text-pastel-100`}>
+                                    Max file size - 10MB
+                                </p>
+                                <p className={`mt-3 font-medium`}>
+                                    Lorem ipsum dolor sit amet sed tincidunt takimata nulla delenit sit tation nonummy stet.
+                                    At duo consetetur sea sed duo vero ea rebum feugiat iriure sed duis sed labore eos.
+                                    Et iriure sanctus nulla dolor et accusam erat nonummy sed elitr. Dolores stet sadipscing.
+                                    Duo nisl eum dolor duis accumsan et dolore vero labore duo lorem. Sed erat iriure amet laoreet.
+                                </p>
+                                <input id={`verifyUser`} type="file" onChange={handleFileChange} />
+                            </div>
                         )}
                         {currPage === "security" && (
                             <div className="p-3 flex flex-col h-full gap-5">
                                 <p className="font-medium text-xl">{t("forgot password")}?</p>
-                                <input
+                                <UnderlinedInput
+                                    IconComponent={EmailSharp}
+                                    iconSize={"large"}
                                     type="text"
-                                    className="base-input"
-                                    placeholder="Example@email.com"
+                                    placeholder="example@email.com"
                                     value={recoveryEmail}
                                     onChange={(e) => setRecoveryEmail(e.target.value)}
                                 />
-                                <PrimaryButton
+                                <SecondaryButton
                                     IconComponent={CheckSharp}
                                     iconSize={"medium"}
                                     text={t("reset")}
                                     onClickHandler={resetPasswordHandler}
                                 />
-                                <div className="mt-auto">
-                                    <PrimaryButton
-                                        text={t("terminate all sessions")}
-                                        onClickHandler={terminateAllSessions}
-                                    />
-                                </div>
+                                <SecondaryButton
+                                    text={t("terminate all sessions")}
+                                    onClickHandler={terminateAllSessions}
+                                />
                             </div>
                         )}
                         {currPage === "geo" && (
@@ -236,9 +330,10 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                     placeholder={t("Russian Federation")}
                                     hintsData={countriesData}
                                 />
-                                <input
+                                <UnderlinedInput
+                                    IconComponent={LocationCitySharp}
+                                    iconSize={"large"}
                                     type="text"
-                                    className="base-input"
                                     placeholder="Moscow"
                                     value={city}
                                     onChange={(e) => setCity(e.target.value)}
@@ -262,8 +357,8 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                             </div>
                         )}
                         {currPage === "blackList" && (
-                            <div className="flex flex-col">
-                                {blacklist.length > 0 && (
+                            <div className="flex flex-col h-full w-full">
+                                {blacklist.length > 0 ? (
                                     blacklist.map((user) => (
                                         <div key={user.id} className="flex flex-row items-center p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200">
                                             <div className="flex flex-row gap-3 items-center" onClick={() => router.push(`/${user.id}`)}>
@@ -275,26 +370,32 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                             </div>
                                         </div>
                                     ))
+                                ) : (
+                                    <div className={`flex flex-row items-center justify-center h-full w-full`}>
+                                        <p className={`font-medium text-xl`}>Тут пусто!</p>
+                                    </div>
                                 )}
                             </div>
                         )}
-                        {currPage === "deleteAccount" && (
-                            <div className="h-full flex flex-col gap-5 p-3">
-                                <p className={`font-medium`}>{t('Are you sure?')}</p>
-                                <div className="mt-auto">
-                                    <PrimaryButton text={t("delete account")} onClickHandler={deleteAccountHandler}/>
+                        {currPage === "support" && (
+                            <div className="flex flex-col p-3 gap-3 font-medium">
+                                <p className={`font-medium`}>Contacts: </p>
+                                <div className={`flex flex-row gap-3 items-center`}>
+                                    <EmailSharp fontSize={"large"} />
+                                    architect.lock@outlook.com
+                                </div>
+                                <div className={`flex flex-row gap-3 items-center`}>
+                                    <Telegram fontSize={"large"} />
+                                    @JMURv
                                 </div>
                             </div>
                         )}
-                        <div className="mt-auto hidden sm:flex flex-col" >
-                            <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200">
-                                <ToggleTheme/>
+                        {currPage === "deleteAccount" && (
+                            <div className="h-full flex flex-col gap-2 p-3">
+                                <p className={`font-medium`}>{t('Are you sure?')}</p>
+                                <SecondaryButton text={t("delete account")} onClickHandler={deleteAccountHandler}/>
                             </div>
-                            <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={signOut}>
-                                 <LogoutSharp />
-                                <p className="font-medium">{t("logout")}</p>
-                            </div>
-                        </div>
+                        )}
                     </>
                 )}
             </div>

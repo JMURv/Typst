@@ -145,9 +145,12 @@ class UserSerializer(serializers.ModelSerializer):
             "relation_type",
             "height",
             "weight",
-            "preferred_age",
-            "preferred_height",
-            "preferred_weight",
+            "max_preferred_age",
+            "min_preferred_age",
+            "max_preferred_height",
+            "min_preferred_height",
+            "max_preferred_weight",
+            "min_preferred_weight",
             "media",
             "liked",
             "liked_by",
@@ -164,6 +167,7 @@ class UserSerializer(serializers.ModelSerializer):
             "tags",
             "is_verified",
             "geo_prox",
+            "is_verified",
         ]
         extra_kwargs = {
             'about': {'required': False},
@@ -201,6 +205,7 @@ class LightUserSerializer(serializers.ModelSerializer):
         validated_data.pop('new_like_notification', None)
         validated_data.pop('new_match_notification', None)
         validated_data.pop('new_message_notification', None)
+        print(validated_data)
         super().update(instance, validated_data)
 
         zodiac_sign = request.data.get('zodiac_sign', None)
@@ -257,9 +262,12 @@ class LightUserSerializer(serializers.ModelSerializer):
             "relation_type",
             "height",
             "weight",
-            "preferred_age",
-            "preferred_height",
-            "preferred_weight",
+            "max_preferred_age",
+            "min_preferred_age",
+            "max_preferred_height",
+            "min_preferred_height",
+            "max_preferred_weight",
+            "min_preferred_weight",
             "zodiac_sign",
             "media",
             "liked",
@@ -277,6 +285,7 @@ class LightUserSerializer(serializers.ModelSerializer):
             "tags",
             "compatibility_percentage",
             "geo_prox",
+            "is_verified",
         ]
         extra_kwargs = {
             'about': {'required': False},

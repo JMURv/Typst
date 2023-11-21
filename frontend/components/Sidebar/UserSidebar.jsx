@@ -7,7 +7,6 @@ import {
     Man4Sharp, MoreSharp,
     Woman2Sharp
 } from "@mui/icons-material";
-import IconInput from "@/components/Inputs/IconInput";
 import {useState} from "react";
 import PrimaryButton from "@/components/Buttons/PrimaryButton";
 import RangeInput from "@/components/Inputs/RangeInput";
@@ -18,6 +17,24 @@ import {UserPageStaticMediaGrid} from "@/components/Media/StaticMediaGrid";
 import useTranslation from "next-translate/useTranslation";
 import ZodiacSignsData from "@/lib/zodiacSigns";
 import tagsData from "@/lib/tagsData";
+import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
+import DoubleRange from "@/components/Inputs/DoubleRange";
+
+const prefAgeMap = {
+    min: 18,
+    max: 100
+}
+
+const prefHeightMap = {
+    min: 150,
+    max: 250
+}
+
+const prefWeightMap = {
+    min: 40,
+    max: 200
+}
+
 
 export default function UserSidebar({session, userData, setUserData, isShowing, setIsShowing}) {
     const { t } = useTranslation('user')
@@ -28,9 +45,20 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
     const [age, setAge] = useState(userData.age)
     const [height, setHeight] = useState(userData.height)
     const [weight, setWeight] = useState(userData.weight)
-    const [prefAge, setPrefAge] = useState(userData.preferred_age || "sm")
-    const [prefHeight, setPrefHeight] = useState(userData.preferred_height || "sm")
-    const [prefWeight, setPrefWeight] = useState(userData.preferred_weight || "sm")
+
+    const [prefAgeValue, setPrefAgeValue] = useState([
+        userData.min_preferred_age || prefAgeMap.min,
+        userData.max_preferred_age || prefAgeMap.max
+    ])
+    const [prefHeightValue, setPrefHeightValue] = useState([
+        userData.min_preferred_height || prefHeightMap.min,
+        userData.max_preferred_height || prefHeightMap.max
+    ])
+    const [prefWeightValue, setPrefWeightValue] = useState([
+        userData.min_preferred_weight || prefWeightMap.min,
+        userData.max_preferred_weight || prefWeightMap.max
+    ])
+
     const [sex, setSex] = useState(userData.sex)
     const [about, setAbout] = useState(userData.about || '')
     const [orientation, setOrientation] = useState(userData.orientation)
@@ -43,11 +71,10 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
         {IconComponent: Woman2Sharp, value: "w"},
     ]
 
-    const ageChoices = [
-        {text: "18-25", value: "sm"},
-        {text: "25-35", value: "md"},
-        {text: "35-45", value: "lg"},
-        {text: "> 45", value: "xl"},
+    const orientationChoices = [
+        {IconComponent: Man4Sharp, value: "m"},
+        {text: "BI", value: "bi"},
+        {IconComponent: Woman2Sharp, value: "w"},
     ]
 
     const heightChoices = [
@@ -74,9 +101,14 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
         formData.append("weight", weight)
         formData.append("sex", sex)
         formData.append("orientation", orientation)
-        formData.append("preferred_age", prefAge)
-        formData.append("preferred_height", prefHeight)
-        formData.append("preferred_weight", prefWeight)
+
+        formData.append("min_preferred_age", prefAgeValue[0])
+        formData.append("max_preferred_age", prefAgeValue[1])
+        formData.append("min_preferred_height", prefHeightValue[0])
+        formData.append("max_preferred_height", prefHeightValue[1])
+        formData.append("min_preferred_weight", prefWeightValue[0])
+        formData.append("max_preferred_weight", prefWeightValue[1])
+
         formData.append("zodiac_sign", zodiacSign)
         selectedTags.forEach((tag, index) => {
             formData.append(`tag-${index}`, tag)
@@ -148,10 +180,9 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                                 setUserData={setUserData}
                                 isAuthor={true}
                             />
-                            <IconInput
+                            <UnderlinedInput
                                 IconComponent={AccountCircle}
-                                iconSize="medium"
-                                label={t("first name")}
+                                iconSize={"large"}
                                 id="username"
                                 name="username"
                                 type="username"
@@ -160,7 +191,6 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
-
                             <div>
                                 <label
                                     htmlFor=""
@@ -218,7 +248,7 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                                 propValue={orientation}
                                 setValue={setOrientation}
                                 label={t("my orientation")}
-                                rangeItems={sexChoices}
+                                rangeItems={orientationChoices}
                                 name={"orientation"}
                             />
                         </div>
@@ -258,31 +288,26 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
 
                 {currPage === "preferences" && (
                     <div className={`flex flex-col gap-5 mt-5 px-2 sm:px-10`}>
-                        <RingsInput
-                            propValue={prefAge}
-                            setValue={setPrefAge}
+                        <DoubleRange
                             label={t("preferred age")}
-                            textSize={`text-sm`}
-                            rangeItems={ageChoices}
-                            name={"preferred_age"}
+                            minValue={prefAgeMap.min}
+                            maxValue={prefAgeMap.max}
+                            rangeValues={prefAgeValue}
+                            setRangeValues={setPrefAgeValue}
                         />
-
-                        <RingsInput
-                            propValue={prefHeight}
-                            setValue={setPrefHeight}
+                        <DoubleRange
                             label={t("preferred height")}
-                            textSize={`text-sm`}
-                            rangeItems={heightChoices}
-                            name={"preferred_height"}
+                            minValue={prefHeightMap.min}
+                            maxValue={prefHeightMap.max}
+                            rangeValues={prefHeightValue}
+                            setRangeValues={setPrefHeightValue}
                         />
-
-                        <RingsInput
-                            propValue={prefWeight}
-                            setValue={setPrefWeight}
+                        <DoubleRange
                             label={t("preferred weight")}
-                            textSize={`text-sm`}
-                            rangeItems={weightChoices}
-                            name={"preferred_weight"}
+                            minValue={prefWeightMap.min}
+                            maxValue={prefWeightMap.max}
+                            rangeValues={prefWeightValue}
+                            setRangeValues={setPrefWeightValue}
                         />
                     </div>
                 )}

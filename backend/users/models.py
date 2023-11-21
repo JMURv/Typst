@@ -74,22 +74,39 @@ class User(AbstractUser):
         null=True
     )
 
-    preferred_age = models.CharField(
-        "Preferred Age",
-        max_length=2,
-        choices=AGE_CHOICES,
+    max_preferred_age = models.PositiveIntegerField(
+        "Max preferred age",
+        default=100,
         null=True
     )
-    preferred_height = models.CharField(
-        "Preferred Height",
-        max_length=2,
-        choices=HEIGHT_CHOICES,
+
+    min_preferred_age = models.PositiveIntegerField(
+        "Min preferred age",
+        default=18,
         null=True
     )
-    preferred_weight = models.CharField(
-        "Preferred Weight",
-        max_length=2,
-        choices=WEIGHT_CHOICES,
+
+    max_preferred_height = models.PositiveIntegerField(
+        "Max preferred height",
+        default=250,
+        null=True
+    )
+
+    min_preferred_height = models.PositiveIntegerField(
+        "Min preferred height",
+        default=150,
+        null=True
+    )
+
+    max_preferred_weight = models.PositiveIntegerField(
+        "Max preferred weight",
+        default=200,
+        null=True
+    )
+
+    min_preferred_weight = models.PositiveIntegerField(
+        "Min preferred weight",
+        default=40,
         null=True
     )
 
@@ -168,7 +185,7 @@ class User(AbstractUser):
     new_match_notification = models.BooleanField(default=True)
     new_message_notification = models.BooleanField(default=True)
 
-    is_verified = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
