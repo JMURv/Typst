@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 import {
     CloseSharp, DehazeSharp,
     FavoriteBorderSharp, FavoriteSharp,
-    HeightSharp, MessageSharp, PlaceSharp, ScaleSharp,
+    HeightSharp, LocationCitySharp, MessageSharp, PlaceSharp, ScaleSharp,
 } from "@mui/icons-material";
 import ModalBase from "@/components/Modals/ModalBase";
 import ImageSlider from "@/components/Slider/ImageSlider";
@@ -25,15 +25,37 @@ export function UserGrid({user, reqUser, swipe, setIsOpen, setCurrentUser}) {
                 )}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300"/>
                 <div className="w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 flex flex-col gap-3 justify-between items-start p-4 text-white">
+
                     <div className="flex flex-row w-full justify-between">
-                        <div className="flex flex-row gap-3">
-                            {user.country && user.city && (
-                                <>
-                                    <PlaceSharp/>
-                                    <p className="font-medium">{user.country}, {user.city}</p>
-                                </>
+                        <div className={`flex flex-row-reverse gap-3`}>
+                            {user.geo_prox !== null ? (
+                                user.geo_prox > 0 ? (
+                                    <div
+                                        className={`flex flex-row items-center gap-1 items-center font-medium text-sm`}>
+                                        <PlaceSharp/>
+                                        <p>{user.geo_prox}{t('km from u')}</p>
+                                    </div>
+                                ) : (
+                                    <div
+                                        className={`flex flex-row items-center gap-1 items-center font-medium text-sm`}>
+                                        <PlaceSharp/>
+                                        <p>{t('near to u')}</p>
+                                    </div>
+                                )
+                            ) : (
+                                user.city && (
+                                    <div className="flex flex-row gap-1 items-center font-medium text-sm">
+                                        <LocationCitySharp/>
+                                        {user.city && (
+                                            <p>
+                                                {user.city}
+                                            </p>
+                                        )}
+                                    </div>
+                                )
                             )}
                         </div>
+
                         <div className="text-zinc-100 cursor-pointer ms-auto" onClick={() => {
                             setIsOpen(true)
                             setCurrentUser(user)
@@ -80,7 +102,7 @@ export function UserGrid({user, reqUser, swipe, setIsOpen, setCurrentUser}) {
                                 <FavoriteBorderSharp fontSize={"large"} />
                             )}
                         </div>
-                        {user.compatibility_percentage && user.compatibility_percentage > 0 &&  (
+                        {(user.compatibility_percentage > 10) &&  (
                             <div className={
                                 `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
                                 `${user.compatibility_percentage > 75 ? 'ring-green-500':'ring-orange-400'}`
@@ -132,26 +154,8 @@ export default function UsersGrid({reqUser, usersData, swipe, loadMore}) {
                         />
                     </div>
                     <div className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-100 dark:bg-purple-300">
-                        {currentUser.country && currentUser.city && (
-                            <div className="flex flex-row gap-3 items-center">
-                                <PlaceSharp/>
-                                <p className="font-medium text-sm">{currentUser.country}, {currentUser.city}</p>
-                            </div>
-                        )}
-                        <p className="text-2xl font-medium">{currentUser.username}, {currentUser.age}</p>
-                        <div className="flex flex-row gap-5 items-center flex-wrap">
-                            {currentUser.height && (
-                                <div className="flex flex-row gap-3 items-center">
-                                    <HeightSharp fontSize={"medium"}/>
-                                    <p className="font-medium text-sm">{currentUser.height}{t("cm")}</p>
-                                </div>
-                            )}
-                            {currentUser.weight && (
-                                <div className="flex flex-row gap-3 items-center">
-                                    <ScaleSharp fontSize={"medium"}/>
-                                    <p className="font-medium text-sm">{currentUser.weight}{t("kg")}</p>
-                                </div>
-                            )}
+                        <div className="flex flex-row items-center w-full">
+                            <p className="text-2xl font-medium">{currentUser.username}, {currentUser.age}</p>
                             {currentUser.zodiac_sign && (
                                 <div className={`flex flex-row items-center justify-center ms-auto`}>
                                     <img
@@ -161,6 +165,45 @@ export default function UsersGrid({reqUser, usersData, swipe, loadMore}) {
                                         alt={''}
                                     />
                                     <p className={`font-medium text-sm`}>{t(currentUser.zodiac_sign.title)}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex flex-row gap-3 items-center flex-wrap">
+                            {currentUser.geo_prox !== null ? (
+                                currentUser.geo_prox > 10 ? (
+                                    <div className={`flex flex-row items-center gap-1 font-medium text-sm`}>
+                                        <PlaceSharp/>
+                                        <p>{currentUser.geo_prox}{t('km from u')}</p>
+                                    </div>
+                                ) : (
+                                    <div className={`flex flex-row items-center gap-1 font-medium text-sm`}>
+                                        <PlaceSharp/>
+                                        <p>{t('near to u')}</p>
+                                    </div>
+                                )
+                            ) : (
+                                currentUser.city && (
+                                    <div className="flex flex-row gap-1 items-center font-medium text-sm">
+                                        <LocationCitySharp/>
+                                        {currentUser.city && (
+                                            <p>
+                                                {currentUser.city}
+                                            </p>
+                                        )}
+                                    </div>
+                                )
+                            )}
+                            {currentUser.height && (
+                                <div className="flex flex-row gap-1 items-center">
+                                    <HeightSharp fontSize={"medium"}/>
+                                    <p className="font-medium text-sm">{currentUser.height}{t("cm")}</p>
+                                </div>
+                            )}
+                            {currentUser.weight && (
+                                <div className="flex flex-row gap-1 items-center">
+                                    <ScaleSharp fontSize={"medium"}/>
+                                    <p className="font-medium text-sm">{currentUser.weight}{t("kg")}</p>
                                 </div>
                             )}
                         </div>
@@ -177,7 +220,7 @@ export default function UsersGrid({reqUser, usersData, swipe, loadMore}) {
                             }}>
                             <FavoriteSharp fontSize={"large"}/>
                         </div>
-                        {currentUser.compatibility_percentage && currentUser.compatibility_percentage > 0 &&  (
+                        {currentUser.compatibility_percentage > 10 &&  (
                             <div className={
                                 `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
                                 `${currentUser.compatibility_percentage > 75 ? 'ring-green-500':'ring-orange-400'}`

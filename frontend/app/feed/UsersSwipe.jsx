@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
     CloseSharp,
     FavoriteSharp,
-    HeightSharp,
+    HeightSharp, LocationCitySharp,
     PlaceSharp,
     ScaleSharp,
     UndoSharp,
@@ -57,13 +57,32 @@ export default function UsersSwipe({usersData, swipe, loadMore}) {
                     <div className="absolute inset-0 w-full flex flex-col gap-3 justify-end items-start text-white p-5 rounded-3xl bg-gradient-to-t from-[#00000051] via-transparent">
                         <div className="flex flex-row gap-3 mb-auto w-full mt-6">
                             <div className={`flex flex-row w-full items-start`}>
-                                {user.country && user.city && (
-                                    <>
-                                        <PlaceSharp/>
-                                        <p className="font-medium">{user.country}, {user.city}</p>
-                                    </>
+                                {user.geo_prox !== null ? (
+                                    user.geo_prox > 0 ? (
+                                        <div className={`flex flex-row items-center gap-1 font-medium text-sm`}>
+                                            <PlaceSharp/>
+                                            <p>{user.geo_prox}{t('km from u')}</p>
+                                        </div>
+                                    ) : (
+                                        <div className={`flex flex-row items-center gap-1 font-medium text-sm`}>
+                                            <PlaceSharp/>
+                                            <p>{t('near to u')}</p>
+                                        </div>
+                                    )
+                                ) : (
+                                    user.city && (
+                                        <div className="flex flex-row gap-1 items-center font-medium text-sm">
+                                            <LocationCitySharp/>
+                                            {user.city && (
+                                                <p>
+                                                    {user.city}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )
                                 )}
-                                {user.compatibility_percentage && user.compatibility_percentage !== 0 && (
+
+                                {user.compatibility_percentage > 10 && (
                                     <div className={
                                         `ms-auto p-3 rounded-full flex items-center justify-center w-12 h-12 rounded-full ring-4 ring-inset ` +
                                         `${user.compatibility_percentage > 75 ? 'ring-green-500' : 'ring-orange-400'}`
@@ -75,30 +94,34 @@ export default function UsersSwipe({usersData, swipe, loadMore}) {
                                 )}
                             </div>
                         </div>
-                        <div className={`flex flex-row items-center w-full`}>
-                            <p className="text-3xl font-medium">{user.username}, {user.age}</p>
-                            {user.zodiac_sign && (
-                                <div className={`flex flex-col items-center justify-center ms-auto`}>
-                                    <img src={`/media/defaults/zodiac/${user.zodiac_sign.title}.svg`} width="30" height="30" alt={''}/>
-                                    <p className={`font-medium`}>{t(user.zodiac_sign.title)}</p>
-                                </div>
-                            )}
+
+                        <div className={`flex flex-col gap-1 w-full`}>
+                            <div className={`flex flex-row items-center w-full`}>
+                                <p className="text-3xl font-medium">{user.username}, {user.age}</p>
+                                {user.zodiac_sign && (
+                                    <div className={`flex flex-col items-center justify-center ms-auto`}>
+                                        <img src={`/media/defaults/zodiac/${user.zodiac_sign.title}.svg`} width="30"
+                                             height="30" alt={''}/>
+                                        <p className={`font-medium`}>{t(user.zodiac_sign.title)}</p>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex flex-row gap-5 flex-wrap">
+                                {user.height && (
+                                    <div className="flex flex-row gap-3 items-center">
+                                        <HeightSharp fontSize={"medium"}/>
+                                        <p className="font-medium text-sm">{user.height}{t("cm")}</p>
+                                    </div>
+                                )}
+                                {user.weight && (
+                                    <div className="flex flex-row gap-3 items-center">
+                                        <ScaleSharp fontSize={"medium"}/>
+                                        <p className="font-medium text-sm">{user.weight}{t("kg")}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="flex flex-row gap-5 flex-wrap">
-                            {user.height && (
-                                <div className="flex flex-row gap-3 items-center">
-                                    <HeightSharp fontSize={"medium"}/>
-                                    <p className="font-medium text-sm">{user.height}{t("cm")}</p>
-                                </div>
-                            )}
-                            {user.weight && (
-                                <div className="flex flex-row gap-3 items-center">
-                                    <ScaleSharp fontSize={"medium"}/>
-                                    <p className="font-medium text-sm">{user.weight}{t("kg")}</p>
-                                </div>
-                            )}
-                        </div>
                         <div className="font-medium text-sm">
                             {user.about.length > maxContentLength ? `${user.about.slice(0, maxContentLength)}...` : user.about}
                         </div>

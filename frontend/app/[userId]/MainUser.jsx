@@ -80,15 +80,13 @@ export default function MainUser({
                         ) : (
                             <div className="ms-auto flex flex-row flex-wrap items-center gap-5">
 
-                                {userData.compatibility_percentage && (
-                                    userData.compatibility_percentage > 10 && (
-                                        <div className={
-                                            `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
-                                            `${userData.compatibility_percentage > 75 ? 'ring-green-500' : 'ring-orange-400'}`
-                                        }>
-                                            <p className={`font-medium`}>{userData.compatibility_percentage}</p>
-                                        </div>
-                                    )
+                                {userData.compatibility_percentage > 10 && (
+                                    <div className={
+                                        `cursor-pointer flex items-center justify-center w-12 h-12 transition-color duration-200 text-center rounded-full ring-4 ring-inset ` +
+                                        `${userData.compatibility_percentage > 75 ? 'ring-green-500' : 'ring-orange-400'}`
+                                    }>
+                                        <p className={`font-medium`}>{userData.compatibility_percentage}</p>
+                                    </div>
                                 )}
 
                                 <div
@@ -113,7 +111,7 @@ export default function MainUser({
                 <div className="relative flex flex-col gap-3 p-5 rounded-2xl font-medium text-lg bg-zinc-100 dark:bg-deep-purple">
                     <div className="flex flex-col gap-3">
 
-                        {userData.geo_prox !== null && (
+                        {userData.geo_prox !== null ? (
                             userData.geo_prox > 0 ? (
                                 <div className={`flex flex-row items-center gap-3`}>
                                     <PlaceSharp />
@@ -125,22 +123,18 @@ export default function MainUser({
                                     <p>{t('near to u')}</p>
                                 </div>
                             )
+                        ) : (
+                            userData.city && (
+                                <div className="flex flex-row gap-3 items-center font-medium">
+                                    <LocationCitySharp/>
+                                    {userData.city && (
+                                        <p>
+                                            {userData.city}
+                                        </p>
+                                    )}
+                                </div>
+                            )
                         )}
-
-                        <div className={`flex flex-row gap-3 items-center`}>
-                            <LocationCitySharp/>
-                            {userData.country && (
-                                <p>
-                                    {userData.country}
-                                </p>
-                            )}
-                            {userData.city && (
-                                <p>
-                                    {userData.city}
-                                </p>
-                            )}
-                        </div>
-
                         <div className={`absolute flex flex-row items-center gap-3 right-5 top-5 `}>
                             <div className={`flex flex-row gap-3 bg-pink-pastel dark:bg-purple-300 rounded-full p-3`}>
                                 <img
