@@ -5,6 +5,7 @@ import requests
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.utils.html import strip_tags
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.shortcuts import get_object_or_404
@@ -56,14 +57,15 @@ def send_verification_submission_email(user_id, photo_name, photo_data):
     domain = Site.objects.get_current().domain
     scheme = settings.CURRENT_SCHEME
     base_url = f'{scheme}{domain}'
-    accept_url = f'admin/verification/accept/{user.id}/'
-    decline_url = f'admin/verification/decline/{user.id}/'
+    accept_url = f'/admin/verification/accept/{user.id}/'
+    decline_url = f'/admin/verification/decline/{user.id}/'
 
-    html_message = render_to_string('email/send_verification_submission_email.html', {
-        'accept_url': base_url + accept_url,
-        'decline_url': base_url + decline_url
-    })
-    plain_message = html_message.strip_tags()
+    html_message = render_to_string(
+        'email/send_verification_submission_email.html', {
+            'accept_url': base_url + accept_url,
+            'decline_url': base_url + decline_url
+        })
+    plain_message = html_message
     email = EmailMultiAlternatives(
         subject=subject,
         body=plain_message,

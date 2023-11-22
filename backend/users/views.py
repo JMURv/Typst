@@ -27,7 +27,8 @@ from services.models import Notification
 from services.utils import check_recaptcha
 from typst.tasks import (
     send_password_reset_message_task,
-    compute_user_text_recommends_task, send_verification_submission_email_task,
+    compute_user_text_recommends_task,
+    send_verification_submission_email_task,
 )
 
 from django.core.cache import cache

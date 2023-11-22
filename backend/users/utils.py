@@ -65,9 +65,18 @@ def calculate_compatibility(request_user: User, inspected_user: User) -> int:
             score = max(0, 100 - (100 * distance / max_distance))
             return score
 
-    pref_age_range = [request_user.min_preferred_age, request_user.max_preferred_age]
-    pref_height_range = [request_user.min_preferred_height, request_user.max_preferred_height]
-    pref_weight_range = [request_user.min_preferred_weight, request_user.max_preferred_weight]
+    pref_age_range = [
+        request_user.min_preferred_age,
+        request_user.max_preferred_age
+    ]
+    pref_height_range = [
+        request_user.min_preferred_height,
+        request_user.max_preferred_height
+    ]
+    pref_weight_range = [
+        request_user.min_preferred_weight,
+        request_user.max_preferred_weight
+    ]
 
     if not all([pref_age_range, pref_height_range, pref_weight_range]):
         return 0
