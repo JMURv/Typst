@@ -128,10 +128,13 @@ const ChatContainer = ({ session, room, removeRoom, blacklistUser, allRoomsData,
         }
     }
 
-    if (ChatContainerRef.current){
-        const ChatContainerDiv = ChatContainerRef.current
-        ChatContainerDiv.scrollTop = ChatContainerDiv.scrollHeight
-    }
+    useEffect(() => {
+        if (ChatContainerRef.current) {
+            const ChatContainerDiv = ChatContainerRef.current
+            ChatContainerDiv.scrollTop = ChatContainerDiv.scrollHeight
+        }
+    }, [])
+
 
     useEffect(() => {
         if (messages.length > 0) {

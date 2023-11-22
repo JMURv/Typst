@@ -2,9 +2,8 @@
 import {useEffect, useState} from "react";
 import {signIn} from "next-auth/react";
 import {
-    ArrowBackIosNewSharp, ArrowForwardIosSharp,
     CheckSharp,
-    CloseSharp, CodeSharp,
+    CloseSharp,
     EmailSharp,
     LockSharp,
     LoginSharp
@@ -16,10 +15,12 @@ import SecondaryButton from "@/components/Buttons/SecondaryButton";
 import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 import CodeInput from "@/components/Inputs/CodeInput";
 import {useReCaptcha} from "next-recaptcha-v3";
+import {useNotification} from "@/providers/NotificationContext";
 
 
-export default function LoginForm({setIsLoading, setPushNotifications}) {
+export default function LoginForm({setIsLoading}) {
     const { t } = useTranslation('user')
+    const { addNotification } = useNotification()
     const { executeRecaptcha } = useReCaptcha()
     const router = useRouter()
     const [email, setEmail] = useState('')
@@ -34,12 +35,10 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
         const response = await resetPassword(recoveryEmail)
         if (response.status === 200) {
             setForgotPassword(false)
-            setPushNotifications(
-                (prevNoty) => [...prevNoty, {
-                    id: new Date().toISOString(),
-                    message: t("email has been sent")
-                }]
-            )
+            addNotification({
+                id: new Date().toISOString(),
+                message: t("email has been sent")
+            })
         }
     }
 
@@ -60,12 +59,10 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
                         setIsCode(false)
                         return await login()
                     } else {
-                        setPushNotifications(
-                            (prevNoty) => [...prevNoty, {
-                                id: new Date().toISOString(),
-                                message: `${t("code error")}`
-                            }]
-                        )
+                        addNotification({
+                            id: new Date().toISOString(),
+                            message: `${t("code error")}`
+                        })
                     }
                 } catch (e) {
                     console.log("Failed to get server", e)
@@ -83,12 +80,10 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
             redirect: false,
         })
         if (result.error) {
-            setPushNotifications(
-                (prevNoty) => [...prevNoty, {
-                    id: new Date().toISOString(),
-                    message: t("invalid credentials")
-                }]
-            )
+            addNotification({
+                id: new Date().toISOString(),
+                message: t("invalid credentials")
+            })
         } else {
             router.refresh()
             console.log('Successfully authenticated.')
@@ -104,27 +99,21 @@ export default function LoginForm({setIsLoading, setPushNotifications}) {
             })
             if (response.status === 200) {
                 setIsCode(true)
-                setPushNotifications(
-                    (prevNoty) => [...prevNoty, {
-                        id: new Date().toISOString(),
-                        message: t("email has been sent")
-                    }]
-                )
+                addNotification({
+                    id: new Date().toISOString(),
+                    message: t("email has been sent")
+                })
             } else {
-                setPushNotifications(
-                    (prevNoty) => [...prevNoty, {
-                        id: new Date().toISOString(),
-                        message: t("invalid credentials")
-                    }]
-                )
+                addNotification({
+                    id: new Date().toISOString(),
+                    message: t("invalid credentials")
+                })
             }
         } catch (e) {
-            setPushNotifications(
-                (prevNoty) => [...prevNoty, {
-                    id: new Date().toISOString(),
-                    message: t("server error")
-                }]
-            )
+            addNotification({
+                id: new Date().toISOString(),
+                message: t("server error")
+            })
         }
     }
 

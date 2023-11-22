@@ -22,7 +22,6 @@ export const MessagesList = forwardRef(({ session, room, messages, handleReply, 
             'room': room,
         }))
     }
-
     return (
         <div ref={ref} className="bg-zinc-200 dark:bg-purple-100 h-full overflow-y-auto px-3 py-3">
             <TransitionGroup>

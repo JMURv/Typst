@@ -68,6 +68,7 @@ class MediaFileBytesSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     media = MediaFileSerializer(many=True, required=False)
+    stories = MediaFileSerializer(many=True, required=False)
     zodiac_sign = ZodiacSignSerializer(required=False)
     tags = TagSerializer(many=True, required=False)
     compatibility_percentage = serializers.SerializerMethodField()
@@ -78,6 +79,7 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
 
         validated_data.pop('media', None)
+        validated_data.pop('stories', None)
         validated_data.pop('liked', None)
         validated_data.pop('liked_by', None)
         validated_data.pop('disliked', None)
@@ -152,6 +154,7 @@ class UserSerializer(serializers.ModelSerializer):
             "max_preferred_weight",
             "min_preferred_weight",
             "media",
+            "stories",
             "liked",
             "liked_by",
             "disliked",
@@ -188,6 +191,7 @@ class BlackListedUserSerializer(serializers.ModelSerializer):
 
 class LightUserSerializer(serializers.ModelSerializer):
     media = MediaFileSerializer(many=True, required=False)
+    stories = MediaFileSerializer(many=True, required=False)
     zodiac_sign = ZodiacSignSerializer(required=False)
     tags = TagSerializer(many=True, required=False)
     compatibility_percentage = serializers.SerializerMethodField()
@@ -196,6 +200,7 @@ class LightUserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get('request')
         validated_data.pop('media', None)
+        validated_data.pop('stories', None)
         validated_data.pop('liked', None)
         validated_data.pop('liked_by', None)
         validated_data.pop('disliked', None)
@@ -270,6 +275,7 @@ class LightUserSerializer(serializers.ModelSerializer):
             "min_preferred_weight",
             "zodiac_sign",
             "media",
+            "stories",
             "liked",
             "liked_by",
             "disliked",

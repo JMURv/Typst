@@ -14,6 +14,7 @@ import {Transition} from '@headlessui/react'
 import NavSettings from "@/components/Nav/NavSettings";
 import useTranslation from "next-translate/useTranslation";
 import {NotificationContainer} from "@/components/Notifications/Notification";
+import {useNotification} from "@/providers/NotificationContext";
 
 export async function readAllNotifications(token) {
     return await fetch(`api/v1/services/notifications/`, {
@@ -27,6 +28,7 @@ export async function readAllNotifications(token) {
 export default function Nav({session}) {
     const router = useRouter()
     const { t } = useTranslation('user')
+    const { addNotification } = useNotification()
 
     const [isSettings, setIsSettings] = useState(false)
     const [mobileMenu, setMobileMenu] = useState(false)
@@ -34,7 +36,6 @@ export default function Nav({session}) {
     const [isAllRead, setIsAllRead] = useState(false)
     const [isNotifications, setIsNotifications] = useState(false)
     const [userNotifications, setUserNotifications] = useState([])
-    const [pushNotifications, setPushNotifications] = useState([])
 
     async function signOutHandler() {
         await fetch(`/api/v1/logout/`,{
@@ -87,7 +88,7 @@ export default function Nav({session}) {
             const data = JSON.parse(event.data)
             if (data.type === "send_notification"){
                 setUserNotifications((prevNotifications) => [data.notification, ...prevNotifications])
-                setPushNotifications((prevNotifications) => [...prevNotifications, data.notification])
+                addNotification(data.notification)
                 setIsAllRead(false)
             }
         }
@@ -150,10 +151,7 @@ export default function Nav({session}) {
                 </div>
             </Transition>
 
-            <NotificationContainer
-                pushNotifications={pushNotifications}
-                setPushNotifications={setPushNotifications}
-            />
+            <NotificationContainer/>
             <NavNotifications
                 session={session}
                 isNotifications={isNotifications} setIsNotifications={setIsNotifications}

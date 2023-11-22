@@ -1,5 +1,7 @@
 import {useState, useEffect} from 'react';
 import {CloseSharp} from "@mui/icons-material";
+import {useNotification} from "@/providers/NotificationContext";
+
 
 export default function Notification({notification, onClose}) {
     const [visible, setVisible] = useState(null)
@@ -42,12 +44,8 @@ export default function Notification({notification, onClose}) {
 }
 
 
-export function NotificationContainer({pushNotifications, setPushNotifications}) {
-
-    const removeNotification = (id) => {
-        setPushNotifications((prevNotifications) => prevNotifications.filter((n) => n.id !== id))
-    }
-
+export function NotificationContainer() {
+    const { pushNotifications, removeNotification } = useNotification()
     return (
         <div className="fixed z-40 top-40 right-0 w-0 h-full flex flex-col gap-3 items-end">
             {pushNotifications.map((notification) => (
@@ -60,5 +58,3 @@ export function NotificationContainer({pushNotifications, setPushNotifications})
         </div>
     )
 }
-
-

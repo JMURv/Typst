@@ -20,10 +20,12 @@ import handleBlacklist from "@/lib/handleBlacklist";
 import resetPassword from "@/lib/resetPassword";
 import SecondaryButton from "@/components/Buttons/SecondaryButton";
 import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
+import {useNotification} from "@/providers/NotificationContext";
 
 
 export default function NavSettings({session, isSettings, setIsSettings, signOut}) {
     const fileSizeLimit = 10 * 1024 * 1024 // 10MB
+    const { addNotification } = useNotification()
     const { t } = useTranslation('user')
     const router = useRouter()
 
@@ -149,7 +151,9 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
             }
         })
         if (response.status === 200) {
-            return
+            addNotification({
+                id: new Date.toISOString(), message: `${t("success")}`
+            })
         }
     }
 
@@ -278,14 +282,14 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                 >
                                     <DownloadSharp/>
                                     <p className={`font-medium`}>
-                                        Submit request
+                                        {t("submit request")}
                                     </p>
                                 </div>
                                 <p className={`mt-3 font-medium text-sm text-pastel-100`}>
-                                    Only one image accepted
+                                    {t("only one image accepted")}
                                 </p>
                                  <p className={`mt-3 font-medium text-sm text-pastel-100`}>
-                                    Max file size - 10MB
+                                     {t("max file size - 10MB")}
                                 </p>
                                 <p className={`mt-3 font-medium`}>
                                     Lorem ipsum dolor sit amet sed tincidunt takimata nulla delenit sit tation nonummy stet.

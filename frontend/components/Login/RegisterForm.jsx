@@ -25,10 +25,12 @@ import ZodiacSignsData from "@/lib/zodiacSigns";
 import tagsData from "@/lib/tagsData";
 import ScreenSlider from "@/components/Slider/ScreenSlider";
 import CodeInput from "@/components/Inputs/CodeInput";
+import {useNotification} from "@/providers/NotificationContext";
 
 
-export default function RegisterForm({setIsLoading, setPushNotifications}) {
+export default function RegisterForm({setIsLoading}) {
     const { t } = useTranslation('user')
+    const { addNotification } = useNotification()
     const maxPages = 11
     const maxTags = 5
     const router = useRouter()
@@ -153,30 +155,24 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
             if (response.status === 200) {
                 setIsLoading(false)
                 setIsEmailSent(true)
-                setPushNotifications(
-                    (prevNoty) => [...prevNoty, {
-                        id: new Date().toISOString(),
-                        message: `${t("email has been sent")}`
-                    }]
-                )
+                addNotification({
+                    id: new Date().toISOString(),
+                    message: `${t("email has been sent")}`
+                })
             } else {
                 setIsLoading(false)
-                setPushNotifications(
-                    (prevNoty) => [...prevNoty, {
-                        id: new Date().toISOString(),
-                        message: `${t("reCAPTCHA failed")}`
-                    }]
-                )
+                addNotification({
+                    id: new Date().toISOString(),
+                    message: `${t("reCAPTCHA failed")}`
+                })
             }
         } catch (e) {
             setIsLoading(false)
             console.error(`Error with the server connection: ${e}`)
-            setPushNotifications(
-                (prevNoty) => [...prevNoty, {
-                    id: new Date().toISOString(),
-                    message: `${t("server error")}`
-                }]
-            )
+            addNotification({
+                id: new Date().toISOString(),
+                message: `${t("server error")}`
+            })
         }
     }
 
@@ -225,24 +221,20 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                 for (const key in errors) {
                     if (errors.hasOwnProperty(key)) {
                         for (const error of errors[key]) {
-                            setPushNotifications(
-                                (prevNoty) => [...prevNoty, {
-                                    id: new Date().toISOString(),
-                                    message: `${t("Error for")} ${key}: ${error}`
-                                }]
-                            )
+                            addNotification({
+                                id: new Date().toISOString(),
+                                message: `${t("Error for")} ${key}: ${error}`
+                            })
                         }
                     }
                 }
             }
         } catch (e) {
             console.error(`Error with the server connection: ${e}`)
-            setPushNotifications(
-                (prevNoty) => [...prevNoty, {
-                    id: new Date().toISOString(),
-                    message: `${t("Error with the server connection")}`
-                }]
-            )
+            addNotification({
+                id: new Date().toISOString(),
+                message: `${t("Error with the server connection")}`
+            })
         }
         setIsLoading(false)
     }
@@ -411,19 +403,15 @@ export default function RegisterForm({setIsLoading, setPushNotifications}) {
                 if (response.status === 200){
                     pageIncrease()
                     setEmailConfirmed(true)
-                    setPushNotifications(
-                        (prevNoty) => [...prevNoty, {
-                            id: new Date().toISOString(),
-                            message: `${t("success")}`
-                        }]
-                    )
+                    addNotification({
+                        id: new Date().toISOString(),
+                        message: `${t("success")}`
+                    })
                 } else {
-                    setPushNotifications(
-                        (prevNoty) => [...prevNoty, {
-                            id: new Date().toISOString(),
-                            message: `${t("code error")}`
-                        }]
-                    )
+                    addNotification({
+                        id: new Date().toISOString(),
+                        message: `${t("code error")}`
+                    })
                 }
             }
             checkCode()

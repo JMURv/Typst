@@ -71,12 +71,29 @@ export default function Rooms({session, rooms, setRooms, remove}) {
 }
 
 export function Room({room, session, change}) {
-    const chatUser = room.members.find(member => member.id !== session.user.user_id) ?? null
+    const currentUserId = session.user.user_id
+    const chatUser = room.members.find(member => member.id !== currentUserId) ?? null
+    let unseenMessages = room.messages.filter(message =>
+        message.seen === false &&
+        message.user.id !== currentUserId
+    )
     return (
-        <div className="relative flex flex-row p-3 bg-zinc-100 dark:bg-purple-200 hover:bg-zinc-200 dark:hover:bg-purple-300 cursor-pointer transition-color duration-200" onClick={() => change(room.id)}>
+        <div
+            className={
+            `relative flex flex-row p-3 bg-zinc-100 dark:bg-purple-200 hover:bg-zinc-200 dark:hover:bg-purple-300 ${unseenMessages.length > 0 ? 'dark:bg-pink-pastel/20':''} cursor-pointer transition-color duration-200`
+        }
+            onClick={() => change(room.id)}
+        >
             <div className="w-full flex flex-row gap-3">
                 {chatUser ? (
-                    <img loading={"lazy"} src={chatUser.media[0]?.relative_path || ''} width={50} height={50} className="rounded-full bg-pink-pastel object-cover w-[50px] h-[50px]" alt=""/>
+                    <img
+                        loading={"lazy"}
+                        src={chatUser.media[0]?.relative_path || ''}
+                        width={50}
+                        height={50}
+                        className="rounded-full bg-pink-pastel object-cover w-[50px] h-[50px]"
+                        alt=""
+                    />
                 ):(
                     <div className="w-[50px] h-[50px] rounded-full bg-pink-pastel"/>
                 )}

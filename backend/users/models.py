@@ -201,7 +201,27 @@ class UserMedia(models.Model):
         upload_to="users/user_media",
         validators=[],
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.file.name
+
+
+class UserStories(models.Model):
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='stories',
+    )
+    file = models.FileField(
+        upload_to="users/user_stories",
+        validators=[],
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return self.file.name
