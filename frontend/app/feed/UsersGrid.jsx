@@ -65,7 +65,21 @@ export function UserGrid({user, reqUser, swipe, setIsOpen, setCurrentUser}) {
                     </div>
 
                     <div className="flex flex-col justify-between gap-2">
-                        <p onClick={() => router.push(`${user.id}/`)} className="text-lg font-medium cursor-pointer transition-color duration-200">{user.username}, {user.age}</p>
+
+                        <div className={`flex flex-row items-center gap-3`}>
+                            <p onClick={() => router.push(`${user.id}/`)} className="text-lg font-medium cursor-pointer transition-color duration-200">{user.username}, {user.age}</p>
+                            {user.is_verified === "true" && (
+                                <div className={``}>
+                                    <img
+                                        className={`object-cover`}
+                                        src={`verification.png`}
+                                        width={20}
+                                        height={20}
+                                        alt=""
+                                    />
+                                </div>
+                            )}
+                        </div>
 
                         <div className="flex flex-row gap-5 flex-wrap">
                             {user.height && (
@@ -154,8 +168,19 @@ export default function UsersGrid({reqUser, usersData, swipe, loadMore}) {
                         />
                     </div>
                     <div className="flex flex-col gap-3 p-4 rounded-2xl bg-zinc-100 dark:bg-purple-300">
-                        <div className="flex flex-row items-center w-full">
+                        <div className="flex flex-row gap-3 items-center w-full">
                             <p className="text-2xl font-medium">{currentUser.username}, {currentUser.age}</p>
+                            {currentUser.is_verified === "true" && (
+                                <div className={``}>
+                                    <img
+                                        className={`object-cover`}
+                                        src={`verification.png`}
+                                        width={20}
+                                        height={20}
+                                        alt=""
+                                    />
+                                </div>
+                            )}
                             {currentUser.zodiac_sign && (
                                 <div className={`flex flex-row items-center justify-center ms-auto`}>
                                     <img

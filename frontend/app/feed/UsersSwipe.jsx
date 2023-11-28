@@ -96,8 +96,19 @@ export default function UsersSwipe({usersData, swipe, loadMore}) {
                         </div>
 
                         <div className={`flex flex-col gap-1 w-full`}>
-                            <div className={`flex flex-row items-center w-full`}>
+                            <div className={`flex flex-row gap-3 items-center w-full`}>
                                 <p className="text-3xl font-medium">{user.username}, {user.age}</p>
+                                {user.is_verified === "true" && (
+                                    <div className={``}>
+                                        <img
+                                            className={`object-cover`}
+                                            src={`verification.png`}
+                                            width={25}
+                                            height={25}
+                                            alt=""
+                                        />
+                                    </div>
+                                )}
                                 {user.zodiac_sign && (
                                     <div className={`flex flex-col items-center justify-center ms-auto`}>
                                         <img src={`/media/defaults/zodiac/${user.zodiac_sign.title}.svg`} width="30"

@@ -37,6 +37,12 @@ RELATIONSHIPS_CHOICES = (
     ("d", "Default"),
 )
 
+VERIFICATION_CHOICES = (
+    ("false", "False"),
+    ("in progress", "In progress"),
+    ("true", "True")
+)
+
 
 class User(AbstractUser):
     email = models.EmailField(
@@ -53,11 +59,6 @@ class User(AbstractUser):
     orientation = models.CharField(
         max_length=1,
         choices=ORIENTATION_CHOICES,
-        null=True
-    )
-    relation_type = models.CharField(
-        max_length=1,
-        choices=RELATIONSHIPS_CHOICES,
         null=True
     )
 
@@ -185,7 +186,10 @@ class User(AbstractUser):
     new_match_notification = models.BooleanField(default=True)
     new_message_notification = models.BooleanField(default=True)
 
-    is_verified = models.BooleanField(default=False)
+    is_verified = models.CharField(
+        choices=VERIFICATION_CHOICES,
+        default="false"
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

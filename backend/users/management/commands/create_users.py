@@ -13,8 +13,6 @@ from users.models import (
     UserMedia,
     SEX_CHOICES,
     ORIENTATION_CHOICES,
-    RELATIONSHIPS_CHOICES,
-    BASE_CHOICES
 )
 
 
@@ -60,12 +58,8 @@ class Command(BaseCommand):
             "age": 21,
             "sex": "m",
             "orientation": "w",
-            "relation_type": "l",
             "height": 180,
             "weight": 50,
-            "preferred_age": "sm",
-            "preferred_height": "lg",
-            "preferred_weight": "md",
             'email': settings.EMAIL_ADMIN,
             "zodiac_sign": ZodiacSign.objects.get(
                 pk=random.choice(range(1, 11))
@@ -111,15 +105,11 @@ class Command(BaseCommand):
                 "age": random.randint(18, 45),
                 "sex": random.choice(SEX_CHOICES)[0],
                 "orientation": random.choice(ORIENTATION_CHOICES)[0],
-                "relation_type": random.choice(RELATIONSHIPS_CHOICES)[0],
                 "height": random.randint(160, 210),
                 "weight": random.randint(45, 100),
                 "zodiac_sign": ZodiacSign.objects.get(
                     pk=random.choice(range(1, 11))
                 ),
-                "preferred_age": random.choice(BASE_CHOICES)[0],
-                "preferred_height": random.choice(BASE_CHOICES)[0],
-                "preferred_weight": random.choice(BASE_CHOICES)[0],
                 "country": "RU",
                 "city": "Moscow",
                 'is_active': True,

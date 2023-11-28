@@ -44,6 +44,7 @@ services:
       - .:/app
       - static_volume_typst:/app/backend/static
       - media_volume_typst:/app/backend/media
+      - shared_data:/app/shared_data
     ports:
       - "8000:8000"
     expose:
@@ -102,6 +103,7 @@ services:
       - .:/app
       - node_modules_typst:/app/frontend/node_modules
       - static_volume_typst:/app/frontend/public/static
+      - shared_data:/app/shared_data
     depends_on:
       - postgres
       - backend
@@ -131,3 +133,4 @@ volumes:
   node_modules_typst:
   static_volume_typst:
   media_volume_typst:
+  shared_data:

@@ -19,6 +19,7 @@ import ZodiacSignsData from "@/lib/zodiacSigns";
 import tagsData from "@/lib/tagsData";
 import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 import DoubleRange from "@/components/Inputs/DoubleRange";
+import {useNotification} from "@/providers/NotificationContext";
 
 const prefAgeMap = {
     min: 18,
@@ -38,6 +39,8 @@ const prefWeightMap = {
 
 export default function UserSidebar({session, userData, setUserData, isShowing, setIsShowing}) {
     const { t } = useTranslation('user')
+    const { addNotification } = useNotification()
+
     const maxTags = 5
 
     const [currPage, setCurrPage] = useState('main')
@@ -77,20 +80,6 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
         {IconComponent: Woman2Sharp, value: "w"},
     ]
 
-    const heightChoices = [
-        {text: "< 160", value: "sm"},
-        {text: "160-175", value: "md"},
-        {text: "175-185", value: "lg"},
-        {text: "> 185", value: "xl"},
-    ]
-
-    const weightChoices = [
-        {text: "< 50", value: "sm"},
-        {text: "50-65", value: "md"},
-        {text: "65-75", value: "lg"},
-        {text: "> 75", value: "xl"},
-    ]
-
     async function update(e) {
         e.preventDefault()
         const formData = new FormData()
@@ -123,6 +112,10 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
         if (response.ok) {
             const data = await response.json()
             setUserData(data)
+            addNotification({
+                id: new Date().toISOString(),
+                message: t('saved')
+            })
         }
     }
 

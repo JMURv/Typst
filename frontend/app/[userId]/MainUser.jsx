@@ -69,6 +69,17 @@ export default function MainUser({
             <div className="flex flex-col gap-3 w-full lg:w-1/2 h-full">
                 <div className="flex flex-row flex-wrap gap-3 pt-3 items-center rounded-2xl bg-zinc-100 dark:bg-transparent">
                     <p className="font-medium text-3xl">{userData.username}, {userData.age}</p>
+                    {userData.is_verified === "true" && (
+                        <div className={``}>
+                            <img
+                                className={`object-cover`}
+                                src={`verification.png`}
+                                width={25}
+                                height={25}
+                                alt=""
+                            />
+                        </div>
+                    )}
                     {isAuthor ? (
                         <>
                             <UserUpdate

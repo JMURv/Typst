@@ -1,69 +1,18 @@
-import os
-import base64
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from mediafiles.serializers import MediaFileSerializer
 from services.models import ZodiacSign
-from .models import UserMedia
-from .utils import save_or_update_user_media, calculate_compatibility, \
-    save_or_update_user_tags, calculate_geo_proximity
+from .utils import (
+    save_or_update_user_media,
+    calculate_compatibility,
+    save_or_update_user_tags,
+    calculate_geo_proximity
+)
 from services.serializers import (
     ZodiacSignSerializer,
     TagSerializer
 )
-
-
-class MediaFileSerializer(serializers.ModelSerializer):
-    type = serializers.SerializerMethodField()
-    relative_path = serializers.SerializerMethodField()
-    file_name = serializers.SerializerMethodField()
-
-    def get_type(self, instance):
-        file_name, file_ext = os.path.splitext(instance.file.name)
-        file_ext = file_ext.strip('.')
-        if file_ext in ('png', 'jpg', 'jpeg'):
-            return f"image/{file_ext}"
-        elif file_ext in ('mp4', 'avi'):
-            return f"video/{file_ext}"
-        else:
-            return f"file/{file_ext}"
-
-    def get_relative_path(self, instance):
-        file_path = instance.file.url
-        return file_path
-
-    def get_file_name(self, instance):
-        file_name = instance.file.name
-        file_name = file_name.split('/')[-1]
-        return file_name
-
-    class Meta:
-        model = UserMedia
-        fields = [
-            'id',
-            "type",
-            "relative_path",
-            "file_name",
-            "created_at",
-        ]
-
-
-class MediaFileBytesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserMedia
-        fields = [
-            'file',
-        ]
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['file'] = self.get_media_file_bytes(instance.file)
-        return data
-
-    def get_media_file_bytes(self, media_file):
-        with open(media_file.path, 'rb') as file:
-            bytes_data = file.read()
-            return base64.b64encode(bytes_data).decode('utf-8')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -90,6 +39,41 @@ class UserSerializer(serializers.ModelSerializer):
         instance.new_like_notification = True
         instance.new_match_notification = True
         instance.new_message_notification = True
+
+        zodiac_sign = request.data.get('zodiac_sign', None)
+        if zodiac_sign:
+            try:
+                instance.zodiac_sign = ZodiacSign.objects.get(
+                    title=zodiac_sign
+                )
+            except ZodiacSign.DoesNotExist:
+                instance.zodiac_sign = ZodiacSign.objects.first()
+
+        save_or_update_user_tags(
+            request=request,
+            instance=instance
+        )
+        save_or_update_user_media(
+            request=request,
+            instance=instance
+        )
+        instance.save()
+        return instance
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        validated_data.pop('media', None)
+        validated_data.pop('stories', None)
+        validated_data.pop('liked', None)
+        validated_data.pop('liked_by', None)
+        validated_data.pop('disliked', None)
+        validated_data.pop('disliked_by', None)
+        validated_data.pop('blacklist', None)
+        validated_data.pop('blacklisted_by', None)
+        validated_data.pop('new_like_notification', None)
+        validated_data.pop('new_match_notification', None)
+        validated_data.pop('new_message_notification', None)
+        super().update(instance, validated_data)
 
         zodiac_sign = request.data.get('zodiac_sign', None)
         if zodiac_sign:
@@ -144,7 +128,6 @@ class UserSerializer(serializers.ModelSerializer):
             "age",
             "sex",
             "orientation",
-            "relation_type",
             "height",
             "weight",
             "max_preferred_age",
@@ -159,6 +142,8 @@ class UserSerializer(serializers.ModelSerializer):
             "liked_by",
             "disliked",
             "disliked_by",
+            "blacklist",
+            "blacklisted_by",
             "country",
             "preferred_country",
             "city",
@@ -173,7 +158,15 @@ class UserSerializer(serializers.ModelSerializer):
             "is_verified",
         ]
         extra_kwargs = {
-            'about': {'required': False},
+            'about': {"required": False},
+            "email": {
+                "write_only": True,
+                "required": False
+            },
+            'password': {
+                "write_only": True,
+                "required": False
+            },
         }
 
 
@@ -264,7 +257,6 @@ class LightUserSerializer(serializers.ModelSerializer):
             "age",
             "sex",
             "orientation",
-            "relation_type",
             "height",
             "weight",
             "max_preferred_age",
@@ -313,7 +305,8 @@ class SettingsSerializer(serializers.ModelSerializer):
             "new_match_notification",
             "new_message_notification",
             "blacklist",
-            "tags"
+            "tags",
+            "is_verified"
         ]
 
 

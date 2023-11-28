@@ -2,6 +2,7 @@ import {getServerSession} from "next-auth";
 import {options} from "@/app/options";
 import {redirect} from "next/navigation";
 import LoginAndRegister from "@/components/Login/LoginAndRegister";
+import GuestNav from "@/components/Nav/GuestNav";
 
 
 export default async function Home() {
@@ -9,6 +10,7 @@ export default async function Home() {
     if (!session) {
         return (
             <div className="w-full h-screen overflow-hidden bg-deep-purple flex flex-col justify-center items-center">
+                <GuestNav/>
                 <LoginAndRegister/>
             </div>
         )

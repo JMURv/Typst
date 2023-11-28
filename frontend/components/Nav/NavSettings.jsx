@@ -39,6 +39,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
     const [prefCountry, setPrefCountry] = useState('')
     const [recoveryEmail, setRecoveryEmail] = useState('')
     const [blacklist, setBlacklist] = useState([])
+    const [isVerified, setIsVerified] = useState("false")
 
     const [file, setFile] = useState(null)
     const [imageUrl, setImageUrl] = useState(null)
@@ -62,6 +63,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                 setCity(data.city)
                 setCountry(data.country)
                 setBlacklist(data.blacklist)
+                setIsVerified(data.is_verified)
                 if (data.preferred_country) {
                     setPrefCountry(data.preferred_country)
                 }
@@ -152,8 +154,9 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
         })
         if (response.status === 200) {
             addNotification({
-                id: new Date.toISOString(), message: `${t("success")}`
+                id: new Date().toISOString(), message: `${t("success")}`
             })
+            setIsVerified("in progress")
         }
     }
 
@@ -205,13 +208,18 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                     <>
                         {currPage === "main" && (
                             <>
-                                <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={() => setCurrPage('verify')}>
-                                    <CheckSharp />
-                                    <p className="font-medium">{t("verify")}</p>
-                                    <div className="ms-auto">
-                                        <ArrowRightSharp/>
+                                {isVerified === "false" && (
+                                    <div
+                                        className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200"
+                                        onClick={() => setCurrPage('verify')}
+                                    >
+                                        <CheckSharp/>
+                                        <p className="font-medium">{t("verify")}</p>
+                                        <div className="ms-auto">
+                                            <ArrowRightSharp/>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                                 <div className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200" onClick={() => setCurrPage('security')}>
                                     <LockSharp />
                                     <p className="font-medium">{t("security")}</p>

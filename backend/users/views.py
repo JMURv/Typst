@@ -30,18 +30,15 @@ from typst.tasks import (
     compute_user_text_recommends_task,
     send_verification_submission_email_task,
 )
-
+from mediafiles.serializers import MediaFileSerializer, MediaFileBytesSerializer
 from django.core.cache import cache
-
+from .models import UserMedia, UserStories
 from .serializers import (
     UserSerializer,
     LightUserSerializer,
     SettingsSerializer,
-    MediaFileSerializer,
     PasswordResetSerializer,
-    MediaFileBytesSerializer
 )
-from .models import UserMedia, UserStories
 from .utils import (
     calculate_preferences_and_order,
     exclude_curr_user_and_disliked, send_ws_notification
@@ -391,7 +388,7 @@ class MediaRetrieveCreateDestroy(APIView):
             status=status.HTTP_200_OK,
             data=self.media_bytes_serializer(
                 self.user_media_model.objects.filter(
-                    author_id=kwargs.get("pk")
+                    author_id=kwargs.get("user_id")
                 ),
                 many=True
             ).data
@@ -399,7 +396,7 @@ class MediaRetrieveCreateDestroy(APIView):
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         user = request.user
-        if user.is_authenticated and user.id == kwargs.get('pk'):
+        if user.is_authenticated and user.id == kwargs.get('user_id'):
             curr_model = self.user_media_model
             if request.data.get("type", None) == "stories":
                 curr_model = self.user_stories_model
@@ -422,7 +419,7 @@ class MediaRetrieveCreateDestroy(APIView):
 
     def delete(self, request: Request, *args, **kwargs) -> Response:
         user = request.user
-        if user.is_authenticated and user.id == kwargs.get('pk'):
+        if user.is_authenticated and user.id == kwargs.get('user_id'):
             curr_model = self.user_media_model
             if request.data.get("type", None) == "stories":
                 curr_model = self.user_stories_model
@@ -447,10 +444,6 @@ class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data)
-        # print(request.data)
-        if not serializer.is_valid():
-            print(serializer.errors)
         if request.user != instance:
             return Response(
                 status=status.HTTP_403_FORBIDDEN
@@ -460,10 +453,17 @@ class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
 
 class VerifyUser(APIView):
     def post(self, request, *args, **kwargs):
+        if not all([request.user.is_authenticated, request.user.is_verified != "true"]):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         is_photo = request.data.get('file', None)
         if is_photo:
             data, name = is_photo.read(), is_photo.name
             photo_data_base64 = base64.b64encode(data).decode()
+
+            user_profile = get_object_or_404(get_user_model(), id=request.user.id)
+            user_profile.is_verified = "in progress"
+            user_profile.save()
+
             send_verification_submission_email_task.delay(
                 user_id=request.user.id,
                 photo_name=name,
@@ -476,7 +476,7 @@ class VerifyUser(APIView):
 def approve_verification(request, user_id):
     if request.user.is_staff:
         user_profile = get_object_or_404(get_user_model(), id=user_id)
-        user_profile.is_verified = True
+        user_profile.is_verified = "true"
         user_profile.save()
 
         new_notification = Notification.objects.create(
@@ -492,6 +492,8 @@ def approve_verification(request, user_id):
 def decline_verification(request, user_id):
     if request.user.is_staff:
         user_profile = get_object_or_404(get_user_model(), id=user_id)
+        user_profile.is_verified = "false"
+        user_profile.save()
         new_notification = Notification.objects.create(
             recipient=user_profile,
             message="Your profile has not been verified",

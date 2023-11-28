@@ -12,7 +12,7 @@ urlpatterns = [
     path('<int:pk>/blacklist/', views.UserBlackList.as_view(), name='user-blacklist'),
     path('<int:pk>/like/', views.UserLike.as_view(), name='user-like'),
     path('<int:pk>/dislike/', views.UserDislike.as_view(), name='user-dislike'),
-    path('<int:pk>/media/', views.MediaRetrieveCreateDestroy.as_view(), name='media-create-destroy'),
+    path('<int:user_id>/media/', views.MediaRetrieveCreateDestroy.as_view(), name='media-create-destroy'),
     path('<int:pk>/settings/', views.UserSettingsUpdate.as_view(), name='user-settings-update'),
     path('<int:pk>/', views.UserRetrieveUpdateDestroy.as_view(), name='user-retrieve-update-destroy'),
 ]

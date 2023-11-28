@@ -2,9 +2,9 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from rest_framework import serializers
 
+from mediafiles.serializers import MediaFileSerializer
 from users.serializers import LightUserSerializer
-from .models import Room, Message, MessageMediaFile
-import os
+from .models import Room, Message
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -49,40 +49,6 @@ class UserMessageSerializer(serializers.ModelSerializer):
             'id',
             'username',
             'media',
-        ]
-
-
-class MediaFileSerializer(serializers.ModelSerializer):
-    type = serializers.SerializerMethodField()
-    relative_path = serializers.SerializerMethodField()
-    file_name = serializers.SerializerMethodField()
-
-    def get_type(self, instance):
-        file_name, file_ext = os.path.splitext(instance.file.name)
-        file_ext = file_ext.strip('.')
-        if file_ext in ('png', 'jpg', 'jpeg'):
-            return f"image/{file_ext}"
-        elif file_ext in ('mp4', 'avi'):
-            return f"video/{file_ext}"
-        else:
-            return f"file/{file_ext}"
-
-    def get_relative_path(self, instance):
-        file_path = instance.file.url
-        return file_path
-
-    def get_file_name(self, instance):
-        file_name = instance.file.name
-        file_name = file_name.split('/')[-1]
-        return file_name
-
-    class Meta:
-        model = MessageMediaFile
-        fields = [
-            'id',
-            "type",
-            "relative_path",
-            "file_name",
         ]
 
 
