@@ -107,7 +107,7 @@ export default function Nav({session}) {
                 leave="transition-all ease-in-out duration-300"
                 leaveFrom="transform translate-x-0"
                 leaveTo="transform translate-x-full"
-                className="fixed top-0 bottom-0 right-0 flex flex-col w-screen h-screen bg-zinc-100/70 dark:bg-purple-100/70 backdrop-blur-xl z-50"
+                className="fixed top-0 bottom-0 right-0 flex flex-col w-screen h-screen bg-zinc-100/70 dark:bg-purple-100/70 backdrop-blur-xl z-30"
             >
                 <div className="p-5 px-10 ms-auto" onClick={() => setMobileMenu((value) => !value)}>
                     <div className="cursor-pointer">
@@ -165,7 +165,7 @@ export default function Nav({session}) {
                 signOut={signOutHandler}
             />
 
-            <nav className="flex justify-between container mx-auto items-center py-4 bg-transparent backdrop-blur-md w-full fixed top-0 left-0 right-0 z-40">
+            <nav className="flex justify-between container mx-auto items-center py-4 bg-transparent backdrop-blur-md w-full fixed top-0 left-0 right-0 z-30">
 
                 <div className="flex items-center justify-center">
                     <a className="cursor-pointer">

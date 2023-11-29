@@ -101,10 +101,16 @@ class UserSerializer(serializers.ModelSerializer):
             return None
         if request.user.id == instance.id:
             return None
-        return calculate_geo_proximity(
-            request_user=request.user,
-            inspected_user=instance
-        )
+        if all([
+            request.user.last_loc_latitude,
+            request.user.last_loc_longitude,
+            instance.last_loc_latitude,
+            instance.last_loc_longitude
+        ]):
+            return calculate_geo_proximity(
+                request_user=request.user,
+                inspected_user=instance
+            )
 
     def get_compatibility_percentage(self, instance) -> int:
         request = self.context.get('request')
@@ -180,113 +186,6 @@ class BlackListedUserSerializer(serializers.ModelSerializer):
             "username",
             "media",
         ]
-
-
-class LightUserSerializer(serializers.ModelSerializer):
-    media = MediaFileSerializer(many=True, required=False)
-    stories = MediaFileSerializer(many=True, required=False)
-    zodiac_sign = ZodiacSignSerializer(required=False)
-    tags = TagSerializer(many=True, required=False)
-    compatibility_percentage = serializers.SerializerMethodField()
-    geo_prox = serializers.SerializerMethodField()
-
-    def update(self, instance, validated_data):
-        request = self.context.get('request')
-        validated_data.pop('media', None)
-        validated_data.pop('stories', None)
-        validated_data.pop('liked', None)
-        validated_data.pop('liked_by', None)
-        validated_data.pop('disliked', None)
-        validated_data.pop('disliked_by', None)
-        validated_data.pop('blacklist', None)
-        validated_data.pop('blacklisted_by', None)
-        validated_data.pop('new_like_notification', None)
-        validated_data.pop('new_match_notification', None)
-        validated_data.pop('new_message_notification', None)
-        super().update(instance, validated_data)
-
-        zodiac_sign = request.data.get('zodiac_sign', None)
-        if zodiac_sign:
-            try:
-                instance.zodiac_sign = ZodiacSign.objects.get(
-                    title=zodiac_sign
-                )
-            except ZodiacSign.DoesNotExist:
-                instance.zodiac_sign = ZodiacSign.objects.first()
-
-        save_or_update_user_tags(
-            request=request,
-            instance=instance
-        )
-        save_or_update_user_media(
-            request=request,
-            instance=instance
-        )
-        instance.save()
-        return instance
-
-    def get_geo_prox(self, instance):
-        request = self.context.get('request')
-        if not request:
-            return None
-        if request.user.id == instance.id:
-            return None
-        return calculate_geo_proximity(
-            request_user=request.user,
-            inspected_user=instance
-        )
-
-    def get_compatibility_percentage(self, instance) -> int:
-        request = self.context.get('request')
-        if not request:
-            return 0
-        if request.user.id == instance.id:
-            return 0
-        return calculate_compatibility(
-            request_user=request.user,
-            inspected_user=instance
-        )
-
-    class Meta:
-        model = get_user_model()
-        fields = [
-            "id",
-            "username",
-            "about",
-            "age",
-            "sex",
-            "orientation",
-            "height",
-            "weight",
-            "max_preferred_age",
-            "min_preferred_age",
-            "max_preferred_height",
-            "min_preferred_height",
-            "max_preferred_weight",
-            "min_preferred_weight",
-            "zodiac_sign",
-            "media",
-            "stories",
-            "liked",
-            "liked_by",
-            "disliked",
-            "disliked_by",
-            "blacklist",
-            "blacklisted_by",
-            "country",
-            "preferred_country",
-            "city",
-            "new_like_notification",
-            "new_match_notification",
-            "new_message_notification",
-            "tags",
-            "compatibility_percentage",
-            "geo_prox",
-            "is_verified",
-        ]
-        extra_kwargs = {
-            'about': {'required': False},
-        }
 
 
 class SettingsSerializer(serializers.ModelSerializer):

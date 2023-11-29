@@ -69,10 +69,8 @@ class GeolocationView(APIView):
     permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request: Request, *args, **kwargs) -> Response:
-        request.user.latest_location = {
-            'latitude': request.data.get('latitude'),
-            'longitude': request.data.get('longitude')
-        }
+        request.user.last_loc_latitude = request.data.get('latitude')
+        request.user.last_loc_longitude = request.data.get('longitude')
         request.user.save()
         return Response(
             status=status.HTTP_200_OK

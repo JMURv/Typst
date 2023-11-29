@@ -30,12 +30,14 @@ from typst.tasks import (
     compute_user_text_recommends_task,
     send_verification_submission_email_task,
 )
-from mediafiles.serializers import MediaFileSerializer, MediaFileBytesSerializer
+from mediafiles.serializers import (
+    MediaFileSerializer,
+    MediaFileBytesSerializer
+)
 from django.core.cache import cache
 from .models import UserMedia, UserStories
 from .serializers import (
     UserSerializer,
-    LightUserSerializer,
     SettingsSerializer,
     PasswordResetSerializer,
 )
@@ -51,7 +53,7 @@ class GetCurrentUser(APIView):
     def get(self, request: Request, *args, **kwargs) -> Response:
         return Response(
             status=status.HTTP_200_OK,
-            data=LightUserSerializer(
+            data=UserSerializer(
                 get_object_or_404(
                     klass=self.user_model,
                     id=request.user.id
@@ -277,7 +279,7 @@ class ConfirmEmail(APIView):
 class UserRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     queryset = get_user_model().objects.all()
-    serializer_class = LightUserSerializer
+    serializer_class = UserSerializer
 
     def update(self, request: Request, *args, **kwargs) -> Response:
         instance = self.get_object()
@@ -453,14 +455,16 @@ class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
 
 class VerifyUser(APIView):
     def post(self, request, *args, **kwargs):
-        if not all([request.user.is_authenticated, request.user.is_verified != "true"]):
+        if request.user.is_verified == "true":
             return Response(status=status.HTTP_400_BAD_REQUEST)
         is_photo = request.data.get('file', None)
         if is_photo:
             data, name = is_photo.read(), is_photo.name
             photo_data_base64 = base64.b64encode(data).decode()
-
-            user_profile = get_object_or_404(get_user_model(), id=request.user.id)
+            user_profile = get_object_or_404(
+                get_user_model(),
+                id=request.user.id
+            )
             user_profile.is_verified = "in progress"
             user_profile.save()
 

@@ -21,7 +21,9 @@ class Command(BaseCommand):
             zodiac_signs = json.load(zodiac_file)
         for zodiac_sign in zodiac_signs.get("zodiac_signs"):
             title = zodiac_sign.get("title")
-            icon_path = os.path.join(DEFAULT_IMAGE_PATH, title + ZODIAC_FILE_EXT)
+            icon_path = os.path.join(
+                DEFAULT_IMAGE_PATH, title + ZODIAC_FILE_EXT
+            )
             with open(icon_path, "rb") as icon_data:
                 ZodiacSign.objects.create(
                     title=title,

@@ -162,11 +162,6 @@ class User(AbstractUser):
         null=True
     )
 
-    latest_location = models.JSONField(
-        blank=True,
-        null=True
-    )
-
     recommends = models.ManyToManyField(
         "self",
         related_name='recommended_by',
@@ -182,13 +177,17 @@ class User(AbstractUser):
         null=True
     )
 
+    last_loc_latitude = models.FloatField(blank=True, null=True)
+    last_loc_longitude = models.FloatField(blank=True, null=True)
+
     new_like_notification = models.BooleanField(default=True)
     new_match_notification = models.BooleanField(default=True)
     new_message_notification = models.BooleanField(default=True)
 
     is_verified = models.CharField(
         choices=VERIFICATION_CHOICES,
-        default="false"
+        default="false",
+        max_length=15
     )
 
     USERNAME_FIELD = 'email'

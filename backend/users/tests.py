@@ -12,6 +12,12 @@ class UserAPITestCase(APITestCase):
             'username': 'testuser',
             'email': 'test@example.com',
             'password': 'testpassword',
+            "max_preferred_age": 100,
+            "min_preferred_age": 18,
+            "max_preferred_height": 250,
+            "min_preferred_height": 150,
+            "max_preferred_weight": 200,
+            "min_preferred_weight": 40,
         }
         self.second_user_data = {
             'id': 2,

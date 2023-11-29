@@ -36,18 +36,16 @@ WEIGHT_MAPPING = {
 }
 
 
-def calculate_geo_proximity(request_user: User, inspected_user: User) -> float:
-    request_user_geo = request_user.latest_location
-    inspected_user_geo = inspected_user.latest_location
+def calculate_geo_proximity(request_user: User, inspected_user: User) -> int:
+    request_user_geo = (
+        request_user.last_loc_latitude,
+        request_user.last_loc_longitude,
+    )
+    inspected_user_geo = (
+        inspected_user.last_loc_latitude,
+        inspected_user.last_loc_longitude,
+    )
     if request_user_geo and inspected_user_geo:
-        request_user_geo = (
-            request_user_geo.get("latitude"),
-            request_user_geo.get("longitude")
-        )
-        inspected_user_geo = (
-            inspected_user_geo.get("latitude"),
-            inspected_user_geo.get("longitude")
-        )
         distance = geodesic(request_user_geo, inspected_user_geo).km
         return int(distance)
     return None
@@ -78,7 +76,10 @@ def calculate_compatibility(request_user: User, inspected_user: User) -> int:
         request_user.max_preferred_weight
     ]
 
-    if not all([pref_age_range, pref_height_range, pref_weight_range]):
+    if not all([
+        pref_age_range, pref_height_range, pref_weight_range,
+        inspected_user.age, inspected_user.height, inspected_user.weight
+    ]):
         return 0
 
     age_score = calculate_score(inspected_user.age, pref_age_range)

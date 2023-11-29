@@ -3,12 +3,12 @@ from django.urls import reverse_lazy
 from rest_framework import serializers
 
 from mediafiles.serializers import MediaFileSerializer
-from users.serializers import LightUserSerializer
+from users.serializers import UserSerializer
 from .models import Room, Message
 
 
 class RoomSerializer(serializers.ModelSerializer):
-    members = LightUserSerializer(many=True)
+    members = UserSerializer(many=True)
 
     def get_messages(self, instance):
         messages = Message.objects.filter(
