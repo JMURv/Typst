@@ -11,6 +11,8 @@ jobs:
         with:
           python-version: '3.11'
       - name: Change to backend directory, install poetry, and run commands
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
           cd backend
           pip install poetry
