@@ -15,7 +15,6 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: True
           DOCKER: False
-          ALLOWED_HOSTS: *
         run: |
           cd backend
           pip install poetry
