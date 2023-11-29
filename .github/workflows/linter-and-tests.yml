@@ -19,5 +19,6 @@ jobs:
           cd backend
           pip install poetry
           poetry install
+          poetry run python manage.py makemigrations
           make lint
           make test
