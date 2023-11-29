@@ -1,0 +1,40 @@
+{
+  "zodiac_signs": [
+    {
+        "title": "aquarius"
+    },
+    {
+        "title": "aries"
+    },
+    {
+        "title": "cancer"
+    },
+    {
+        "title": "capricorn"
+    },
+    {
+        "title": "gemini"
+    },
+    {
+        "title": "leo"
+    },
+    {
+        "title": "libra"
+    },
+    {
+        "title": "pisces"
+    },
+    {
+        "title": "sagittarius"
+    },
+    {
+        "title": "scorpio"
+    },
+    {
+        "title": "taurus"
+    },
+    {
+        "title": "virgo"
+    }
+]
+}

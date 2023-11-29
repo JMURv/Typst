@@ -15,8 +15,8 @@ import SidebarBase from "@/components/Sidebar/SidebarBase";
 import DangerButton from "@/components/Buttons/DangerButton";
 import {UserPageStaticMediaGrid} from "@/components/Media/StaticMediaGrid";
 import useTranslation from "next-translate/useTranslation";
-import ZodiacSignsData from "@/lib/zodiacSigns";
-import tagsData from "@/lib/tagsData";
+import ZodiacSignsData from "@/../shared_data/zodiacSigns.json"
+import tagsData from "@/../shared_data/tags.json"
 import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
 import DoubleRange from "@/components/Inputs/DoubleRange";
 import {useNotification} from "@/providers/NotificationContext";
@@ -308,7 +308,7 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                 {currPage === "tags" && (
                     <div className={`flex flex-col items-center justify-center mt-5`}>
                         <div className={`flex flex-col flex-wrap justify-start w-full`}>
-                            {tagsData.map((tag) => (
+                            {tagsData.tags.map((tag) => (
                                 <div
                                     key={tag.value}
                                     onClick={() => handleSelectedTags(tag.value)}
@@ -329,23 +329,23 @@ export default function UserSidebar({session, userData, setUserData, isShowing, 
                 {currPage === "zodiac" && (
                     <div className={`flex flex-col items-center justify-center mt-5`}>
                         <div className={`flex flex-col flex-wrap justify-start w-full`}>
-                            {ZodiacSignsData.map((zodiac) => (
+                            {ZodiacSignsData.zodiac_signs.map((zodiac) => (
                                 <div
-                                    key={zodiac.value}
-                                    onClick={() => zodiacSignSelect(zodiac.value)}
+                                    key={zodiac.title}
+                                    onClick={() => zodiacSignSelect(zodiac.title)}
                                     className={
                                         `flex flex-row gap-3 p-5 items-center cursor-pointer transition-color duration-300 hover:bg-pink-pastel ` +
-                                        `${zodiacSign === zodiac.value ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                        `${zodiacSign === zodiac.title ? 'bg-pink-pastel' : 'bg-transparent'}`
                                     }
                                 >
                                     <img
-                                        src={`/media/defaults/zodiac/${zodiac.value}.svg`}
+                                        src={`/media/defaults/zodiac/${zodiac.title}.svg`}
                                         width={30}
                                         height={30}
                                         alt=""
                                     />
                                      <p className={`font-medium`}>
-                                        {t(zodiac.value)}
+                                        {t(zodiac.title)}
                                     </p>
                                 </div>
                             ))}

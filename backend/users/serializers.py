@@ -203,7 +203,6 @@ class LightUserSerializer(serializers.ModelSerializer):
         validated_data.pop('new_like_notification', None)
         validated_data.pop('new_match_notification', None)
         validated_data.pop('new_message_notification', None)
-        print(validated_data)
         super().update(instance, validated_data)
 
         zodiac_sign = request.data.get('zodiac_sign', None)

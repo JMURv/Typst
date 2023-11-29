@@ -284,7 +284,7 @@ const ChatContainer = ({ session, room, removeRoom, blacklistUser, allRoomsData,
             />
             <div className="flex flex-col">
                 <div className={`bg-zinc-100 dark:bg-purple-200 ${isReply ? 'h-[70px]':'h-[0px]'}`}>
-                    <div className="flex flex-row items-center border-l-2 border-l-pink-pastel border-l-solid p-2 px-3 flex flex-row gap-1">
+                    <div className="flex flex-row items-center border-l-2 border-l-pink-pastel border-l-solid p-2 px-3 gap-1">
                         {replyMessage && (
                             <>
                                 {replyMessage.media_files.length > 0 && (

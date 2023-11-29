@@ -47,7 +47,7 @@ export default function Notification({notification, onClose}) {
 export function NotificationContainer() {
     const { pushNotifications, removeNotification } = useNotification()
     return (
-        <div className="fixed z-40 top-40 right-0 w-0 h-full flex flex-col gap-3 items-end">
+        <div className="fixed z-50 top-40 right-0 w-0 h-full flex flex-col gap-3 items-end">
             {pushNotifications.map((notification) => (
                 <Notification
                     key={notification.id}

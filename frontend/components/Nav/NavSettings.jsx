@@ -156,6 +156,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
             addNotification({
                 id: new Date().toISOString(), message: `${t("success")}`
             })
+            setCurrPage('main')
             setIsVerified("in progress")
         }
     }

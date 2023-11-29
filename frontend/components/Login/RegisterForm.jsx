@@ -21,8 +21,8 @@ import useTranslation from "next-translate/useTranslation";
 import {signIn} from "next-auth/react";
 import SecondaryButton from "@/components/Buttons/SecondaryButton";
 import UnderlinedInput from "@/components/Inputs/UnderlinedInput";
-import ZodiacSignsData from "@/lib/zodiacSigns";
-import tagsData from "@/lib/tagsData";
+import ZodiacSignsData from "@/../shared_data/zodiacSigns.json"
+import tagsData from "@/../shared_data/tags.json"
 import ScreenSlider from "@/components/Slider/ScreenSlider";
 import CodeInput from "@/components/Inputs/CodeInput";
 import {useNotification} from "@/providers/NotificationContext";
@@ -611,23 +611,23 @@ export default function RegisterForm({setIsLoading}) {
                     <div className={`flex flex-col justify-center items-center max-w-[350px] mx-auto w-full h-full gap-3`}>
                         <p className="text-4xl font-medium text-center">{t("zodiac")}</p>
                         <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
-                            {ZodiacSignsData.map((zodiac) => (
+                            {ZodiacSignsData.zodiac_signs.map((zodiac) => (
                                 <div
-                                    key={zodiac.value}
-                                    onClick={() => zodiacSignSelect(zodiac.value)}
+                                    key={zodiac.title}
+                                    onClick={() => zodiacSignSelect(zodiac.title)}
                                     className={
                                         `flex flex-row gap-3 ring-2 ring-inset ring-pink-pastel rounded-full p-3 cursor-pointer transition-color duration-100 ` +
-                                        `${zodiacSign === zodiac.value ? 'bg-pink-pastel' : 'bg-transparent'}`
+                                        `${zodiacSign === zodiac.title ? 'bg-pink-pastel' : 'bg-transparent'}`
                                     }
                                 >
                                     <img
-                                        src={`/media/defaults/zodiac/${zodiac.value}.svg`}
+                                        src={`/media/defaults/zodiac/${zodiac.title}.svg`}
                                         width={20}
                                         height={20}
                                         alt=""
                                     />
                                      <p className={`font-medium text-sm`}>
-                                        {t(zodiac.value)}
+                                        {t(zodiac.title)}
                                     </p>
                                 </div>
                             ))}
@@ -639,7 +639,7 @@ export default function RegisterForm({setIsLoading}) {
                     <div className={`flex flex-col justify-center items-center max-w-[550px] mx-auto w-full h-full gap-3`}>
                         <p className="text-4xl font-medium text-center">{t("tags")}</p>
                         <div className={`flex flex-row flex-wrap justify-center items-center gap-3`}>
-                            {tagsData.map((tag) => (
+                            {tagsData.tags.map((tag) => (
                                 <div
                                     key={tag.value}
                                     onClick={() => handleSelectedTags(tag.value)}
