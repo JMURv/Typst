@@ -14,10 +14,10 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG') == "True"
 DOCKER = env('DOCKER') == "True"
 
-ALLOWED_HOSTS = env('ALLOWED_HOSTS').split()
+ALLOWED_HOSTS = env('ALLOWED_HOSTS', default="").split()
 
 SITE_ID = 1
-SITE_DOMAIN = env('DOMAIN')
+SITE_DOMAIN = env('DOMAIN', default="")
 
 INSTALLED_APPS = [
     'daphne',
@@ -74,7 +74,7 @@ SIMPLE_JWT = {
 }
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS').split()
+CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS', default="").split()
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'GET',
@@ -97,7 +97,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS').split()
+CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS', default="").split()
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -205,14 +205,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default="")
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default="")
 EMAIL_SERVER = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-EMAIL_ADMIN = env('EMAIL_ADMIN')
+EMAIL_ADMIN = env('EMAIL_ADMIN', default="")
 
 # Redis settings
-REDIS_LOCATION = env('REDIS_LOCATION')
+REDIS_LOCATION = env('REDIS_LOCATION', default="redis://redis:6379")
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
@@ -244,5 +244,5 @@ CELERY_TIMEZONE = 'Europe/Moscow'
 # ReCaptcha settings
 RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
 RECAPTCHA_PARAMS = {
-    'secret': env('RECAPTCHA_SECRET_KEY'),
+    'secret': env('RECAPTCHA_SECRET_KEY', default=""),
 }
