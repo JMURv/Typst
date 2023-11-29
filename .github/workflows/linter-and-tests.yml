@@ -13,6 +13,7 @@ jobs:
       - name: Change to backend directory, install poetry, and run commands
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DEBUG: True
         run: |
           cd backend
           pip install poetry
