@@ -138,11 +138,11 @@ WSGI_APPLICATION = 'typst.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST'),
-        'PORT': env('POSTGRES_PORT'),
+        'NAME': env('POSTGRES_DB', default="typst"),
+        'USER': env('POSTGRES_USER', default="postgres"),
+        'PASSWORD': env('POSTGRES_PASSWORD', default=""),
+        'HOST': env('POSTGRES_HOST', default="localhost"),
+        'PORT': env('POSTGRES_PORT', default="5432"),
     }
 }
 
