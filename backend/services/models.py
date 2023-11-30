@@ -19,9 +19,15 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"From: {self.actor.username} to: {self.recipient.username}"
+
 
 class Tag(models.Model):
     title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.title
 
 
 class ZodiacSign(models.Model):
@@ -30,3 +36,6 @@ class ZodiacSign(models.Model):
         upload_to="zodiac/",
         validators=[],
     )
+
+    def __str__(self):
+        return self.title

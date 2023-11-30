@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import ZodiacSign, Notification, Tag
 
-# Register your models here.
+
+admin.site.register(Notification)
+admin.site.register(ZodiacSign)
+admin.site.register(Tag)

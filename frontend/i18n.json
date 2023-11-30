@@ -1,6 +1,8 @@
 {
   "locales": ["en", "ru"],
   "defaultLocale": "ru",
+  "localeDetection": false,
+  "redirectToDefaultLang": true,
   "pages": {
     "*": ["common", "user"],
     "/": ["home", "user"],

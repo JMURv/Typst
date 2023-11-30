@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
+from .managers import UserManager
 from services.models import Notification
 from chat.models import Room
 
@@ -190,8 +191,13 @@ class User(AbstractUser):
         max_length=15
     )
 
+    objects = UserManager()
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.username
 
 
 class UserMedia(models.Model):

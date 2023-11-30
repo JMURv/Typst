@@ -67,7 +67,8 @@ class Command(BaseCommand):
             "country": "RU",
             "city": "Moscow",
             "is_staff": True,
-            "is_superuser": True
+            "is_superuser": True,
+            "is_active": True,
         }
         is_admin = User.objects.filter(
             username=admin_user_data.get('username')
