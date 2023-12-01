@@ -7,8 +7,8 @@ from users.views import approve_verification, decline_verification
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('admin/verification/accept/', approve_verification),
-    path('admin/verification/decline/', decline_verification),
+    path('staff/verification/accept/', approve_verification),
+    path('staff/verification/decline/', decline_verification),
     path('api/', include('api.urls'))
 ]
 if settings.DEBUG:

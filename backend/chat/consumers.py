@@ -189,7 +189,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, **kwargs):
-        # text_data_json = json.loads(text_data)
         return
 
     async def send_notification(self, event):

@@ -48,7 +48,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
         const fetchReqUser = async () => {
             setIsFetching(true)
             try {
-                const response = await fetch(`/api/v1/users/me/settings/`, {
+                const response = await fetch(`/api/v1/users/${session.user.user_id}/settings/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -145,7 +145,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
     const sentVerificationRequest = async () => {
         const formData = new FormData()
         formData.append('file', file)
-        const response = await fetch(`api/v1/users/${session.user.user_id}/verify/`, {
+        const response = await fetch(`api/v1/users/verify/`, {
             method: "POST",
             body: formData,
             headers: {
@@ -200,7 +200,7 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                     onClickHandler={update}
                 />
             </div>
-            <div className="flex flex-col gap-3 w-full h-full">
+            <div className="flex flex-col w-full">
                 {isFetching ? (
                     <div className="items-center justify-center animate-spin">
                         <SyncSharp />
@@ -264,7 +264,8 @@ export default function NavSettings({session, isSettings, setIsSettings, signOut
                                     </div>
                                 </div>
 
-                                <div className="mt-auto hidden sm:flex flex-col">
+                                <div className="hidden sm:flex flex-col">
+                                    <div className={`w-full h-1 bg-pink-pastel`}/>
                                     <div
                                         className="flex flex-row p-5 gap-3 cursor-pointer hover:bg-pink-pastel/40 transition-color duration-200">
                                         <ToggleTheme/>

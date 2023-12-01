@@ -1,161 +1,33 @@
 import base64
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.tokens import default_token_generator
-from django.core.files.base import ContentFile
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
-from django.utils.http import urlsafe_base64_decode
-from rest_framework import permissions, status
 
-from rest_framework.generics import (
-    ListCreateAPIView,
-    RetrieveUpdateDestroyAPIView
-)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from rest_framework_simplejwt.token_blacklist.models import (
-    OutstandingToken,
-    BlacklistedToken
+from rest_framework import permissions, status
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView
 )
 
 from services.models import Notification
 from services.utils import check_recaptcha
 from typst.tasks import (
-    send_password_reset_message_task,
     compute_user_text_recommends_task,
     send_verification_submission_email_task,
 )
-from mediafiles.serializers import (
-    MediaFileSerializer,
-    MediaFileBytesSerializer
-)
-from django.core.cache import cache
-from .models import UserMedia, UserStories
 from .serializers import (
     UserSerializer,
     SettingsSerializer,
-    PasswordResetSerializer,
 )
 from .utils import (
     calculate_preferences_and_order,
     exclude_curr_user_and_disliked, send_ws_notification
 )
-
-
-class GetCurrentUser(APIView):
-    user_model = get_user_model()
-
-    def get(self, request: Request, *args, **kwargs) -> Response:
-        return Response(
-            status=status.HTTP_200_OK,
-            data=UserSerializer(
-                get_object_or_404(
-                    klass=self.user_model,
-                    id=request.user.id
-                )
-            ).data
-        )
-
-
-class GetCurrentUserSettings(APIView):
-    user_model = get_user_model()
-
-    def get(self, request: Request, *args, **kwargs) -> Response:
-        return Response(
-            status=status.HTTP_200_OK,
-            data=SettingsSerializer(
-                get_object_or_404(
-                    klass=self.user_model,
-                    id=request.user.id
-                )
-            ).data
-        )
-
-
-class CheckUsername(APIView):
-    user_model = get_user_model()
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request: Request, *args, **kwargs) -> Response:
-        return Response(
-            status=status.HTTP_200_OK,
-            data={
-                'username_exists': self.user_model.objects.filter(
-                    username__iexact=request.data.get('username')
-                ).exists()
-            },
-        )
-
-
-class CheckEmail(APIView):
-    user_model = get_user_model()
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request: Request, *args, **kwargs) -> Response:
-        return Response(
-            status=status.HTTP_200_OK,
-            data={
-                'email_exists': self.user_model.objects.filter(
-                    email__iexact=request.data.get('email')
-                ).exists()
-            },
-        )
-
-
-class ForgotPassword(APIView):
-    user_model = get_user_model()
-    serializer_class = PasswordResetSerializer
-    permission_classes = (permissions.AllowAny,)
-
-    def get(self, request: Request, *args, **kwargs) -> Response:
-        email = request.GET.get('email')
-        try:
-            user = self.user_model.objects.filter(email=email).first()
-        except self.user_model.DoesNotExist:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        else:
-            send_password_reset_message_task.delay(user.id)
-            return Response(
-                status=status.HTTP_200_OK
-            )
-
-    def post(self, request: Request, *args, **kwargs) -> Response:
-        uidb64 = request.data.get('uidb64', None)
-        token = request.data.get('token', None)
-        new_password = request.data.get('newPassword', None)
-
-        if not uidb64 or not token or not new_password:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            user = self.user_model.objects.get(
-                id=urlsafe_base64_decode(uidb64).decode('utf-8')
-            )
-        except self.user_model.DoesNotExist:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        stored_token = cache.get(f'password_reset_code_{user.id}')
-        if stored_token is not None and stored_token == token:
-            for token in OutstandingToken.objects.filter(user=user):
-                _, _ = BlacklistedToken.objects.get_or_create(token=token)
-            user.password = make_password(new_password)
-            user.save()
-            return Response(
-                status=status.HTTP_200_OK
-            )
-        return Response(
-            status=status.HTTP_400_BAD_REQUEST
-        )
 
 
 class UsersPagination(PageNumberPagination):
@@ -249,36 +121,10 @@ class UserListCreate(ListCreateAPIView):
             )
 
 
-class ConfirmEmail(APIView):
-    user_model = get_user_model()
-    permission_classes = (permissions.AllowAny,)
-
-    def get(self, request: Request, uidb64: str, token: str) -> Response:
-        try:
-            uid = urlsafe_base64_decode(uidb64)
-            user = self.user_model.objects.get(pk=uid)
-        except (
-                TypeError,
-                ValueError,
-                OverflowError,
-                self.user_model.DoesNotExist
-        ):
-            user = None
-        if default_token_generator.check_token(user, token):
-            user.is_active = True
-            user.save()
-            return Response(
-                status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-
 class UserRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
+    user_model = get_user_model()
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = get_user_model().objects.all()
+    queryset = user_model.objects.all()
     serializer_class = UserSerializer
 
     def update(self, request: Request, *args, **kwargs) -> Response:
@@ -300,6 +146,12 @@ class UserRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
             )
         return super().destroy(request, *args, **kwargs)
 
+    def get_object(self):
+        return get_object_or_404(
+            klass=self.user_model,
+            id=self.kwargs.get("user_id")
+        )
+
 
 class UserBlackList(APIView):
     user_model = get_user_model()
@@ -308,7 +160,7 @@ class UserBlackList(APIView):
     def post(self, request: Request, *args, **kwargs):
         blacklisted_user = get_object_or_404(
             klass=self.user_model,
-            id=self.kwargs.get('pk')
+            id=self.kwargs.get('user_id')
         )
         if request.user.blacklist.contains(blacklisted_user):
             request.user.blacklist.remove(blacklisted_user.id)
@@ -324,14 +176,17 @@ class UserLike(APIView):
     user_model = get_user_model()
 
     def post(self, request: Request, *args, **kwargs) -> Response:
-        user_profile = self.get_object()
-        if request.user.liked.contains(user_profile):
-            request.user.liked.remove(user_profile.id)
+        liked_user = get_object_or_404(
+            klass=self.user_model,
+            id=self.kwargs.get('user_id')
+        )
+        if request.user.liked.contains(liked_user):
+            request.user.liked.remove(liked_user.id)
         else:
-            request.user.liked.add(user_profile.id)
+            request.user.liked.add(liked_user.id)
 
-        if request.user.disliked.contains(user_profile):
-            request.user.disliked.remove(user_profile.id)
+        if request.user.disliked.contains(liked_user):
+            request.user.disliked.remove(liked_user.id)
 
         request.user.save()
 
@@ -344,113 +199,61 @@ class UserLike(APIView):
             status=status.HTTP_200_OK
         )
 
-    def get_object(self):
-        obj = get_object_or_404(
-            klass=self.user_model,
-            id=self.kwargs.get('pk')
-        )
-        return obj
-
 
 class UserDislike(APIView):
     user_model = get_user_model()
 
     def post(self, request: Request, *args, **kwargs) -> Response:
-        user_profile = self.get_object()
-        if request.user.disliked.contains(user_profile):
-            request.user.disliked.remove(user_profile.id)
+        disliked_user = get_object_or_404(
+            klass=self.user_model,
+            id=self.kwargs.get('user_id')
+        )
+        if request.user.disliked.contains(disliked_user):
+            request.user.disliked.remove(disliked_user.id)
         else:
-            request.user.disliked.add(user_profile.id)
+            request.user.disliked.add(disliked_user.id)
 
-        if request.user.liked.contains(user_profile):
-            request.user.liked.remove(user_profile.id)
+        if request.user.liked.contains(disliked_user):
+            request.user.liked.remove(disliked_user.id)
         request.user.save()
         return Response(
             status=status.HTTP_200_OK
         )
 
-    def get_object(self):
-        obj = get_object_or_404(
-            klass=self.user_model,
-            id=self.kwargs.get('pk')
-        )
-        return obj
 
-
-class MediaRetrieveCreateDestroy(APIView):
+class UserSettingsRetrieveUpdate(RetrieveUpdateDestroyAPIView):
     user_model = get_user_model()
-    user_media_model = UserMedia
-    user_stories_model = UserStories
-    media_serializer = MediaFileSerializer
-    media_bytes_serializer = MediaFileBytesSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = user_model.objects.all()
+    serializer_class = SettingsSerializer
 
-    def get(self, request: Request, *args, **kwargs):
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        if request.user.id != kwargs.get("user_id"):
+            return Response(
+                status=status.HTTP_403_FORBIDDEN
+            )
         return Response(
             status=status.HTTP_200_OK,
-            data=self.media_bytes_serializer(
-                self.user_media_model.objects.filter(
-                    author_id=kwargs.get("user_id")
-                ),
-                many=True
+            data=self.serializer_class(
+                get_object_or_404(
+                    klass=self.user_model,
+                    id=request.user.id
+                )
             ).data
         )
 
     def post(self, request: Request, *args, **kwargs) -> Response:
-        user = request.user
-        if user.is_authenticated and user.id == kwargs.get('user_id'):
-            curr_model = self.user_media_model
-            if request.data.get("type", None) == "stories":
-                curr_model = self.user_stories_model
-            file = request.data.get('file')
-            data = file.read()
-            new_file = curr_model(author=user)
-            new_file.file.save(
-                name=file.name,
-                content=ContentFile(data)
-            )
-            new_file.save()
-
-            return Response(
-                status=status.HTTP_200_OK,
-                data=self.media_serializer(new_file).data
-            )
-        return Response(
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-    def delete(self, request: Request, *args, **kwargs) -> Response:
-        user = request.user
-        if user.is_authenticated and user.id == kwargs.get('user_id'):
-            curr_model = self.user_media_model
-            if request.data.get("type", None) == "stories":
-                curr_model = self.user_stories_model
-            media_object = get_object_or_404(
-                curr_model,
-                id=request.data.get('mediaId')
-            )
-            media_object.file.delete(save=False)
-            media_object.delete()
-            return Response(
-                status=status.HTTP_204_NO_CONTENT
-            )
-        return Response(
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-
-class UserSettingsUpdate(RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    queryset = get_user_model().objects.all()
-    serializer_class = SettingsSerializer
-
-    def post(self, request: Request, *args, **kwargs) -> Response:
-        instance = self.get_object()
-        if request.user != instance:
+        if request.user.id != kwargs.get("user_id"):
             return Response(
                 status=status.HTTP_403_FORBIDDEN
             )
         return super().update(request, *args, **kwargs)
+
+    def get_object(self):
+        return get_object_or_404(
+            klass=self.user_model,
+            id=self.kwargs.get("user_id")
+        )
 
 
 class VerifyUser(APIView):
@@ -461,13 +264,8 @@ class VerifyUser(APIView):
         if is_photo:
             data, name = is_photo.read(), is_photo.name
             photo_data_base64 = base64.b64encode(data).decode()
-            user_profile = get_object_or_404(
-                get_user_model(),
-                id=request.user.id
-            )
-            user_profile.is_verified = "in progress"
-            user_profile.save()
-
+            request.user.is_verified = "in progress"
+            request.user.save()
             send_verification_submission_email_task.delay(
                 user_id=request.user.id,
                 photo_name=name,

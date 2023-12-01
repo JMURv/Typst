@@ -3,7 +3,7 @@ import {options} from "@/app/options";
 import {redirect} from "next/navigation";
 import Nav from "@/components/Nav/Nav";
 import FeedPage from "@/app/feed/FeedPage";
-import getRequestUser from "@/lib/getRequestUser";
+import getUserPageById from "@/lib/getUserPageById";
 
 export async function getFeedUsers(sessionToken) {
     try {
@@ -37,7 +37,7 @@ export default async function Page() {
     }
     const [usersPaginatedData, requestUser] = await Promise.all([
         getFeedUsers(session.access),
-        getRequestUser(session.access),
+        getUserPageById(session.user.user_id, session.access),
     ])
     const usersData = usersPaginatedData.results || []
     const usersNextLink = usersPaginatedData.next || null

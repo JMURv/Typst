@@ -48,11 +48,17 @@ class UserAPITestCase(APITestCase):
         self.user_login_url = reverse('login')
         self.user_list_create_url = reverse('user-list-create')
         self.user_like_url = reverse('user-like', kwargs={
-            'pk': self.second_user.id
+            'user_id': self.second_user.id
+        })
+        self.user_dislike_url = reverse('user-dislike', kwargs={
+            'user_id': self.second_user.id
+        })
+        self.user_blacklist_url = reverse('user-blacklist', kwargs={
+            'user_id': self.second_user.id
         })
         self.user_retrieve_update_destroy_url = reverse(
             'user-retrieve-update-destroy', kwargs={
-                'pk': self.user.id
+                'user_id': self.user.id
             })
 
     def test_user_login(self):
@@ -76,6 +82,7 @@ class UserAPITestCase(APITestCase):
             self.user_list_create_url,
             self.creation_user_data
         )
+        # 400 code causes by invalid captcha
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Test user listing
@@ -84,9 +91,18 @@ class UserAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_user_like_view(self):
-        # Test user like view
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.user_like_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_dislike_view(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.user_dislike_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_blacklist_view(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.user_blacklist_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_user_retrieve_update_destroy_view(self):

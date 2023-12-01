@@ -146,7 +146,7 @@ export default function RegisterForm({setIsLoading}) {
         const recaptchaToken = await executeRecaptcha('email_activate')
         registerKey.current = new Date().toISOString()
         try {
-            const response = await fetch(`/api/v1/services/activation/?key=${registerKey.current}&email=${email}&captcha=${recaptchaToken}`, {
+            const response = await fetch(`/api/v1/email-activation/?key=${registerKey.current}&email=${email}&captcha=${recaptchaToken}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json"
@@ -269,7 +269,7 @@ export default function RegisterForm({setIsLoading}) {
 
         const formData = new FormData
         formData.append("username", inputValue)
-        const response = await fetch('/api/v1/users/check-username/', {
+        const response = await fetch('/api/v1/check-username/', {
             method: "POST",
             body: formData
         })
@@ -302,7 +302,7 @@ export default function RegisterForm({setIsLoading}) {
 
         const formData = new FormData
         formData.append("email", inputValue)
-        const response = await fetch('/api/v1/users/check-email/', {
+        const response = await fetch('/api/v1/check-email/', {
             method: "POST",
             body: formData
         })
@@ -388,7 +388,7 @@ export default function RegisterForm({setIsLoading}) {
         const code = digits.join('')
         if (code.length === 4) {
             const checkCode = async () => {
-                const response = await fetch(`api/v1/services/activation/`, {
+                const response = await fetch(`api/v1/email-activation/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

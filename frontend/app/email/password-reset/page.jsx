@@ -23,7 +23,7 @@ export default function Page({searchParams}) {
         formData.append("token", token)
         formData.append("newPassword", newPassword)
         try {
-            const response = await fetch(`/api/v1/users/forgot-password/`, {
+            const response = await fetch(`/api/v1/forgot-password/`, {
                 method: "POST",
                 body: formData
             })

@@ -3,19 +3,7 @@ import {options} from "@/app/options";
 import {redirect} from "next/navigation";
 import Nav from "@/components/Nav/Nav";
 import MainUser from "@/app/[userId]/MainUser";
-import getRequestUser from "@/lib/getRequestUser";
-
-
-export async function getUserPageById(userId, accessToken) {
-    const response = await fetch(`${process.env.NEXTAUTH_URL_INTERNAL}/api/users/${userId}/`, {
-        cache: "no-cache",
-        method: 'GET',
-        headers: {
-            "Authorization": `Bearer ${accessToken}`
-        }
-    })
-    return await response.json()
-}
+import getUserPageById from "@/lib/getUserPageById";
 
 
 export async function generateMetadata(props) {
@@ -37,7 +25,7 @@ export default async function Page({params, searchParams}) {
 
     const [prefetchUserData, prefetchRequestUser] = await Promise.all([
         getUserPageById(userId, session.access),
-        getRequestUser(session.access),
+        getUserPageById(session.user.user_id, session.access),
     ])
     const isAuthor = parseInt(userId) === parseInt(session.user.user_id)
     return (

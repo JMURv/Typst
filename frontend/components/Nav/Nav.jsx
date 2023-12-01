@@ -165,7 +165,7 @@ export default function Nav({session}) {
                 signOut={signOutHandler}
             />
 
-            <nav className="flex justify-between container mx-auto items-center py-4 bg-transparent backdrop-blur-md w-full fixed top-0 left-0 right-0 z-30">
+            <nav className="flex justify-between container mx-auto items-center py-4 bg-transparent backdrop-blur-md w-full fixed inset-x-0 top-0 z-30">
 
                 <div className="flex items-center justify-center">
                     <a className="cursor-pointer">

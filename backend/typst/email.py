@@ -56,8 +56,8 @@ def send_verification_submission_email(user_id, photo_name, photo_data):
     domain = Site.objects.get_current().domain
     scheme = settings.CURRENT_SCHEME
     base_url = f'{scheme}{domain}'
-    accept_url = f'/admin/verification/accept/{user.id}/'
-    decline_url = f'/admin/verification/decline/{user.id}/'
+    accept_url = f'/staff/verification/accept/{user.id}/'
+    decline_url = f'/staff/verification/decline/{user.id}/'
 
     html_message = render_to_string(
         'email/send_verification_submission_email.html', {
