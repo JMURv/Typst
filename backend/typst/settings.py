@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'api',
     'users',
     'services',
+    'subscriptions',
 ]
 
 CURRENT_SCHEME = "http://" if env('DEBUG') == "True" else "https://"
@@ -241,6 +242,19 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Europe/Moscow'
+
+
+CELERY_BEAT_SCHEDULE = {
+    'update_user_likes_daily': {
+        'task': 'typst.tasks.update_user_likes_daily',
+        'schedule': 60 * 60,  # Run every 1 hour
+    },
+    'remove_expired_subscriptions': {
+        'task': 'typst.tasks.remove_expired_subscriptions',
+        'schedule': 60 * 60,  # Run every 1 hour
+    },
+}
+
 
 # ReCaptcha settings
 RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'

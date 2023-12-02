@@ -90,6 +90,7 @@ class UserListCreate(ListCreateAPIView):
                     'error': 'Please provide password and email.'
                 },
             )
+
         try:
             serializer = UserSerializer(
                 data=request.data,

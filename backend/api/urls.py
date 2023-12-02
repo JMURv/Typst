@@ -32,6 +32,7 @@ urlpatterns = [
     path('check-email/', CheckEmail.as_view(), name="check-email"),
 
     path('users/', include('users.urls')),
+    path('subscriptions/', include('subscriptions.urls')),
     path('chat/', include('chat.urls')),
     path('services/', include('services.urls')),
 ]

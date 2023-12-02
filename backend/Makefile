@@ -31,3 +31,6 @@ zodiac:
 
 tags:
 	poetry run python manage.py create_tags
+
+subs:
+	poetry run python manage.py create_subs

@@ -1,4 +1,7 @@
 from celery import shared_task
+from django.utils import timezone
+
+from subscriptions.models import UserSubscription, UserDailyLikes
 from .email import (
     send_activate_email_code,
     send_login_email_message,
@@ -6,6 +9,25 @@ from .email import (
     send_password_reset_message,
     send_verification_submission_email
 )
+
+
+@shared_task
+def update_user_likes_daily():
+    active_subscriptions = UserSubscription.objects.filter(
+        expiration_date__gte=timezone.now()
+    )
+    for user_subscription in active_subscriptions:
+        UserDailyLikes.objects.filter(
+            user_subscription=user_subscription
+        ).update(likes_used=0)
+
+
+@shared_task
+def remove_expired_subscriptions():
+    expired_subscriptions = UserSubscription.objects.filter(
+        expiration_date__lt=timezone.now()
+    )
+    expired_subscriptions.delete()
 
 
 @shared_task
