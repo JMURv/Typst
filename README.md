@@ -2,7 +2,7 @@
 ### About:
 Full-powered dating application.
 
-Working example: https://typst.ru
+Working example: https://dating.typst.ru
 
 ___
 ### Stack:
