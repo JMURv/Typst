@@ -48,6 +48,8 @@ export const MessagesList = forwardRef(({ session, room, messages, handleReply, 
     )
 })
 
+MessagesList.displayName = 'MessagesList';
+
 export function Message({session, messageData, handleSeen, handleReply, handleEdit, remove}) {
     const { t } = useTranslation('chat')
 

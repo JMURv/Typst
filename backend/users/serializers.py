@@ -33,6 +33,11 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data.pop('liked_by', None)
         validated_data.pop('disliked', None)
         validated_data.pop('disliked_by', None)
+        validated_data.pop('blacklist', None)
+        validated_data.pop('blacklisted_by', None)
+        validated_data.pop('new_like_notification', None)
+        validated_data.pop('new_match_notification', None)
+        validated_data.pop('new_message_notification', None)
 
         instance = user_model.objects.create_user(**validated_data)
         instance.is_verified = False

@@ -114,8 +114,8 @@ services:
     image: nginx:stable-alpine
     restart: always
     ports:
-      - "81:80"
-      - "444:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - static_volume_typst:/app/frontend/public/static
       - media_volume_typst:/app/backend/media
