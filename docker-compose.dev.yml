@@ -65,13 +65,26 @@ services:
     working_dir: /app/backend
     image: "typst_backend:latest"
     env_file:
-      - docker/env/.env.dev
-    command: celery -A typst worker --loglevel=info --logfile=../docker/logs/celery-worker.log
+      - docker/env/.env.prod
+    command: celery -A typst worker -l info
     volumes:
       - .:/app
     depends_on:
-      - postgres
       - redis
+      - postgres
+
+  celery-beat:
+    container_name: celery_beat_typst
+    working_dir: /app/backend
+    image: "typst_backend:latest"
+    env_file:
+      - docker/env/.env.prod
+    command: celery -A typst beat -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - postgres
 
   recommends:
     container_name: recommends_typst
